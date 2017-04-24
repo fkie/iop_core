@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?> <?oxygen RNGSchema="../jsidl/iop_service_interface_definition_language.rnc" type="compact"?>
+<service_def name="PrimitiveManipulatorClient" id="urn:jaus:jss:manipulator:PrimitiveManipulatorClient"
+  version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1" >
+  <description xml:space="preserve">
+    This service is a client to communicate with PrimitiveManipulator service.
+  </description>
+  <assumptions>
+    Messages may be delayed, lost, or reordered.
+  </assumptions>
+  <references>
+    <inherits_from name="managementClient" id="urn:jaus:jss:core:ManagementClient" version="1.0" />
+  </references>
+  <declared_type_set name="types">
+    <declared_type_set_ref name="manipulator" id="urn:jaus:jss:manipulator:MessageSet" version="1.0" />
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportManipulatorSpecifications" declared_type_ref="manipulator.informClass.ReportManipulatorSpecifications" />
+      <declared_message_def name="ReportJointEffort" declared_type_ref="manipulator.informClass.ReportJointEffort" />
+    </input_set>
+    <output_set>
+      <declared_message_def name="QueryManipulatorSpecifications" declared_type_ref="manipulator.queryClass.QueryManipulatorSpecifications" />
+      <declared_message_def name="QueryJointEffort" declared_type_ref="manipulator.queryClass.QueryJointEffort" />
+      <declared_message_def name="SetJointEffort" declared_type_ref="manipulator.commandClass.SetJointEffort" />
+    </output_set>
+  </message_set>
+  <internal_events_set />
+  <protocol_behavior is_stateless="true">
+    <start state_machine_name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready" />
+    <state_machine name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready">
+        <state name="Ready">
+          <default_state>
+            <transition name="ReportManipulatorSpecifications">
+              <parameter type="ReportManipulatorSpecifications" value="msg" interpretation="enveloped ReportManipulatorSpecifications message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+              <simple/>
+              <action name="reportManipulatorSpecifications" interpretation="handle ReportManipulatorSpecifications">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+
+            <transition name="ReportJointEffort">
+              <parameter type="ReportJointEffort" value="msg" interpretation="enveloped ReportJointEffort message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+              <simple/>
+              <action name="reportJointEffort" interpretation="handle ReportJointEffort">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+          </default_state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>

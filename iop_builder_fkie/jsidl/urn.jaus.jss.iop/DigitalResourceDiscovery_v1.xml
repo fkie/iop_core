@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="DigitalResourceDiscovery" id="urn:jaus:jss:iop:DigitalResourceDiscovery" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
+    <description xml:space="preserve">The Digital Resource Discovery service provides a mechanism for SAE JAUS-based components to discover
+      network entities that transmit digital data streams (usually video and/or audio) and files in a standards-compliant format.
+      Because of the wide-spread support for numerous file transfer and streaming standards, this service does not propose a JAUS-specific
+      format for data; it only provides a discovery mechanism based on a Uniform Resource Locator (URL).</description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+    <references>
+        <inherits_from name="Events" id="urn:jaus:jss:core:Events" version="1.0"/>
+    </references>
+    <declared_type_set name="Types">
+      <declared_type_set_ref name="iop" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+    </declared_type_set>
+    <message_set>
+        <input_set>
+            <declared_message_def name="QueryDigitalResourceEndpoint"
+              declared_type_ref="iop.digitalResourceClass.QueryDigitalResourceEndpoint"/>
+            <declared_message_def name="RegisterDigitalResourceEndpoint"
+              declared_type_ref="iop.digitalResourceClass.RegisterDigitalResourceEndpoint"/>
+            <declared_message_def name="RemoveDigitalResourceEndpoint"
+              declared_type_ref="iop.digitalResourceClass.RemoveDigitalResourceEndpoint"/>
+        </input_set>
+        <output_set>
+            <declared_message_def name="ReportDigitalResourceEndpoint"
+              declared_type_ref="iop.digitalResourceClass.ReportDigitalResourceEndpoint"/>
+            <declared_message_def name="ConfirmDigitalResourceEndpoint"
+              declared_type_ref="iop.digitalResourceClass.ConfirmDigitalResourceEndpoint"/>
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior is_stateless="false">
+        <start state_machine_name="events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <state_machine name="events.transport.ReceiveFSM" interpretation = "Extending ReceiveFSM from base.">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready">
+                  <default_state>
+                    <transition name="events.transport.Receive">
+                      <parameter type="QueryDigitalResourceEndpoint" value="msg" interpretation="enveloped Query Digital Resource Endpoint message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                      <simple/>
+                      <action name="reportDigitalResourceEndpoint" interpretation="Send a ReportDigitalResourceEndpoint message to querying client">
+                        <argument value="transportData"/>
+                      </action>
+                    </transition>
+
+                    <transition name="events.transport.Receive">
+                      <parameter type="RegisterDigitalResourceEndpoint" value="msg" interpretation="enveloped Register Digital Resource Endpoint message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                      <simple/>
+                      <action name="addAndConfirmDigitalResourceEndpoint" interpretation="Adds the specified endpoint to the list of known endpoints
+                          and send a ConfirmDigitalResourceEndpoint message to querying client">
+                        <argument value="msg"/>
+                        <argument value="transportData"/>
+                      </action>
+                    </transition>
+
+                    <transition name="events.transport.Receive">
+                      <parameter type="RemoveDigitalResourceEndpoint" value="msg" interpretation="enveloped Remove Digital Resource Endpoint message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                      <simple/>
+                      <action name="removeAndConfirmDigitalResourceEndpoint" interpretation="Removes the specified endpoint from the list of known endpoints
+                          and send a ConfirmDigitalResourceEndpoint message to querying client">
+                        <argument value="msg"/>
+                        <argument value="transportData"/>
+                      </action>
+                    </transition>
+                  </default_state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>

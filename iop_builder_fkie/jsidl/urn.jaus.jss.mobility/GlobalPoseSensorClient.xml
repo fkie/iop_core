@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service_def name="GlobalPoseSensorClient" id="urn:jaus:jss:mobility:GlobalPoseSensorClient" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+  <description>The The client service to get the global position sensor data.</description>
+  <assumptions>Messages may be delayed, lost or reordered.</assumptions>
+  <references>
+    <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
+  </references>
+  <declared_type_set name="Types">
+    <declared_type_set_ref name="mobility" id="urn:jaus:jss:mobility:MessageSet" version="1.0"/>
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportGlobalPose" declared_type_ref="mobility.informClass.ReportGlobalPose"/>
+      <declared_message_def name="ReportGeomagneticProperty" declared_type_ref="mobility.informClass.ReportGeomagneticProperty"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="SetGlobalPose" declared_type_ref="mobility.commandClass.SetGlobalPose"/>
+      <declared_message_def name="SetGeomagneticProperty" declared_type_ref="mobility.commandClass.SetGeomagneticProperty"/>
+      <declared_message_def name="QueryGlobalPose" declared_type_ref="mobility.queryClass.QueryGlobalPose"/>
+      <declared_message_def name="QueryGeomagneticProperty" declared_type_ref="mobility.queryClass.QueryGeomagneticProperty"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior>
+    <start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+    <state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM" 
+        interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+        <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+          <state name="NotControlled" interpretation="redefine state in order to extend">
+              <default_state>
+                <transition name="ReportGlobalPose">
+                    <parameter type="ReportGlobalPose" value="msg" interpretation="enveloped query global pose message"/>
+                    <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                    <ns1:internal/>
+                    <action name="handleReportGlobalPose" interpretation="handle a ReportGlobalPose message">
+                        <argument value="msg"/>
+                        <argument value="transportData"/>
+                    </action>
+                </transition>
+                <transition name="ReportGeomagneticProperty">
+                    <parameter type="ReportGeomagneticProperty" value="msg" interpretation="enveloped query geomagnetic property message"/>
+                    <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                    <ns1:internal/>
+                    <action name="handleReportGeomagneticProperty" interpretation="handle a ReportGeomagneticProperty message">
+                        <argument value="msg"/>
+                        <argument value="transportData"/>
+                    </action>
+                </transition>
+              </default_state>
+         </state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>

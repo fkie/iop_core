@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>iop_msgs_fkie</name>
+  <version>1.0.0</version>
+  <description>
+     The messages used to interact with ROS/IOP bridge.
+  </description>
+
+  <maintainer email="Alexander.Tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
+  <license>GPLv2</license>
+  <url type="website">https://github.com/fkie/iop_core.git</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>std_msgs</run_depend>
+</package>

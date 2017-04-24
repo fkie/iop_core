@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="DiscoveryClient" id="urn:jaus:jss:core:DiscoveryClient" version="1.0" xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+    <description xml:space="preserve">Offers Registration services for discovering</description>
+    <assumptions xml:space="preserve"></assumptions>
+    <references>
+        <inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.0"/>
+    </references>
+    <declared_type_set name="Types">
+      <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet" version="1.0"/>
+    </declared_type_set>
+    <message_set>
+        <input_set>
+          <declared_message_def name="ReportIdentification"
+            declared_type_ref="core.informClass.ReportIdentification"/>
+          <declared_message_def name="ReportConfiguration"
+            declared_type_ref="core.informClass.ReportConfiguration"/>
+          <declared_message_def name="ReportSubsystemList"
+            declared_type_ref="core.informClass.ReportSubsystemList"/>
+          <declared_message_def name="ReportServices"
+            declared_type_ref="core.informClass.ReportServices"/>
+        </input_set>
+        <output_set>
+          <declared_message_def name="QueryIdentification"
+            declared_type_ref="core.queryClass.QueryIdentification"/>
+          <declared_message_def name="QueryConfiguration"
+            declared_type_ref="core.queryClass.QueryConfiguration"/>
+          <declared_message_def name="QuerySubsystemList"
+            declared_type_ref="core.queryClass.QuerySubsystemList"/>
+          <declared_message_def name="QueryServices"
+            declared_type_ref="core.queryClass.QueryServices"/>
+          <declared_message_def name="RegisterServices"
+            declared_type_ref="core.commandClass.RegisterServices"/>
+        </output_set>
+    </message_set>
+    <internal_events_set>
+      <event_def name="Timeout">
+        <description> Occurs when access is not re-acquired periodically </description>
+        <header name="Header"/>
+        <body name="Body"/>
+        <footer name="Footer"/>
+      </event_def>
+    </internal_events_set>
+    <protocol_behavior is_stateless="false">
+        <start state_machine_name="eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <state_machine name="eventsClient.transport.ReceiveFSM">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready">
+                    <entry>
+                        <action name="register" interpretation="register by discovery service"/>
+                    </entry>
+                    <default_state>
+                        <transition name="ReportIdentification">
+                            <parameter type="ReportIdentification" value="msg"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                            <guard condition="!isRegistered() &amp;&amp; !onRegistration()"/>
+                            <ns2:internal/>
+                            <action name="sendRegisterServices">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                        <transition name="ReportIdentification">
+                            <parameter type="ReportIdentification" value="msg"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                            <ns2:internal/>
+                            <action name="reportedIdentification">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                        <transition name="ReportServices">
+                            <parameter type="ReportServices" value="msg"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                            <ns2:internal/>
+                            <action name="reportedServices">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                        <transition name="ReportConfiguration">
+                            <parameter type="ReportConfiguration" value="msg"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                            <ns2:internal/>
+                            <action name="reportedConfiguration">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                        <transition name="transport.Receive">
+                            <parameter type="ReportSubsystemList" value="msg"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                            <simple/>
+                            <action name="reportedSubsystemList">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                        <transition name="Timeout">
+                          <simple/>
+                          <action name="sendQueryIdentification" interpretation="Send a QueryIdentification message">
+                          </action>
+                        </transition>
+                    </default_state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>

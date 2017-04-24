@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="EnhancedAccessControlClass"
+	id="urn:jaus:jss:iop:MessageSet:EnhancedAccessControlClass" version="1.0">
+	<declared_type_set_ref name="basicTypes"
+		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0" />
+	<declared_type_set_ref name="advTypes"
+		id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0" />
+
+	<message_def name="RequestHandoff" message_id="FF31"
+		is_command="false">
+		<description xml:space="preserve">Creates or updates a request for control handoff from the current controlling client.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="RequestHandoffRec" optional="false">
+				<fixed_field name="AuthorityCode" optional="false"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive"
+							upper_limit="255" upper_limit_type="inclusive" />
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="Explanation"
+					optional="false">
+					<count_field min_count="0" max_count="255"
+						field_type_unsigned="unsigned byte" />
+				</variable_length_string>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="QueryHandoffTimeout" message_id="FF32"
+		is_command="false">
+		<description xml:space="preserve">Causes the service to issue a ReportHandoffTimeout message.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="QueryEnhancedTimeout" message_id="FF33"
+		is_command="false">
+		<description xml:space="preserve">Causes the service to issue a ReportEnhancedTimeout message.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="RemoveHandoffRequest" message_id="FF34"
+		is_command="true">
+		<description xml:space="preserve">Remove a request for handoff control.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="RemoveHandoffRequestRec" optional="false">
+				<fixed_field name="ID" optional="false" field_units="one"
+					field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive"
+							upper_limit="255" upper_limit_type="inclusive" />
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+
+	<message_def name="ConfirmHandoffRequest" message_id="FF35"
+		is_command="false">
+		<description xml:space="preserve">Confirms that action has been taken on a handoff request.  The action is either GRANTED, meaning the request for handoff was granted and the requesting client has control; DENIED, meaning the current controlling client rejected the request for handoff; TIMEOUT, meaning the current controller did not respond within a set amount of time; NOT_AVAILABLE, meaning handoff is not available, QUEUED, meaning the handoff request was queued and pending, or DEFERRED, meaning the current controller is not prepared to make a decision on the request.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ConfirmHandoffRequestRec" optional="false">
+				<fixed_field name="ID" optional="false" field_units="one"
+					field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive"
+							upper_limit="255" upper_limit_type="inclusive" />
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ResponseCode" optional="false"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="GRANTED" />
+						<value_enum enum_index="1" enum_const="NOT_AVAILABLE" />
+						<value_enum enum_index="2" enum_const="TIMEOUT" />
+						<value_enum enum_index="3" enum_const="DENIED" />
+						<value_enum enum_index="4" enum_const="QUEUED" />
+						<value_enum enum_index="5" enum_const="DEFERRED" />
+						<value_enum enum_index="6" enum_const="INSUFFICIENT_AUTHORITY" />
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="ReportHandoffTimeout" message_id="FF36"
+		is_command="false">
+		<description xml:space="preserve">Sent in response to a Query Handoff Timeout message.  The handoff timeout is the amount of time that must pass from when this service first requests a handoff from the current controlling client before the requester is notified that the handoff failed due to a timeout.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ReportHandoffTimeoutRec" optional="false">
+				<fixed_field name="Timeout" optional="false"
+					field_units="second" field_type="unsigned byte" />
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="ReportEnhancedTimeout" message_id="FF37"
+		is_command="false">
+		<description xml:space="preserve">Sent in response to a Query Enhanced Timeout message.  The enhanced timeout is the amount of time that must pass from when a client first requests a handoff and when a client must re-assert its desire for the handoff.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false"
+					field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ReportEnhancedTimeoutRec" optional="false">
+				<fixed_field name="Timeout" optional="false"
+					field_units="second" field_type="unsigned byte" />
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+</declared_type_set>

@@ -1,0 +1,7 @@
+uint8 SYSTEM    = 1
+uint8 SUBSYSTEM = 2
+uint8 NODE      = 3
+uint8 COMPONENT = 4
+
+uint8 type
+---

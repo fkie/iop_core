@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="core"
+  id="urn:jaus:jss:iop:MessageSet" version="1.0">
+  <declared_type_set_ref name="platformClass"
+    id="urn:jaus:jss:iop:MessageSet:PlatformClass" version="1.0"/>
+  <declared_type_set_ref name="digitalResourceClass"
+    id="urn:jaus:jss:iop:MessageSet:DigitalResourceClass" version="1.0"/>
+  <declared_type_set_ref name="handoffControllerClass"
+    id="urn:jaus:jss:iop:MessageSet:HandoffControllerClass" version="1.0"/>
+  <declared_type_set_ref name="enhancedAccessControlClass"
+    id="urn:jaus:jss:iop:MessageSet:EnhancedAccessControlClass" version="1.0"/>
+  <declared_type_set_ref name="CostMap2DClass"
+    id="urn:jaus:jss:iop:MessageSet:CostMap2DClass" version="1.0"/>
+</declared_type_set>

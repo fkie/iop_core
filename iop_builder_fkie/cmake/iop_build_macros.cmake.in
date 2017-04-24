@@ -1,0 +1,208 @@
+# ROS/IOP Bridge
+# Copyright (c) 2017 Fraunhofer
+#
+# This program is dual licensed; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# version 2 as published by the Free Software Foundation, or
+# enter into a proprietary license agreement with the copyright
+# holder.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; or you can read the full license at
+# <http://www.gnu.de/documents/gpl-2.0.html>
+#
+# :author: Timo Röhling
+# :author: Alexander Tiderko
+
+include(CMakeParseArguments)
+
+get_filename_component(IOP_BUILDER_SCRIPT_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+if(NOT EXISTS "${IOP_BUILDER_SCRIPT_DIR}/mss.py")
+  set(IOP_BUILDER_SCRIPT_DIR "@CMAKE_CURRENT_SOURCE_DIR@/cmake")
+endif()
+
+macro(_iop_capitalize_string invalue outvar)
+  string(TOUPPER "${invalue}" _iop_upper_tmp)
+  string(SUBSTRING "${_iop_upper_tmp}" 0 1 _iop_first)
+  string(SUBSTRING "${invalue}" 1 -1 _iop_last)
+  set("${outvar}" "${_iop_first}${_iop_last}")
+endmacro()
+
+macro(iop_init_paths)
+  if ("${PROJECT_NAME}" STREQUAL "")
+    message(FATAL_ERROR "You must call project() first")
+  endif()
+  find_path(IOP_COMMON_ROOT include/JausUtils.h HINTS ENV JTS_COMMON_PATH)
+  if(NOT IOP_COMMON_ROOT)
+    message(FATAL_ERROR "Cannot find JAUS toolset. Did you set JTS_COMMON_PATH?")
+  endif()
+  find_library(IOP_COMMON_LIBRARY Common HINTS "${IOP_COMMON_ROOT}/lib")
+  find_path(IOP_COMMON_INCLUDES JausUtils.h PATH_SUFFIXES include HINTS "${IOP_COMMON_ROOT}")
+  get_filename_component(JTS_GUI_PATH "${IOP_COMMON_ROOT}" PATH)
+  get_filename_component(JTS_GUI_PATH "${JTS_GUI_PATH}" PATH)
+  set(IOP_LIBRARIES "${IOP_COMMON_LIBRARY};pthread;rt")
+  message(STATUS "JAUS Toolkit GUI path is ${JTS_GUI_PATH}")
+endmacro()
+
+macro(iop_init)
+  iop_init_paths()
+  cmake_parse_arguments(iop_arg "" "COMPONENT_ID" "" ${ARGN})
+  if ("${iop_arg_COMPONENT_ID}" STREQUAL "")
+    message(FATAL_ERROR "Missing required argument COMPONENT_ID")
+  endif()
+  _iop_capitalize_string("${PROJECT_NAME}" IOP_COMPONENT_NAME)
+  set(IOP_COMPONENT_ID "${iop_arg_COMPONENT_ID}")
+  set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
+  file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
+  set(IOP_INCLUDE_DIRS "${IOP_COMMON_INCLUDES};${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include")
+#  set(IOP_EXTERN_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/extern")
+#  list(APPEND "IOP_INCLUDE_DIRS" "${IOP_EXTERN_DIR};${IOP_EXTERN_DIR}/include")
+  message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
+  message(STATUS "JAUS component name is ${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
+  message(STATUS "export IOP_INCLUDE_DIRS: ${IOP_INCLUDE_DIRS}")
+  set(IOP_INIT_OK 1)
+  find_program(IOP_DIFF diff)
+  find_program(IOP_JAVA java)
+  if(NOT IOP_JAVA)
+    message(FATAL_ERROR "Cannot find java executable")
+  endif()
+endmacro()
+
+macro(iop_export_service)
+  foreach(service ${ARGN})
+      file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include/${service}")
+      list(APPEND "IOP_INSTALL_INCLUDE_DIRS" "${IOP_COMPONENT_DIR}/include/${service}")
+  endforeach()
+  message(STATUS "export IOP_INSTALL_INCLUDE_DIRS: ${IOP_INSTALL_INCLUDE_DIRS}")
+endmacro()
+
+macro(_iop_find_changes)
+  file(GLOB_RECURSE override_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/jaus" "${CMAKE_CURRENT_SOURCE_DIR}/jaus/*")
+  set(folder1 "${CMAKE_CURRENT_SOURCE_DIR}/jaus")
+  set(folder2 "${IOP_COMPONENT_DIR}")
+  if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/jaus.diff")
+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/jaus.diff")
+  endif()
+  foreach(srcfile ${override_files})
+    if(NOT EXISTS "${folder2}/${srcfile}")
+      message(WARNING "File has vanished: ${srcfile}")
+    else()
+      file(MD5 "${folder1}/${srcfile}" check1)
+      file(MD5 "${folder2}/${srcfile}" check2)
+      if(NOT "${check1}" STREQUAL "${check2}")
+        message(STATUS "Modified by JAUS toolkit: ${srcfile}")
+        if(IOP_DIFF)
+          execute_process(
+            COMMAND "${IOP_DIFF}" -u "${folder1}/${srcfile}" "${folder2}/${srcfile}"
+            OUTPUT_VARIABLE diff_output
+          )
+          string(REGEX REPLACE "--- ${folder1}/" "--- jaus/" diff_output "${diff_output}")
+          string(REGEX REPLACE "\\+\\+\\+ ${folder2}/" "+++ jaus/" diff_output "${diff_output}")
+          file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/jaus.diff" "${diff_output}")
+        endif()
+      endif()
+    endif()
+  endforeach()
+  if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/jaus.diff")
+    message(WARNING "Override files have been modified by the JAUS toolkit. Please see ${CMAKE_CURRENT_BINARY_DIR}/jaus.diff for details")
+  endif()
+endmacro()
+
+
+macro(_iop_filter_list outvar ext)
+  set("${outvar}")
+  foreach(item ${ARGN})
+    STRING(REGEX MATCH ".*\\.${ext}" item ${item})
+    IF(item)
+      list(APPEND "${outvar}" "${item}")
+    ENDIF(item)
+  endforeach()
+endmacro()
+
+macro(_iop_prepend_path outvar ppath)
+  set("${outvar}")
+  foreach(item ${ARGN})
+    list(APPEND "${outvar}" "${ppath}/${item}")
+  endforeach()
+endmacro()
+
+macro(iop_code_generator)
+  if(NOT "${IOP_INIT_OK}" EQUAL 1)
+    message(FATAL_ERROR "You must call iop_init() first")
+  endif()
+  list(APPEND "IOP_INCLUDE_DIRS" "${CATKIN_DEVEL_PREFIX}/include")
+  message(STATUS "new IOP_INCLUDE_DIRS ${IOP_INCLUDE_DIRS}")
+  cmake_parse_arguments(iop_arg "" "GENERATED_SOURCES;COMPONENT_ID" "IDLS;OWN_IDLS;OVERRIDES;EXTERN_SERVICES" ${ARGN})
+  _iop_filter_list(iop_arg_OVERRIDE_SOURCES "cpp" ${iop_arg_OVERRIDES})
+  _iop_filter_list(iop_arg_OVERRIDE_HEADERS "h" ${iop_arg_OVERRIDES})
+  get_filename_component(IOP_BUILDER_JSIDL_DIR "${IOP_BUILDER_SCRIPT_DIR}/../jsidl" ABSOLUTE)
+  if (NOT "${iop_arg_IDLS}" STREQUAL "")
+    _iop_prepend_path(iop_arg_DEFAULT_IDLS "${IOP_BUILDER_JSIDL_DIR}" ${iop_arg_IDLS})
+    message(STATUS "Parse JAUS JSIDLS: ${iop_arg_DEFAULT_IDLS}")
+  endif()
+  # to use external services we delete own services which are generated by JTS code generator
+  if (NOT "${iop_arg_EXTERN_SERVICES}" STREQUAL "")
+    _iop_prepend_path(iop_arg_EXTERN_INCLUDES "${IOP_COMPONENT_DIR}/include" ${iop_arg_EXTERN_SERVICES})
+    _iop_prepend_path(iop_arg_EXTERN_SRCS "${IOP_COMPONENT_DIR}/src" ${iop_arg_EXTERN_SERVICES})
+  endif()
+
+  add_custom_command(
+    OUTPUT "jaus.xml"
+    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" "${IOP_COMPONENT_ID}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/jaus/"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CATKIN_DEVEL_PREFIX}/include"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
+  )
+
+  add_custom_command(
+    OUTPUT "jaus.overrides"
+    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/cpy.py" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
+    COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.overrides"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${iop_arg_OVERRIDE_SOURCES} ${iop_arg_OVERRIDE_HEADERS} "jaus.xml"
+  )
+
+  add_custom_command(
+    OUTPUT "jaus.headers"
+    COMMAND "${IOP_JAVA}" -classpath .:build/classes:lib/jargs-1.0/jargs.jar:lib/smc/Smc.jar:lib/smc:lib/jaxb-plugins/commons-lang-2.5.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" --id "${IOP_COMPONENT_ID}" -n "${IOP_COMPONENT_NAME}" --c++
+    COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
+    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
+    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
+    COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
+    COMMAND find ${CATKIN_DEVEL_PREFIX}/include -name "*.old" -type f -delete
+    COMMAND cp -r -v -t ${CATKIN_DEVEL_PREFIX}/include ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
+    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+    DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
+  )
+
+  add_custom_command(
+    OUTPUT "jaus.cpp"
+    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.cpp" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
+#    DEPENDS "iop_extern.cpp"
+#    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+#  )
+#
+#  add_custom_command(
+#    OUTPUT "iop_extern.cpp"
+#    COMMAND ${CMAKE_COMMAND} -E make_directory "${IOP_EXTERN_DIR}/include"
+#    COMMAND ${CMAKE_COMMAND} -E make_directory "${IOP_EXTERN_DIR}/src"
+#    COMMAND cp -r -v -t ${IOP_EXTERN_DIR}/include ${iop_arg_EXTERN_INCLUDES} 2>/dev/null || :
+#    COMMAND cp -r -v -t ${IOP_EXTERN_DIR}/src ${iop_arg_EXTERN_SRCS} 2>/dev/null || :
+#    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/iop_extern.cpp" "${IOP_COMPONENT_DIR}/../extern" ${iop_arg_OVERRIDE_SOURCES}
+#    COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
+    DEPENDS "jaus.headers"
+    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+  )
+
+#  list(APPEND "IOP_GENERIC_EXTERN_SRC" "${CMAKE_CURRENT_BINARY_DIR}/iop_extern.cpp")
+  set("${iop_arg_GENERATED_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}/jaus.cpp;${iop_arg_OVERRIDE_SOURCES}")
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set_source_files_properties(${${iop_arg_GENERATED_SOURCES}} APPEND PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-write-strings -Wno-sign-compare -Wno-type-limits -Wno-extra")
+  endif()
+endmacro()

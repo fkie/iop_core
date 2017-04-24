@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="StabilizerDriver"
+    id="urn:jaus:jss:ugv:StabilizerDriver" version="1.0"
+    xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0"
+    xmlns:ns3="urn:jaus:jsidl:1.1">
+    <description xml:space="preserve">The StabilizerDriver provides the means to platform 
+        stabilizers, such as flippers</description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+    <references>
+        <inherits_from name="management"
+            id="urn:jaus:jss:core:Management" version="1.0"/>
+    </references>
+    <declared_type_set name="types">
+      <declared_type_set_ref name="stabilizer" id="urn:jaus:jss:ugv:StabilizerSet" version="1.0" />
+    </declared_type_set>
+    <message_set>
+        <input_set>
+          <declared_message_def name="QueryStabilizerEffort" declared_type_ref="stabilizer.QueryStabilizerEffort" />
+          <declared_message_def name="QueryStabilizerCapabilities" declared_type_ref="stabilizer.QueryStabilizerCapabilities" />
+          <declared_message_def name="SetStabilizerEffort" declared_type_ref="stabilizer.SetStabilizerEffort" />
+          <declared_message_def name="SetStabilizerPosition" declared_type_ref="stabilizer.SetStabilizerPosition" />
+          <declared_message_def name="QueryStabilizerPosition" declared_type_ref="stabilizer.QueryStabilizerPosition" />
+        </input_set>
+        <output_set>
+          <declared_message_def name="ReportStabilizerPosition" declared_type_ref="stabilizer.ReportStabilizerPosition" />
+          <declared_message_def name="ReportStabilizerCapabilities" declared_type_ref="stabilizer.ReportStabilizerCapabilities" />
+          <declared_message_def name="ReportStabilizerEffort" declared_type_ref="stabilizer.ReportStabilizerEffort" />
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior>
+        <start
+            state_machine_name="management.accessControl.events.transport.ReceiveFSM"
+            state_name="Receiving.Ready.NotControlled.StateA"/>
+        <start
+            state_machine_name="management.accessControl.events.transport.SendFSM"
+            state_name="Sending"/>
+        <state_machine
+            name="management.accessControl.events.transport.ReceiveFSM">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready" initial_state="NotControlled">
+                    <state name="NotControlled" initial_state="StateA">
+                        <state name="StateA" initial_state="Init">
+                            <state name="Standby"/>
+                            <state name="Init"/>
+                            <state name="Failure"/>
+                            <state name="Shutdown"/>
+                            <state name="Emergency"/>
+                            <default_state>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerCapabilities"
+                                   value="msg"
+                                   interpretation="enveloped query Stabilizer capabilities message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerCapabilities"
+                                   interpretation="Send a Report Stabilizer Capabilities message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerEffort"
+                                   value="msg"
+                                   interpretation="enveloped query
+                                   Stabilizer effort message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerEffort"
+                                   interpretation="Send a Report Stabilizer Effort message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerPosition"
+                                   value="msg"
+                                   interpretation="enveloped query Stabilizer configuration message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerPosition"
+                                   interpretation="Send a Report Stabilizer Position message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                            </default_state>
+                        </state>
+                    </state>
+                    <state name="Controlled" initial_state="StateB">
+                        <state name="StateB" initial_state="Standby">
+                            <state name="Standby"/>
+                            <state name="Ready">
+                                <exit>
+                                   <action name="stopMotion"
+                                   interpretation="When leaving the Ready state, stop motion on all Stabilizers."
+                                   />
+                                </exit>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="SetStabilizerEffort"
+                                   value="msg"
+                                   interpretation="enveloped set Stabilizer effort message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <guard
+                                   condition="isControllingClient(
+                                   transportData ) &amp;&amp; stabilizersExist( msg )"
+                                   interpretation="True if the message that triggered the transition is received from the                      
+                                   client that is in control of this service AND the message contains only valid Stabilizer IDs."/>
+                                   <ns3:internal/>
+                                   <action name="setStabilizerEffort"
+                                   interpretation="Set the actuator effort levels for the specified Stabilizers.">
+                                   <argument value="msg"/>
+                                   </action>
+                                </transition>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="SetStabilizerPosition"
+                                   value="msg"
+                                   interpretation="enveloped set Stabilizer position message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <guard
+                                   condition="isControllingClient(
+                                   transportData ) &amp;&amp; stabilizersExist( msg )                      
+                                   &amp;&amp; areReachable( msg )"
+                                   interpretation="True if the message that triggered the transition                     
+                                   is received from the client that is in control of this service AND the message contains                      
+                                   only valid Stabilizer IDs AND the positions specified in the message are within each Stabilizers                     
+                                   reachable workspace."/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="setStabilizerPosition"
+                                   interpretation="Set the position for the specified Stabilizers.">
+                                   <argument value="msg"/>
+                                   </action>
+                                </transition>
+                            </state>
+                            <state name="Emergency"/>
+                            <default_state>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerCapabilities"
+                                   value="msg"
+                                   interpretation="enveloped query Stabilizer capabilities message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerCapabilities"
+                                   interpretation="Send a Report Stabilizer Capabilities message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerEffort"
+                                   value="msg"
+                                   interpretation="enveloped query Stabilizer effort message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerEffort"
+                                   interpretation="Send a Report Stabilizer Effort message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                                <transition
+                                   name="management.accessControl.events.transport.Receive">
+                                   <parameter
+                                   type="QueryStabilizerPosition"
+                                   value="msg"
+                                   interpretation="enveloped query Stabilizer configuration message"/>
+                                   <parameter
+                                   type="Receive.Body.ReceiveRec"
+                                   value="transportData"
+                                   interpretation="transport data"/>
+                                   <ns3:internal/>
+                                   <action
+                                   name="sendReportStabilizerPosition"
+                                   interpretation="Send a Report Stabilizer Position message">
+                                   <argument value="msg"/>
+                                   <argument value="transportData"/>
+                                   </action>
+                                </transition>
+                            </default_state>
+                        </state>
+                    </state>
+                    <default_state/>
+                </state>
+            </state>
+        </state_machine>
+<!--
+        <state_machine
+            name="management.accessControl.events.transport.SendFSM">
+            <state name="Sending"/>
+        </state_machine>
+ -->
+    </protocol_behavior>
+</service_def>

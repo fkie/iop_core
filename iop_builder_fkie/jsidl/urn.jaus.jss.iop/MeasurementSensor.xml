@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="MeasurementSensor" id="urn:jaus:jss:iop:MeasurementSensor"
+	version="1.0" xmlns="urn:jaus:jsidl:1.0">
+	<description xml:space="preserve">The Measurement Sensor service reports single measurement values of different sensors.
+         The sensors can be types of weather, nuclear, biological or chemical. The type of the measurement is specified in the report.
+         It is also possible to report a whole measurement spectrum of values.</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="Events" id="urn:jaus:jss:core:Events"
+			version="1.0" />
+	</references>
+	<message_set>
+		<input_set>
+			<message_def name="QueryMeasurement" message_id="F92A"
+				is_command="false">
+				<description xml:space="preserve">This message is used to query for last measurements.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false"
+							field_units="one" field_type="unsigned short integer" />
+					</record>
+				</header>
+				<body name="Body" />
+				<footer name="Footer" />
+			</message_def>
+		</input_set>
+		<output_set>
+			<message_def name="ReportMeasurement" message_id="F92B"
+				is_command="false">
+				<description xml:space="preserve">A measurement value(s) with type description and position. </description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false"
+							field_units="one" field_type="unsigned short integer" />
+					</record>
+				</header>
+				<body name="Body">
+					<record name="MeasurementRec" optional="false">
+						<variable_length_string name="DeviceName"
+							optional="false"
+							interpretation="custom name of the detecting device for differentiation">
+							<count_field min_count="0" max_count="255"
+								field_type_unsigned="unsigned byte" />
+						</variable_length_string>
+						<variable_length_string name="DeviceDesignation"
+							optional="true" interpretation="device manufacturing name">
+							<count_field min_count="0" max_count="255"
+								field_type_unsigned="unsigned byte" />
+						</variable_length_string>
+						<variable_length_string name="Classification"
+							optional="false"
+							interpretation="classification of the device, e.g. atomic (A), biological (B), chemical (C), meteorologic (M)">
+							<count_field min_count="0" max_count="255"
+								field_type_unsigned="unsigned byte" />
+						</variable_length_string>
+						<list name="ReadingList" optional="false">
+							<count_field min_count="0" max_count="255"
+								field_type_unsigned="unsigned byte" />
+							<record name="ReadingRec" optional="false">
+								<variable_length_string name="Sensor"
+									optional="false" interpretation="name of the sensor">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+								</variable_length_string>
+								<variable_length_string name="Source"
+									optional="false"
+									interpretation="the source of the sensor data, e.g. wind, rain or other">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+								</variable_length_string>
+								<variable_length_string name="Type"
+									optional="false"
+									interpretation="the type of the sensor data, e.g. direction, speed, duration, intensity">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+								</variable_length_string>
+								<list name="ValueList" optional="false">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+									<record name="ValueRec" optional="false">
+										<fixed_field name="Value" field_type="unsigned integer"
+											field_units="defined by Unit" optional="true"
+											interpretation="one value or a spectrum of values">
+											<scale_range real_lower_limit="-10000"
+												real_upper_limit="10000" integer_function="round" />
+										</fixed_field>
+									</record>
+								</list>
+								<variable_length_string name="Unit"
+									optional="true" interpretation="value unit">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+								</variable_length_string>
+								<fixed_field name="Minimum" optional="true"
+									field_units="one" field_type="unsigned byte"
+									interpretation="sometimes the resulting values are accumulated, so you can specify the details" />
+								<fixed_field name="Avarage" optional="true"
+									field_units="one" field_type="unsigned byte"
+									interpretation="sometimes the resulting values are accumulated, so you can specify the details" />
+								<fixed_field name="Maximum" optional="true"
+									field_units="one" field_type="unsigned byte"
+									interpretation="sometimes the resulting values are accumulated, so you can specify the details" />
+								<fixed_field name="AlertLevel" optional="true"
+									field_units="one" field_type="unsigned byte">
+									<value_set offset_to_lower_limit="false">
+										<value_enum enum_index="255" enum_const="NOT_SUPPORTED" />
+										<value_enum enum_index="0" enum_const="NO_ALERT" />
+										<value_enum enum_index="1" enum_const="LOW" />
+										<value_enum enum_index="2" enum_const="MIDDLE" />
+										<value_enum enum_index="3" enum_const="HIGHT" />
+									</value_set>
+								</fixed_field>
+								<variable_length_string name="AlertExplanation"
+									optional="true" interpretation="The explanation of the alarm">
+									<count_field min_count="0" max_count="255"
+										field_type_unsigned="unsigned byte" />
+								</variable_length_string>
+								<fixed_field name="ID" optional="false" field_units="one"
+									field_type="unsigned byte" />
+								<fixed_field name="ResponseCode" optional="false"
+									field_units="one" field_type="unsigned byte">
+									<value_set offset_to_lower_limit="false">
+										<value_enum enum_index="0" enum_const="GRANTED" />
+										<value_enum enum_index="1" enum_const="DENIED" />
+										<value_enum enum_index="2" enum_const="WAIT" />
+									</value_set>
+								</fixed_field>
+							</record>
+						</list>
+						<variant name="PositionVar" optional="true">
+							<vtag_field min_count="0" max_count="1"
+								field_type_unsigned="unsigned byte" />
+							<record name="GlobalPoseRec" optional="false">
+								<presence_vector field_type_unsigned="unsigned short integer" />
+								<fixed_field name="Latitude" field_type="unsigned integer"
+									field_units="degree" optional="true">
+									<scale_range real_lower_limit="-90"
+										real_upper_limit="90" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Longitude" field_type="unsigned integer"
+									field_units="degree" optional="true">
+									<scale_range real_lower_limit="-180"
+										real_upper_limit="180" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Altitude" field_type="unsigned integer"
+									field_units="meter" optional="true">
+									<scale_range real_lower_limit="-10000"
+										real_upper_limit="35000" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Position_RMS" field_type="unsigned integer"
+									field_units="meter" optional="true"
+									interpretation="An RMS value indicating the validity of the position data.">
+									<scale_range real_lower_limit="0" real_upper_limit="100"
+										integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Roll" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Pitch" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Yaw" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Attitude_RMS" field_type="unsigned short integer"
+									field_units="radian" optional="true"
+									interpretation="An RMS value indicating the validity of the orientation data.">
+									<scale_range real_lower_limit="0"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+							</record>
+							<!-- LocalPose -->
+							<record name="LocalPoseRec" optional="false">
+								<presence_vector field_type_unsigned="unsigned short integer" />
+								<fixed_field name="X" field_type="unsigned integer"
+									field_units="meter" optional="true">
+									<scale_range real_lower_limit="-100000"
+										real_upper_limit="100000" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Y" field_type="unsigned integer"
+									field_units="meter" optional="true">
+									<scale_range real_lower_limit="-100000"
+										real_upper_limit="100000" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Z" field_type="unsigned integer"
+									field_units="meter" optional="true">
+									<scale_range real_lower_limit="-100000"
+										real_upper_limit="100000" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Position_RMS" field_type="unsigned integer"
+									field_units="meter" optional="true"
+									interpretation="An RMS value indicating the validity of the position data.">
+									<scale_range real_lower_limit="0" real_upper_limit="100"
+										integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Roll" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Pitch" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Yaw" field_type="unsigned short integer"
+									field_units="radian" optional="true">
+									<scale_range real_lower_limit="-3.14159265358979323846"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+								<fixed_field name="Attitude_RMS" field_type="unsigned short integer"
+									field_units="radian" optional="true"
+									interpretation="An RMS value indicating the validity of the orientation data.">
+									<scale_range real_lower_limit="0"
+										real_upper_limit="3.14159265358979323846" integer_function="round" />
+								</fixed_field>
+							</record>
+						</variant>
+						<bit_field name="TimeStamp" field_type_unsigned="unsigned integer"
+							optional="false">
+							<sub_field name="Milliseconds">
+								<bit_range from_index="0" to_index="9" />
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive"
+										lower_limit="0" upper_limit="999" upper_limit_type="inclusive" />
+								</value_set>
+							</sub_field>
+							<sub_field name="Seconds">
+								<bit_range from_index="10" to_index="15" />
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive"
+										lower_limit="0" upper_limit="59" upper_limit_type="inclusive" />
+								</value_set>
+							</sub_field>
+							<sub_field name="Minutes">
+								<bit_range from_index="16" to_index="21" />
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive"
+										lower_limit="0" upper_limit="59" upper_limit_type="inclusive" />
+								</value_set>
+							</sub_field>
+							<sub_field name="Hour">
+								<bit_range from_index="22" to_index="26" />
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive"
+										lower_limit="0" upper_limit="23" upper_limit_type="inclusive" />
+								</value_set>
+							</sub_field>
+							<sub_field name="Day">
+								<bit_range from_index="27" to_index="31" />
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive"
+										lower_limit="1" upper_limit="31" upper_limit_type="inclusive" />
+								</value_set>
+							</sub_field>
+						</bit_field>
+					</record>
+				</body>
+				<footer name="Footer" />
+			</message_def>
+		</output_set>
+	</message_set>
+	<internal_events_set>
+	</internal_events_set>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="events.Transport.ReceiveFSM"
+			state_name="Receiving" interpretation="Extending ReceiveFSM from base." />
+		<state_machine name="events.Transport.ReceiveFSM"
+			interpretation="redefine state in order to extend">
+			<state name="Receiving">
+				<default_state>
+					<transition name="events.Transport.Receive">
+						<parameter type="QueryMeasurement" value="msg"
+							interpretation="enveloped QueryMeasurement message" />
+						<parameter type="Receive.Body.ReceiveRec" value="transportData"
+							interpretation="transportData" />
+						<simple />
+						<action name="sendReportMeasurement"
+							interpretation="send the last available measurement report to requester">
+							<argument value="transportData" />
+						</action>
+					</transition>
+				</default_state>
+			</state> <!--Receiving -->
+		</state_machine>
+	</protocol_behavior>
+</service_def>

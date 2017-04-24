@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1" name="StabilizerSet"
+  id="urn:jaus:jss:ugv:StabilizerSet" version="1.0">
+  <header name="JAUSApplicationLayerHeader">
+    <record name="HeaderRec" optional="false">
+      <fixed_field name="MessageID" field_type="unsigned short integer" field_units="one"
+        optional="false" interpretation="A two byte field to hold the message ID of a message"/>
+    </record>
+  </header>
+
+  <message_def name="QueryStabilizerEffort" message_id="2503" is_command="false">
+    <description xml:space="preserve">Requests commanded Stabilizer effort</description>
+    <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+    <body name="Body">
+      <list name="StabilizerID" optional="false">
+        <count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+        <record name="QueryStabilizerRec" optional="false">
+          <fixed_field name="StabilizerID"
+              optional="false"
+              field_type="unsigned byte"
+              field_units="one"/>
+        </record>
+      </list>
+    </body>
+    <footer name="Footer"/>
+  </message_def>
+
+  <message_def name="QueryStabilizerCapabilities"
+      message_id="2505" is_command="false">
+      <description xml:space="preserve">Requests vehicle stabilizer configuration</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body"/>
+      <footer name="Footer"/>
+  </message_def>
+
+  <message_def name="SetStabilizerEffort" message_id="0503"
+      is_command="true">
+      <description xml:space="preserve">Sets Stabilizer effort</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerEffort" optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <record name="StabilizerEffortRec"
+                  optional="false">
+                  <fixed_field name="StabilizerID"
+                      optional="false"
+                      field_type="unsigned byte"
+                      field_units="one"/>
+                  <fixed_field name="Effort"
+                      optional="false"
+                      field_type="unsigned short integer"
+                      field_units="one">
+                      <scale_range real_lower_limit="-100.0"
+                         real_upper_limit="100.0"
+                         integer_function="round"/>
+                  </fixed_field>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+
+  <message_def name="SetStabilizerPosition"
+      message_id="0504" is_command="true">
+      <description xml:space="preserve">Sets Stabilizer position</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerPosition" optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <record name="StabilizerPositionRec"
+                  optional="false">
+                  <fixed_field name="StabilizerID"
+                      optional="false"
+                      field_type="unsigned byte"
+                      field_units="one"/>
+                  <fixed_field name="Position"
+                      optional="false"
+                      field_type="unsigned short integer"
+                      field_units="radian">
+                      <scale_range
+                         real_lower_limit="-3.14159"
+                         real_upper_limit="3.14159"
+                         integer_function="round"/>
+                  </fixed_field>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+
+  <message_def name="QueryStabilizerPosition"
+      message_id="2504" is_command="false">
+      <description xml:space="preserve">Requests commanded Stabilizer position</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerID" optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <record name="QueryStabilizerRec"
+                  optional="false">
+                  <fixed_field name="StabilizerID"
+                      optional="false"
+                      field_type="unsigned byte"
+                      field_units="one"/>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+
+  <message_def name="ReportStabilizerPosition"
+      message_id="4504" is_command="false">
+      <description xml:space="preserve">Reports commanded Stabilizer position</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerPosition" optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <record name="StabilizerPositionRec"
+                  optional="false">
+                  <fixed_field name="StabilizerID"
+                      optional="false"
+                      field_type="unsigned byte"
+                      field_units="one"/>
+                  <fixed_field name="Position"
+                      optional="false"
+                      field_type="unsigned short integer"
+                      field_units="radian">
+                      <scale_range
+                         real_lower_limit="-3.14159"
+                         real_upper_limit="3.14159"
+                         integer_function="round"/>
+                  </fixed_field>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="ReportStabilizerCapabilities"
+      message_id="4505" is_command="false">
+      <description xml:space="preserve">Reports vehicle stabilizer configuration</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerCapabilities"
+              optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <sequence name="StabilizerCapabilitiesSeq"
+                  optional="false">
+                  <record name="StabilizerCapabilitiesRec"
+                      optional="false">
+                      <fixed_field name="StabilizerID"
+                         optional="false"
+                         field_type="unsigned byte"
+                         field_units="one"/>
+                      <fixed_field name="MaximumUpAngle"
+                         optional="false"
+                         field_type="unsigned short integer"
+                         field_units="radian">
+                         <scale_range real_lower_limit="0.0"
+                         real_upper_limit="3.14159"
+                         integer_function="round"/>
+                      </fixed_field>
+                      <fixed_field name="MaximumDownAngle"
+                         optional="false"
+                         field_type="unsigned short integer"
+                         field_units="radian">
+                         <scale_range
+                         real_lower_limit="-3.14158"
+                         real_upper_limit="0.0"
+                         integer_function="round"/>
+                      </fixed_field>
+                  </record>
+                  <list name="StabilizerDimensionsList"
+                      optional="false">
+                      <count_field min_count="0"
+                         max_count="255"
+                         field_type_unsigned="unsigned byte"/>
+                      <record name="Points" optional="false">
+                         <fixed_field name="PointX"
+                         optional="false"
+                         field_type="unsigned short integer"
+                         field_units="one">
+                         <scale_range real_lower_limit="0"
+                         real_upper_limit="30.0"
+                         integer_function="round"/>
+                         </fixed_field>
+                         <fixed_field name="PointY"
+                         optional="false"
+                         field_type="unsigned short integer"
+                         field_units="one">
+                         <scale_range real_lower_limit="0"
+                         real_upper_limit="30.0"
+                         integer_function="round"/>
+                         </fixed_field>
+                         <fixed_field name="PointZ"
+                         optional="false"
+                         field_type="unsigned short integer"
+                         field_units="one">
+                         <scale_range real_lower_limit="0"
+                         real_upper_limit="30.0"
+                         integer_function="round"/>
+                         </fixed_field>
+                      </record>
+                  </list>
+              </sequence>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="ReportStabilizerEffort"
+      message_id="4503" is_command="false">
+      <description xml:space="preserve">Reports commanded Stabilizer effort</description>
+      <declared_header name="AppHeader" declared_type_ref="JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="StabilizerEffort" optional="false">
+              <count_field min_count="0" max_count="255"
+                  field_type_unsigned="unsigned byte"/>
+              <record name="StabilizerEffortRec"
+                  optional="false">
+                  <fixed_field name="StabilizerID"
+                      optional="false"
+                      field_type="unsigned byte"
+                      field_units="one"/>
+                  <fixed_field name="Effort"
+                      optional="false"
+                      field_type="unsigned short integer"
+                      field_units="one">
+                      <scale_range real_lower_limit="-100.0"
+                         real_upper_limit="100.0"
+                         integer_function="round"/>
+                  </fixed_field>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+
+</declared_type_set>

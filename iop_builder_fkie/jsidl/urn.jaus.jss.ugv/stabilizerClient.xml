@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="StabilizerDriverClient"
+    id="urn:jaus:jss:ugv:StabilizerDriverClient" version="1.0"
+    xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0"
+    xmlns:ns3="urn:jaus:jsidl:1.1">
+    <description xml:space="preserve">
+      This service is a client to communicate with StabilizerDriver service.
+    </description>
+    <assumptions xml:space="preserve">
+      Messages may be delayed, lost or reordered.
+    </assumptions>
+    <references>
+        <inherits_from name="managementClient" id="urn:jaus:jss:core:ManagementClient" version="1.0" />
+    </references>
+    <declared_type_set name="types">
+      <declared_type_set_ref name="stabilizer" id="urn:jaus:jss:ugv:StabilizerSet" version="1.0" />
+    </declared_type_set>
+    <message_set>
+        <input_set>
+          <declared_message_def name="ReportStabilizerPosition" declared_type_ref="stabilizer.ReportStabilizerPosition" />
+          <declared_message_def name="ReportStabilizerCapabilities" declared_type_ref="stabilizer.ReportStabilizerCapabilities" />
+          <declared_message_def name="ReportStabilizerEffort" declared_type_ref="stabilizer.ReportStabilizerEffort" />
+        </input_set>
+        <output_set>
+          <declared_message_def name="QueryStabilizerEffort" declared_type_ref="stabilizer.QueryStabilizerEffort" />
+          <declared_message_def name="QueryStabilizerCapabilities" declared_type_ref="stabilizer.QueryStabilizerCapabilities" />
+          <declared_message_def name="SetStabilizerEffort" declared_type_ref="stabilizer.SetStabilizerEffort" />
+          <declared_message_def name="SetStabilizerPosition" declared_type_ref="stabilizer.SetStabilizerPosition" />
+          <declared_message_def name="QueryStabilizerPosition" declared_type_ref="stabilizer.QueryStabilizerPosition" />
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior>
+      <start state_machine_name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready" />
+      <state_machine name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+        <state name="Receiving" initial_state="Ready">
+          <state name="Ready">
+            <default_state>
+              <transition name="ReportStabilizerCapabilities">
+                <parameter type="ReportStabilizerCapabilities" value="msg" interpretation="enveloped ReportStabilizerCapabilities message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                <simple/>
+                <action name="reportStabilizerCapabilities" interpretation="handle ReportStabilizerCapabilities">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+
+              <transition name="ReportStabilizerEffort">
+                <parameter type="ReportStabilizerEffort" value="msg" interpretation="enveloped ReportStabilizerEffort message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                <simple/>
+                <action name="reportStabilizerEffort" interpretation="handle ReportStabilizerEffort">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+
+              <transition name="ReportStabilizerPosition">
+                <parameter type="ReportStabilizerPosition" value="msg" interpretation="enveloped ReportStabilizerPosition message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+                <simple/>
+                <action name="reportStabilizerPosition" interpretation="handle ReportStabilizerPosition">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+            </default_state>
+          </state>
+        </state>
+      </state_machine>
+    </protocol_behavior>
+</service_def>

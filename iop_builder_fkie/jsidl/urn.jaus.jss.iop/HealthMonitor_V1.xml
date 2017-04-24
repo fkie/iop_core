@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="HealthMonitor" id="urn:jaus:jss:exp:aeodrs:HealthMonitor" version="1.2" xmlns="urn:jaus:jsidl:1.0">
+    <description xml:space="preserve">The Health Monitor service constructs a summary of the health status of the JAUS Nodes, Components, and Services.  It contains a single severity field, and individual fields providing the severity code of each node.</description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+    <references>
+        <inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.0"/>
+        <client_of name="HealthReporter" id="urn:jaus:jss:exp:aeodrs:HealthReporter" version="1.2"/>
+    </references>
+    <declared_type_set name="Types">
+      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+    </declared_type_set>
+    <message_set>
+        <input_set>
+            <declared_message_def name="QueryUGVSummary"
+              declared_type_ref="core.platformClass.QueryUGVSummary"/>
+            <declared_message_def name="UpdateUGVSummary"
+              declared_type_ref="core.platformClass.UpdateUGVSummary"/>
+        </input_set>
+        <output_set>
+            <declared_message_def name="ReportUGVSummary"
+              declared_type_ref="core.platformClass.ReportUGVSummary"/>
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior is_stateless="false">
+        <start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+        <state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+            <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+                <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+                    <state name="NotControlled">
+                      <transition name="accessControl.events.transport.Receive">
+                        <parameter type="QueryUGVSummary" value="msg" interpretation="enveloped Query UGV Summary message"/>
+                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                        <simple/>
+                        <action name="accessControl.events.transport.Send" interpretation="Send a ReportUGVSummary message">
+                          <argument value=" 'ReportUGVSummary' "/>
+                          <argument value="transportData"/>
+                        </action>
+                      </transition>
+                    </state>
+                    <state name="Controlled">
+                    	<transition name="accessControl.events.transport.Receive">
+				          <parameter type="QueryUGVSummary" value="msg" interpretation="enveloped Query UGV Summary message"/>
+				          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+				          <simple/>
+				          <action name="accessControl.events.transport.Send" interpretation="Send a ReportUGVSummary message">
+				            <argument value=" 'ReportUGVSummary' "/>
+				            <argument value="transportData"/>
+				          </action>
+				        </transition>
+				        
+				        <!-- B -->
+				        
+				        <transition name="accessControl.events.transport.Receive">
+				          <parameter type="UpdateUGVSummary" value="msg" interpretation="enveloped Update UGV Reporter message"/>
+				          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+				          <guard condition="isControllingClient( transportData )" interpretation="True if requestor currently holds access control of the Component enclosing the Service."/>
+				          <simple/>
+				          <action name="updateUGVSummaryAction" interpretation="Update UGV Summary data by requesting Health Summary information for the subsystem.  This summary data will be returned in subsequent messages.">
+				          </action>
+				        </transition>
+                    </state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>

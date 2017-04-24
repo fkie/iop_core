@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-model href="../../schema/AS5684/iop_service_interface_definition_language.rnc" type="application/relax-ng-compact-syntax"?>
+<service_def name="CostMap2D" id="urn:jaus:jss:iop:CostMap2D" version="1.0" xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+    <description xml:space="preserve">
+        The Cost Map 2D Service provides a mechanism to report obstacles, hazardous terrain, and no-go zones using 
+        an overhead 2D cost map.  The cost map is represented by a list of cells, broken into a specified number of 
+        rows and columns, which in turn corresponds to the width and height (respectively) of the map in meters.  
+        Each cell within the map specifies a cost value, and in some cases, a confidence value.  The cost is a relative 
+        measure of occupancy or effort to traverse the cell, such that a value of zero (0) means no occupancy or no 
+        effort, while a maximum cost value means a cell is non-traversable.  The center point of the cost map may be 
+        specified in global or local coordinates, depending on the particular implementation, as defined by [AS6009].  
+        The map may also be rotated around the coordinate frame’s Z-axis by the specified yaw value.
+        
+        Cells within the list must be sequenced such that the most northwest point, relative to the non-rotated 
+        coordinate frame, is the first element.  Subsequent elements represent cells in an easterly direction, 
+        until the end of the row is reached.  At that point, the next row starts again on the west side of the map. 
+        
+        **** DIAGRAM HERE ****
+    </description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+    <references>
+        <inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.0"/>
+    </references>
+    <declared_type_set name="Types">
+      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+    </declared_type_set>
+    <message_set>
+        <input_set>
+          <declared_message_def name="QueryCostMap2D" declared_type_ref="core.CostMap2DClass.QueryCostMap2D"/>
+          <declared_message_def name="QueryNoGoZones" declared_type_ref="core.CostMap2DClass.QueryNoGoZones"/>
+          <declared_message_def name="AddNoGoZone" declared_type_ref="core.CostMap2DClass.AddNoGoZone"/>
+          <declared_message_def name="RemoveNoGoZone" declared_type_ref="core.CostMap2DClass.RemoveNoGoZone"/>
+        </input_set>
+        <output_set>
+          <declared_message_def name="ReportCostMap2D" declared_type_ref="core.CostMap2DClass.ReportCostMap2D"/>
+          <declared_message_def name="ReportNoGoZones" declared_type_ref="core.CostMap2DClass.ReportNoGoZones"/>
+          <declared_message_def name="AddNoGoZoneResponse" declared_type_ref="core.CostMap2DClass.AddNoGoZoneResponse"/>
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior is_stateless="false">
+        <start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+        <state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+            <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+                <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+                    <state name="NotControlled">
+                        <default_state>
+                            <!-- A -->
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="QueryCostMap2D" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <simple/>
+                                <action name="sendReportCostMap2D" interpretation="Send a Report Cost Map 2D message">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="QueryNoGoZones" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <simple/>
+                                <action name="sendReportNoGoZones" interpretation="Send a Report No Go Zones message">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                        </default_state>
+                    </state>
+                    <state name="Controlled">
+                        <default_state>
+                            <!-- A -->
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="QueryCostMap2D" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <simple/>
+                                <action name="sendReportCostMap2D" interpretation="Send a Report Cost Map 2D message">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="QueryNoGoZones" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <simple/>
+                                <action name="sendReportNoGoZones" interpretation="Send a Report No Go Zones message">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                            
+                            <!-- B -->
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="AddNoGoZone" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <guard condition="isControllingClient( transportData ) &amp;&amp; isSupported( msg )" 
+                                    interpretation="True if requestor currently holds access control of the Component 
+                                    enclosing the Service AND the request is supported by the implementation."/>
+                                <simple/>
+                                <action name="addNoGoZone" interpretation="Add the given no go zone to the cost map, 
+                                    setting the cost of each cell traversed or contained by the polygon formed by 
+                                    imaginary lines connecting the sequenced list of vertices to the maximum value.">
+                                    <argument value="msg"/>
+                                </action>
+                                <action name="sendAddNoGoZoneResponse" interpretation="Send a Add No Go Zone Response message.">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                            
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="AddNoGoZone" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <guard condition="isControllingClient( transportData ) &amp;&amp; !isSupported( msg )" 
+                                    interpretation="True if requestor currently holds access control of the Component 
+                                    enclosing the Service AND the request is NOT supported by the implementation."/>
+                                <simple/>
+                                <action name="sendAddNoGoZoneResponse" interpretation="Send a Add No Go Zone Response message.">
+                                    <argument value="msg"/>
+                                    <argument value="transportData"/>
+                                </action>
+                            </transition>
+                            
+                            <transition name="accessControl.events.transport.Receive">
+                                <parameter type="RemoveNoGoZone" value="msg"/>
+                                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                                <guard condition="isControllingClient( transportData ) &amp;&amp; zoneExists( msg )" 
+                                    interpretation="True if requestor currently holds access control of the Component 
+                                    enclosing the Service AND the specified No Go Zone exists."/>
+                                <simple/>
+                                <action name="removeNoGoZone" interpretation="Remove the specified no go zone from the map, 
+                                    returning each cell to their normal values or to an uncertain (zero confidence) state">
+                                    <argument value="msg"/>
+                                </action>
+                            </transition>
+                        </default_state>
+                    </state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>

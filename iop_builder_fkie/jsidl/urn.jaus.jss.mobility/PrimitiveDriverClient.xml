@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service_def name="PrimitiveDriverClient" id="urn:jaus:jss:mobility:PrimitiveDriverClient" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+  <description>The Primitive Driver Client allows for control of basic platform mobility.  </description>
+  <assumptions>Messages may be delayed, lost or reordered.</assumptions>
+  <references>
+    <inherits_from name="managementClient" id="urn:jaus:jss:core:ManagementClient" version="1.0" />
+  </references>
+  <declared_type_set name="Types">
+    <declared_type_set_ref name="mobility" id="urn:jaus:jss:mobility:MessageSet" version="1.0"/>
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportWrenchEffort" declared_type_ref="mobility.informClass.ReportWrenchEffort"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="SetWrenchEffort" declared_type_ref="mobility.commandClass.SetWrenchEffort"/>
+      <declared_message_def name="QueryWrenchEffort" declared_type_ref="mobility.queryClass.QueryWrenchEffort"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+    <protocol_behavior>
+        <start state_machine_name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <state_machine name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready">
+                  <default_state>
+                      <transition name="ReportWrenchEffort">
+                          <parameter type="ReportWrenchEffort" value="msg" interpretation="enveloped query wrench effort message"/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <ns1:internal/>
+                          <action name="handleReportWrenchEffort" interpretation="handle a Report Wrench Effort message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+                  </default_state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>

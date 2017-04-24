@@ -1,0 +1,22 @@
+*.diff
+*.gen 
+.project
+.cproject
+.pydevproject
+*.pyc
+.*.swp
+*~
+.settings/
+**/msg/*.py
+**/srv/*.py
+*.zip
+*.7z
+*.deb
+*.dsc
+*.changes
+*.build
+*.tar
+*.tar.*
+Copy of*
+Kopie von*
+.idea/

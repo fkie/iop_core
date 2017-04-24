@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service_def xmlns="urn:jaus:jsidl:1.0" xmlns:ns2="urn:jaus:jsidl:1.1"
+  name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1">
+  <description>This service is used to set up event notifications. Since this
+    service does not contain any messages and data on which events can be setup,
+    it is useful only when derived by other services that contain messages and
+    data on which events can be defined.</description>
+  <assumptions>Messages may be delayed, lost or reordered.</assumptions>
+  <references>
+    <inherits_from name="transport" id="urn:jaus:jss:core:Transport" version="1.1"/>
+    <client_of name="Events" id="urn:jaus:jss:core:Events" version="1.1"/>
+  </references>
+  <declared_type_set name="Types">
+    <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet"
+      version="1.1"/>
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ConfirmEventRequest"
+        declared_type_ref="core.commandClass.ConfirmEventRequest"/>
+      <declared_message_def name="RejectEventRequest"
+        declared_type_ref="core.commandClass.RejectEventRequest"/>
+      <declared_message_def name="ReportEvents"
+        declared_type_ref="core.informClass.ReportEvents"/>
+      <declared_message_def name="Event"
+        declared_type_ref="core.informClass.Event"/>
+      <declared_message_def name="CommandEvent"
+        declared_type_ref="core.informClass.CommandEvent"/>
+      <declared_message_def name="ReportEventTimeout"
+        declared_type_ref="core.informClass.ReportEventTimeout"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="CreateEvent"
+        declared_type_ref="core.commandClass.CreateEvent"/>
+      <declared_message_def name="CreateCommandEvent"
+        declared_type_ref="core.commandClass.CreateCommandEvent"/>
+      <declared_message_def name="UpdateEvent"
+        declared_type_ref="core.commandClass.UpdateEvent"/>
+      <declared_message_def name="CancelEvent"
+        declared_type_ref="core.commandClass.CancelEvent"/>
+      <declared_message_def name="QueryEvents"
+        declared_type_ref="core.queryClass.QueryEvents"/>
+      <declared_message_def name="QueryEventTimeout"
+        declared_type_ref="core.queryClass.QueryEventTimeout"/>
+    </output_set>
+  </message_set>
+  <internal_events_set>
+  </internal_events_set>
+  <protocol_behavior is_stateless="false">
+    <start state_machine_name="transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+        <state name="Ready">
+          <transition name="transport.Receive">
+            <parameter type="ReportEvents" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <ns2:internal/>
+            <action name="handleReportEvents" interpretation="Receive Report Events message">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
+
+          <transition name="transport.Receive">
+            <parameter type="ReportEventTimeout" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <ns2:internal/>
+            <action name="handleReportEventTimeout" interpretation="Received Report Event Timeout message">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
+
+          <transition name="transport.Receive">
+            <parameter type="ConfirmEventRequest" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <ns2:internal/>
+            <action name="handleConfirmEventRequest" interpretation="Confirm Event Request message">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
+
+         <transition name="transport.Receive">
+            <parameter type="RejectEventRequest" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <ns2:internal/>
+            <action name="handleRejectEventRequest" interpretation="Reject Event Request message">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
+
+          <transition name="transport.Receive">
+            <parameter type="CommandEvent" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <ns2:internal/>
+            <action name="handleCommandEvent" interpretation="Command Event Request message">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
+
+  <!--
+           <transition name="Event">
+                <parameter type="Event" value="msg"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                <ns1:internal/>
+                <action name="handleEvent">
+                    <argument value="msg"/>
+                    <argument value="transportData"/>
+                </action>
+           </transition>
+ -->
+
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="digitalResourceClass"
+  id="urn:jaus:jss:iop:MessageSet:DigitalResourceClass" version="1.0">
+  <declared_type_set_ref name="basicTypes"
+    id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0"/>
+  <declared_type_set_ref name="advTypes"
+    id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0"/>
+
+
+  <message_def name="QueryDigitalResourceEndpoint" message_id="E702" is_command="false">
+      <description xml:space="preserve">Queries for a list of known digital resource endpoints.</description>
+      <declared_header name="MsgHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+      <body name="Body"/>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="RegisterDigitalResourceEndpoint" message_id="E703" is_command="false">
+      <description xml:space="preserve">Registers a digital resource server with the service.  Each endpoint is represented by a URL; however, the URL shall not require a Domain Name Service (DNS) to resolve.  In addition, each stream may also specify a JAUS ID that hosts additional SAE JAUS services for the configuration and control of the digital resource, as well as a ResourceID that identifies the stream source.</description>
+      <declared_header name="MsgHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <sequence name="RegisterDigitalResourceSeq" optional="false">
+              <record name="RequestIDRec" optional="false">
+                  <fixed_field name="RequestID" optional="false" field_units="one" field_type="unsigned byte"/>
+              </record>
+              <record name="DigitalResourceEndpointRec" optional="false">
+                  <presence_vector field_type_unsigned="unsigned byte"/>
+                  <declared_fixed_field name="ServerType"
+                    declared_type_ref="advTypes.ServerType" optional="false"/>
+                  <variable_length_string name="ServerURL" optional="false">
+                      <count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+                  </variable_length_string>
+                  <declared_bit_field name="IOP_ID"
+                    declared_type_ref="advTypes.JausID" optional="true"/>
+                  <fixed_field name="ResourceID" optional="true" field_units="one" field_type="unsigned short integer"/>
+              </record>
+          </sequence>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="RemoveDigitalResourceEndpoint" message_id="E704" is_command="true">
+      <description xml:space="preserve">Remove a previously registered digital resource transfer server from the service.</description>
+      <declared_header name="MsgHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <record name="RemoveDigitalResourceEndpointRec" optional="false">
+              <fixed_field name="ID" optional="false" field_units="one" field_type="unsigned byte"/>
+              <fixed_field name="RequestID" optional="false" field_units="one" field_type="unsigned byte"/>
+          </record>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="ReportDigitalResourceEndpoint" message_id="F702" is_command="false">
+      <description xml:space="preserve">Reports a list of known digital resource servers.  Each endpoint is represented by a URL; however, the URL shall not require a Domain Name Service (DNS) to resolve.</description>
+      <declared_header name="MsgHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <list name="ReportFileTransferEndpointList" optional="false">
+              <count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+              <record name="DigitalResourceEndpointRec" optional="false">
+                  <presence_vector field_type_unsigned="unsigned byte"/>
+                  <declared_fixed_field name="ServerType"
+                    declared_type_ref="advTypes.ServerType" optional="false"/>
+                  <variable_length_string name="ServerURL" optional="false">
+                      <count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+                  </variable_length_string>
+                  <declared_bit_field name="IOP_ID"
+                    declared_type_ref="advTypes.JausID" optional="true"/>
+                  <fixed_field name="ResourceID" optional="true" field_units="one" field_type="unsigned short integer"/>
+              </record>
+          </list>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+  <message_def name="ConfirmDigitalResourceEndpoint" message_id="F703" is_command="false">
+      <description xml:space="preserve">Confirm a digital resource endpoint registration or removal.  Provides a unique ID for referencing the server in the future.</description>
+      <declared_header name="MsgHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+      <body name="Body">
+          <record name="ConfirmDigitalResourceEndpointRec" optional="false">
+              <fixed_field name="ID" optional="false" field_units="one" field_type="unsigned byte"/>
+              <fixed_field name="RequestID" optional="false" field_units="one" field_type="unsigned byte"/>
+          </record>
+      </body>
+      <footer name="Footer"/>
+  </message_def>
+
+</declared_type_set>
