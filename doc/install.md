@@ -5,7 +5,12 @@ Get [JAUS Toolset](http://jaustoolset.org/) (JTS), e.g. from Github:
 
     git clone https://github.com/dvmartin999/jaustoolset.git
 
-You need **[Oracle Java 7 JDK](https://help.ubuntu.com/community/Java)** (does not work with java 8!) to compile the JAUS Tool Set. The easiest way to install Java 7 is listed here:
+You need **Java JDK**. Either **OpenJDK 1.8** or **[Oracle Java 7 JDK](https://help.ubuntu.com/community/Java)** (does not work with java 8!) to compile the JAUS Tool Set.
+Install OpenJKD:
+
+    sudo apt-get install default-jdk
+
+The easiest way to install Java 7 is listed here:
 
     sudo apt-get install python-software-properties
     sudo add-apt-repository ppa:webupd8team/java
