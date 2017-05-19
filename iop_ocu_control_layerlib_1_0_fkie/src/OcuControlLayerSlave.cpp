@@ -44,23 +44,23 @@ OcuControlLayerSlave::~OcuControlLayerSlave(void)
 void OcuControlLayerSlave::init(JausAddress own_address, std::string control_uri, jUnsignedByte major_version, jUnsignedByte minor_version)
 {
 	iop::Component &cmp = iop::Component::get_instance();
-	DiscoveryClientService *discovery_srv = dynamic_cast<DiscoveryClientService*>(cmp.get_service(typeid(DiscoveryClientService)));
+	DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp.get_service("DiscoveryClient"));
 	if (discovery_srv != NULL) {
 		p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
 	} else {
-		throw std::runtime_error("[OcuControlLayerSlave] no DiscoveryClientService found!");
+		throw std::runtime_error("[OcuControlLayerSlave] no DiscoveryClient found! Please include its plugin first (in the list)!");
 	}
-	AccessControlClientService *accesscontrol_srv = dynamic_cast<AccessControlClientService*>(cmp.get_service(typeid(AccessControlClientService)));
+	AccessControlClientService *accesscontrol_srv = static_cast<AccessControlClientService*>(cmp.get_service("AccessControlClient"));
 	if (accesscontrol_srv != NULL) {
 		p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 	} else {
-		throw std::runtime_error("[OcuControlLayerSlave] no AccessControlClientService found!");
+		throw std::runtime_error("[OcuControlLayerSlave] no AccessControlClient found! Please include its plugin first (in the list)!");
 	}
-	ManagementClientService *management_srv = dynamic_cast<ManagementClientService*>(cmp.get_service(typeid(ManagementClientService)));
+	ManagementClientService *management_srv = static_cast<ManagementClientService*>(cmp.get_service("ManagementClient"));
 	if (management_srv != NULL) {
 		p_management_client = management_srv->pManagementClient_ReceiveFSM;
 	} else {
-		ROS_INFO_NAMED("OcuControlLayerSlave", "no management service available!");
+		ROS_INFO_NAMED("OcuControlLayerSlave", "no management service available! Please include its plugin first (in the list)!");
 	}
 
 	p_own_address = own_address;

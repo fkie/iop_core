@@ -50,19 +50,21 @@ namespace iop
 		void start_component();
 		void shutdown_component();
 
-		JTS::Service* get_service(const std::type_info &iop_service);
+		JTS::Service* get_service(std::string service_name);
 	protected:
 		static Component* global_ptr;
 		virtual void processInternalEvent(JTS::InternalEvent* ie);
 
 		pluginlib::ClassLoader<iop::PluginInterface>* p_class_loader;
 		std::vector<boost::shared_ptr<iop::PluginInterface> > p_plugins;
+		std::map<std::string, iop::PluginInterface::ServiceInfo> p_cache_service_info;
 		std::vector<JTS::Service*> serviceList;
 		JTS::JausRouter* jausRouter;
 		ros::NodeHandle p_pnh;
 
 		void load_plugins();
-		boost::shared_ptr<iop::PluginInterface> p_get_plugin(const std::type_info &iop_service);
+		iop::PluginInterface::ServiceInfo p_read_service_info(std::string serviceid, std::string manifest);
+		boost::shared_ptr<iop::PluginInterface> p_get_plugin_str(const std::string service_uri, unsigned char major_version=1, unsigned char min_minor_version=0);
 
 	};
 };

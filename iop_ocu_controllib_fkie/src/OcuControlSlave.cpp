@@ -69,7 +69,6 @@ void OcuControlSlave::pInit(unsigned short subsystem, unsigned char node, unsign
 	if (!control_addr.empty()) {
 		std::vector<std::string> strs;
 		boost::split(strs, control_addr, boost::is_any_of(".:"));
-std::cout << "strs.size()" << strs.size() << "  to parse: " << control_addr.c_str() << std::endl;
 		if (strs.size() > 3) {
 			throw new std::string("Invalid control_addr parameter: "+ control_addr + "\n");
 		} else {
