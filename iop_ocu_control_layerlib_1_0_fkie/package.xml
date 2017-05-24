@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>iop_ocu_control_layerlib_1_0_fkie</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>A helper layer library for slaves. This layer combines the AccessControlClient, DiscoveryClient and OcuControlLib to simplify the creation of bridge nodes for OCU. </description>
 
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
