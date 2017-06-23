@@ -27,23 +27,22 @@ iop_code_generator(
     urn.jaus.jss.mobility/PrimitiveDriver.xml
   OWN_IDLS
   OVERRIDES
-    include/urn_jaus_jss_mobility_PrimitiveDriver_1_0/PrimitiveDriver_ReceiveFSM.h
-    src/urn_jaus_jss_mobility_PrimitiveDriver_1_0/PrimitiveDriver_ReceiveFSM.cpp
+    include/urn_jaus_jss_mobility_PrimitiveDriver/PrimitiveDriver_ReceiveFSM.h
+    src/urn_jaus_jss_mobility_PrimitiveDriver/PrimitiveDriver_ReceiveFSM.cpp
     src/main.cpp
   EXTERN_SERVICES
-    urn_jaus_jss_core_AccessControl_1_0
-    urn_jaus_jss_core_DiscoveryClient_1_0
-    urn_jaus_jss_core_Events_1_0
-    urn_jaus_jss_core_Liveness_1_0
-    urn_jaus_jss_core_Management_1_0
-    urn_jaus_jss_core_Transport_1_0
+    urn_jaus_jss_core_AccessControl
+    urn_jaus_jss_core_DiscoveryClient
+    urn_jaus_jss_core_Events
+    urn_jaus_jss_core_Liveness
+    urn_jaus_jss_core_Management
+    urn_jaus_jss_core_Transport
   GENERATED_SOURCES cppfiles
 )
 ```
 
 #### : IDLS
 Specify a list of JSIDL files with IOP/JAUS services. This path is relative to `iop_builder_fkie/jsidl`.
->you can not mix different versions of the same service (e.g. Events 1.0 and Events 1.1) since the code generation of JTS fails.
 
 #### : OWN_IDLS
 Specify a list of JSIDL files with IOP/JAUS services. This path is relative to own package.
@@ -61,8 +60,8 @@ A list of IOP/JAUS services for which a library is available and will be used in
 
 >If your package creates also a library you need to export the IOP/JAUS services by `iop_export_service` e.g.
 ```makefile
-iop_export_service(urn_jaus_jss_core_Discovery_1_0
-                   urn_jaus_jss_core_DiscoveryClient_1_0)
+iop_export_service(urn_jaus_jss_core_Discovery
+                   urn_jaus_jss_core_DiscoveryClient)
 ```
 and specify your package in `catkin_package`/`LIBRARIES` of the *CMakeLists.txt*
 

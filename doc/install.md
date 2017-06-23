@@ -1,11 +1,10 @@
 # Installation of the ROS/IOP Bridge
 
-## Install JAUS Toolset
-Get [JAUS Toolset](http://jaustoolset.org/) (JTS), e.g. from Github:
+## Install dependencies for JAUS Toolset
+ROS/IOP Bridge uses JAUS Toolset (JTS) to generate basic C++ code from JSIDL definitions of JAUS. You find the JAUS Toolset desciption [here](http://jaustoolset.org/).
+JTS will be downloaded from github.com and build while you build the ROS/IOP Bridge sources. For successful build JTS needs follow external software:
 
-    git clone https://github.com/dvmartin999/jaustoolset.git
-
-You need **Java JDK**. Either **OpenJDK 1.8** or **[Oracle Java 7 JDK](https://help.ubuntu.com/community/Java)** (does not work with java 8!) to compile the JAUS Tool Set.
+**Java JDK**. Either **OpenJDK 1.8** or **[Oracle Java 7 JDK](https://help.ubuntu.com/community/Java)** (does not work with java 8!) to compile the JAUS Tool Set.
 Install OpenJKD:
 
     sudo apt-get install default-jdk
@@ -22,21 +21,6 @@ Install  **scons** and **ant**:
 
     sudo apt-get install scons ant
 
-Now compile JTS:
-
-    1. goto jaustoolset/GUI/
-    2. ant bindmxGraph
-    3. ant bindJSIDLPlus
-    4. ant bind
-    5. ant compile-promela
-    6. ant compile
-    7. ant schema-export
-    8. export JTS_COMMON_PATH=/home/XXX/jaustoolset/GUI/templates/Common
-    9. goto jaustoolset/nodeManager
-    10. scons
-
->If some errors occur regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *GUI/templates/Common/SConstruct*
-
 ## Set up your ROS environment
 
 Make sure, that your catin workspace is set up correctly:
@@ -49,9 +33,9 @@ For newer ROS versions (since Kinetic) you will have to define the CPATH environ
     export CPATH=<path-to-ros-iop-bridge-workspace>/devel/include
 
 If you want to use a manipulator, you will have to install moveit:
-    
+
     sudo apt-get install ros-kinetic-moveit
-    
+
 >For other ROS version replace kinetic by your ROS version
 
 
@@ -104,11 +88,27 @@ To install the complete ROS/IOP-Bridge go into your ROS workspace and clone thes
 	git clone https://github.com/fkie/iop_gui
 	git clone https://github.com/fkie/iop_cfg_sim_stage_fkie
 
+You can also use the [wstool](http://wiki.ros.org/wstool):
+  > If you do not already have an *.rosinstall* go into you ROS workspace and call
+```
+cd catkin_ws/
+wstool init src
+```
+
+Merge the iop.rosinstall file and fetch code.
+```
+wstool merge -t src https://raw.githubusercontent.com/fkie/iop_core_fkie/master/iop.rosinstall
+wstool update -t src
+```
+
 ## Build the sources
 
 Go to the root folder of your ROS workspace and type:
 
     catkin_make
-    
+
 >In case of "permission denied" errors you have to mark the \*.py files in *jaus\_builder\_fkie/cmake/* as runnable
 >You can also use `catkin build` instead of `catkin_make`, if you have [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) installed
+
+>If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/build/jaustoolset/GUI/templates/Common/SConstruct*
+

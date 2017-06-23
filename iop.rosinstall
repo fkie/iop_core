@@ -1,0 +1,33 @@
+- git:
+    local-name: iop_jaus_core
+    uri: https://github.com/fkie/iop_jaus_core
+- git:
+    local-name: iop_cfg_sim_stage_fkie
+    uri: https://github.com/fkie/iop_cfg_sim_stage_fkie
+- git:
+    local-name: iop_core
+    uri: https://github.com/fkie/iop_core
+- git:
+    local-name: iop_gui
+    uri: https://github.com/fkie/iop_gui
+- git:
+    local-name: iop_platform
+    uri: https://github.com/fkie/iop_platform
+- git:
+    local-name: iop_sensing
+    uri: https://github.com/fkie/iop_sensing
+- git:
+    local-name: iop_sensing_clients
+    uri: https://github.com/fkie/iop_sensing_clients
+- git:
+    local-name: iop_jaus_mobility
+    uri: https://github.com/fkie/iop_jaus_mobility
+- git:
+    local-name: iop_jaus_mobility_clients
+    uri: https://github.com/fkie/iop_jaus_mobility_clients
+- git:
+    local-name: iop_jaus_sensing
+    uri: https://github.com/fkie/iop_jaus_sensing
+- git:
+    local-name: iop_jaus_sensing_clients
+    uri: https://github.com/fkie/iop_jaus_sensing_clients
