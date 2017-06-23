@@ -304,7 +304,7 @@
         <variable_length_string name="Identification" optional="false"
           interpretation="Human-recognizable name of the Subsystem, Node or
           Component. ">
-          <count_field field_type_unsigned="unsigned byte"/>
+          <count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
         </variable_length_string>
       </record>
     </body>
@@ -415,7 +415,7 @@
                   max_count="255"/>
                 <record name="ServiceRec" optional="false">
                   <variable_length_string name="URI" optional="false">
-                    <count_field field_type_unsigned="unsigned byte"/>
+                    <count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
                   </variable_length_string>
                   <fixed_field name="MajorVersionNumber" field_type="unsigned
                     byte" field_units="one" optional="false"/>
@@ -485,7 +485,7 @@
                       min_count="0" max_count="255"/>
                     <record name="ServiceRec" optional="false">
                       <variable_length_string name="URI" optional="false">
-                        <count_field field_type_unsigned="unsigned byte"/>
+                        <count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
                       </variable_length_string>
                       <fixed_field name="MajorVersionNumber"
                         field_type="unsigned byte" field_units="one"

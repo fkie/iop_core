@@ -35,7 +35,7 @@ Component* Component::global_ptr = 0;
 Component::Component(unsigned int subsystem, unsigned short node, unsigned short component)
 {
 	global_ptr = this;
-	this->jausRouter = new JausRouter(JausAddress(subsystem, node, component), ieHandler);
+	this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler);
 	p_class_loader = NULL;
 	p_pnh = ros::NodeHandle("~");
 	load_plugins();
@@ -51,13 +51,13 @@ Component::~Component()
 		plugin.reset();
 	}
 
-	Service* service;
+	ServiceInfo si;
 
-	while (!serviceList.empty())
+	while (!service_list.empty())
 	{
-		service = serviceList.back();
-		serviceList.pop_back();
-		delete service;
+		si = service_list.back();
+		service_list.pop_back();
+//		delete si.service;
 	}
 
 	delete p_class_loader;
@@ -67,9 +67,10 @@ Component::~Component()
 
 void Component::load_plugins()
 {
+	bool has_1_1_transport = false;
 	boost::shared_ptr<iop::PluginInterface> discovery_client;
 	std::map<std::string, std::string > service_package_list;
-	std::vector<std::string> servicelist;
+	std::vector<std::string> plugin_names;
 	XmlRpc::XmlRpcValue v;
 	p_pnh.getParam("services", v);
 	if (!v.valid()) {
@@ -85,7 +86,7 @@ void Component::load_plugins()
 				std::string package = iterator->first;
 				std::string service = iterator->second;
 				service_package_list[service] = package;
-				servicelist.push_back(service);
+				plugin_names.push_back(service);
 			}
 		}
 	}
@@ -94,12 +95,12 @@ void Component::load_plugins()
 	p_class_loader = new pluginlib::ClassLoader<iop::PluginInterface>("iop_component_fkie", "iop::PluginInterface", std::string("plugin"), p_xml_paths);
 	std::vector<std::string> classes = p_class_loader->getDeclaredClasses();
 	std::map< std::pair<std::string, std::string>, std::string> mpaths;  // <pair<service, package>, path_to_xml>
-	for (unsigned int i = 0; i < servicelist.size(); ++i)
+	for (unsigned int i = 0; i < plugin_names.size(); ++i)
 	{
 		bool found_xml = false;
 		for(unsigned int c = 0; c < classes.size(); ++c)
 		{
-			if (classes[c].compare(servicelist[i]) == 0)
+			if (classes[c].compare(plugin_names[i]) == 0)
 			{
 				std::string package = service_package_list[classes[c]];
 				std::string xml_path = p_class_loader->getPluginManifestPath(classes[c].c_str());
@@ -114,24 +115,27 @@ void Component::load_plugins()
 		}
 		if (!found_xml)
 		{
-			ROS_ERROR("No xml with service definition for '%s' in package '%s' found!", servicelist[i].c_str(), service_package_list[servicelist[i]].c_str());
+			ROS_ERROR("No xml with service definition for '%s' in package '%s' found!", plugin_names[i].c_str(), service_package_list[plugin_names[i]].c_str());
 			throw std::logic_error("no manifest found");
 		}
 	}
 	try
 	{
-		for (unsigned int i = 0; i < servicelist.size(); ++i)
+		for (unsigned int i = 0; i < plugin_names.size(); ++i)
 		{
 			// initialize all services without defined base services
-			std::pair<std::string, std::string> svr_pkg_pair = std::make_pair(servicelist[i], service_package_list[servicelist[i]]);
-			boost::shared_ptr<iop::PluginInterface> plugin = p_class_loader->createInstance(servicelist[i]);
-			plugin->set_service_info(this->p_read_service_info(servicelist[i], mpaths[svr_pkg_pair]));
+			std::pair<std::string, std::string> svr_pkg_pair = std::make_pair(plugin_names[i], service_package_list[plugin_names[i]]);
+			boost::shared_ptr<iop::PluginInterface> plugin = p_class_loader->createInstance(plugin_names[i]);
+			plugin->set_service_info(this->p_read_service_info(plugin_names[i], mpaths[svr_pkg_pair]));
 			if (plugin->get_base_service_uri().empty()) {
 				ROS_INFO("Initialize IOP-plugin for %s", plugin->get_service_uri().c_str());
 				plugin->create_service(this->jausRouter);
 				JTS::Service* iop_service = plugin->get_service();
-				ROS_DEBUG("Initialized IOP-plugin for %s", plugin->get_service_uri().c_str());
-				serviceList.push_back(iop_service);
+				ROS_DEBUG("Initialized IOP-plugin for %s v%d.%d", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
+				bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
+				has_1_1_transport = has_1_1_transport | is_transport_1_1;
+				ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
+				service_list.push_back(si);
 				if (plugin->is_discovery_client()) {
 					discovery_client = plugin;
 				}
@@ -154,8 +158,11 @@ void Component::load_plugins()
 							p_plugins[i]->set_base_plugin(base_plugin.get());
 							p_plugins[i]->create_service(this->jausRouter);
 							JTS::Service* iop_service = p_plugins[i]->get_service();
-							ROS_DEBUG("Initialization for %s done.", p_plugins[i]->get_service_uri().c_str());
-							serviceList.push_back(iop_service);
+							ROS_DEBUG("Initialization for %s v%d.%d done.", p_plugins[i]->get_service_uri().c_str(), p_plugins[i]->get_version_number_major(), p_plugins[i]->get_version_number_minor());
+							bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
+							has_1_1_transport = has_1_1_transport | is_transport_1_1;
+							ServiceInfo si(iop_service, p_plugins[i]->get_service_uri(), is_transport_1_1);
+							service_list.push_back(si);
 							one_initialized = true;
 							if (p_plugins[i]->is_discovery_client()) {
 								discovery_client = p_plugins[i];
@@ -166,6 +173,7 @@ void Component::load_plugins()
 					} catch (std::logic_error &no_plugin){
 						// The needed plugin is still not available, perhaps in the next iteration.
 						// The component stops if one_initialized was not set to true.
+						std::cout << "err while load: " << no_plugin.what() << std::endl;
 					}
 				}
 			}
@@ -202,6 +210,12 @@ void Component::load_plugins()
 	{
 		p_plugins[i]->init_service();
 	}
+	if (has_1_1_transport) {
+		ROS_INFO("Use transport version 1.1");
+		jausRouter->setTransportType(JausRouter::Version_1_1);
+	} else {
+		ROS_INFO("Use transport version 1.0");
+	}
 	ROS_INFO("... initialization complete");
 }
 
@@ -232,10 +246,11 @@ void Component::start_component()
 	jausRouter->start();
 	this->start();
 
-	for (unsigned int i = 0; i < serviceList.size(); i++)
+	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
-		 service = serviceList.at(i);
-		 service->start();
+		ROS_INFO("Start Service: %s", service_list.at(i).uri.c_str());
+		service = service_list.at(i).service;
+		service->start();
 	}
 
 }
@@ -245,10 +260,10 @@ void Component::shutdown_component()
 {
 	Service* service;
 
-	for (unsigned int i = 0; i < serviceList.size(); i++)
+	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
-		 service = serviceList.at(i);
-		 service->stop();
+		service = service_list.at(i).service;
+		service->stop();
 	}
 
 	this->stop();
@@ -262,12 +277,12 @@ JTS::Service* Component::get_service(std::string service_name)
 	{
 		if (p_plugins[i]->get_service_name().compare(service_name) == 0
 				&& p_plugins[i]->get_service() != NULL) {
+//			std::cout << "get service '" << service_name << "', uri: " << p_plugins[i]->get_service_uri()  << ", type: " << typeid(p_plugins[i]->get_service()).name() << std::endl;
 			return p_plugins[i]->get_service();
 		}
 	}
 	return NULL;
 }
-
 
 void Component::processInternalEvent(InternalEvent *ie)
 {
@@ -280,14 +295,41 @@ void Component::processInternalEvent(InternalEvent *ie)
 	// again to the services (children first) for default transitions.
 	// A given event may only be processed by at most one service.
 	//
-	for (unsigned int i = serviceList.size(); i>0; i--)
+	for (unsigned int i = service_list.size(); i>0; i--)
 	{
-		if (!done) done = serviceList.at(i-1)->processTransitions(ie);
+		if (!done) {
+			if (ie == 0) {
+				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
+			} else {
+				done = service_list.at(i-1).service->processTransitions(ie);
+				if (done) {
+					Receive* casted_ie = (Receive*) ie;
+					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+//					std::cout << "PROCESSED: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
+				}
+			}
+		}
 	}
-	for (unsigned int i = serviceList.size(); i>0; i--)
+	for (unsigned int i = service_list.size(); i>0; i--)
 	{
-		if (!done) done = serviceList.at(i-1)->defaultTransitions(ie);
+		if (!done) {
+			if (ie == 0) {
+				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
+			} else {
+				done = service_list.at(i-1).service->defaultTransitions(ie);
+				if (done) {
+					Receive* casted_ie = (Receive*) ie;
+					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+//					std::cout << "PROCESSED DEF: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
+				}
+			}
+		}
 	}
+//	if (!done) {
+//		Receive* casted_ie = (Receive*) ie;
+//		unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+//		std::cout << "NOT PROCESSED: " << std::hex << id << std::dec << "  trans: " << ie->getName() << " source: " << ie->getSource() << std::endl;
+//	}
 }
 
 iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string serviceid, std::string manifest)

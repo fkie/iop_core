@@ -332,7 +332,7 @@
                     results.                          Only service identifiers
                     that contain this string should be
                     returned.">
-                    <count_field field_type_unsigned="unsigned byte"/>
+                    <count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
                   </variable_length_string>
                 </record>
               </list>

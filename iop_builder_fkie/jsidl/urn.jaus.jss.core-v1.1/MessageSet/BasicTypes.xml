@@ -2,6 +2,12 @@
 <declared_type_set name="BasicTypes"
   id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.1"
   xmlns="urn:jaus:jsidl:1.0">
+  <header name="JAUSApplicationLayerHeader">
+    <record name="HeaderRec" optional="false">
+      <fixed_field name="MessageID" field_type="unsigned short integer"
+      field_units="one" optional="false" interpretation="A two byte field to hold the message ID of a message"/>
+    </record>
+  </header>
   <header name="JAUSMessageHeader">
     <record name="HeaderRec" optional="false">
       <fixed_field name="MessageID" field_type="unsigned short integer"

@@ -100,18 +100,15 @@
               <argument value="transportData"/>
             </action>
           </transition>
-
-  <!--
-           <transition name="Event">
+           <transition name="transport.Receive">
                 <parameter type="Event" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-                <ns1:internal/>
+                <ns2:internal/>
                 <action name="handleEvent">
                     <argument value="msg"/>
                     <argument value="transportData"/>
                 </action>
            </transition>
- -->
 
         </state>
       </state>

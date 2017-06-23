@@ -15,12 +15,11 @@ iop_init_paths()
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS pluginlib roscpp
+    CATKIN_DEPENDS iop_builder_fkie pluginlib roscpp
 )
 
 
 include_directories(${catkin_INCLUDE_DIRS}
-                    ${IOP_COMMON_INCLUDES}
                     include
 )
 
@@ -30,7 +29,6 @@ add_executable(iop_component
 )
 # Specify libraries to link a library or executable target against
 target_link_libraries(iop_component
-                      ${IOP_LIBRARIES}
                       ${catkin_LIBRARIES}
 )
 
@@ -39,7 +37,6 @@ add_library(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-                      ${IOP_LIBRARIES}
                       ${catkin_LIBRARIES}
 )
 

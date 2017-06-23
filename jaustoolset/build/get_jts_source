@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+run_updates=1
+rootdir="$(cd "$(dirname "$0")"; pwd)"
+export JTS_COMMON_PATH="$rootdir/jaustoolset/GUI/templates/Common"
+if [ ! -d "$rootdir/jaustoolset" ]
+then
+	mkdir -p "$rootdir/jaustoolset"
+	git clone https://github.com/fkie-forks/jaustoolset.git "$rootdir/jaustoolset"
+	touch $rootdir/.fullbuild
+elif [ "$run_updates" -eq 1 ]
+then
+	result="$(git diff @{upstream})"
+	if [ ! -z "$result" ];
+	then
+		git -C "$rootdir/jaustoolset" pull
+		touch $rootdir/.rebuild
+        fi
+fi
+

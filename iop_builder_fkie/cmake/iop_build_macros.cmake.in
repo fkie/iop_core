@@ -37,16 +37,10 @@ macro(iop_init_paths)
   if ("${PROJECT_NAME}" STREQUAL "")
     message(FATAL_ERROR "You must call project() first")
   endif()
-  find_path(IOP_COMMON_ROOT include/JausUtils.h HINTS ENV JTS_COMMON_PATH)
-  if(NOT IOP_COMMON_ROOT)
-    message(FATAL_ERROR "Cannot find JAUS toolset. Did you set JTS_COMMON_PATH?")
-  endif()
-  find_library(IOP_COMMON_LIBRARY Common HINTS "${IOP_COMMON_ROOT}/lib")
-  find_path(IOP_COMMON_INCLUDES JausUtils.h PATH_SUFFIXES include HINTS "${IOP_COMMON_ROOT}")
-  get_filename_component(JTS_GUI_PATH "${IOP_COMMON_ROOT}" PATH)
-  get_filename_component(JTS_GUI_PATH "${JTS_GUI_PATH}" PATH)
-  set(IOP_LIBRARIES "${IOP_COMMON_LIBRARY};pthread;rt")
-  message(STATUS "JAUS Toolkit GUI path is ${JTS_GUI_PATH}")
+  
+  find_package(jaustoolset REQUIRED)
+  #message(FATAL_ERROR "jaustoolset_GUI_PATH: ${jaustoolset_GUI_PATH}")
+  message(STATUS "JAUS Toolkit GUI path is ${jaustoolset_GUI_PATH}")
 endmacro()
 
 macro(iop_init)
@@ -59,9 +53,7 @@ macro(iop_init)
   set(IOP_COMPONENT_ID "${iop_arg_COMPONENT_ID}")
   set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
   file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
-  set(IOP_INCLUDE_DIRS "${IOP_COMMON_INCLUDES};${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include")
-#  set(IOP_EXTERN_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/extern")
-#  list(APPEND "IOP_INCLUDE_DIRS" "${IOP_EXTERN_DIR};${IOP_EXTERN_DIR}/include")
+  set(catkin_INCLUDE_DIRS "${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include;${catkin_INCLUDE_DIRS}")
   message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
   message(STATUS "JAUS component name is ${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
   message(STATUS "export IOP_INCLUDE_DIRS: ${IOP_INCLUDE_DIRS}")
@@ -177,7 +169,7 @@ macro(iop_code_generator)
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
     COMMAND find ${CATKIN_DEVEL_PREFIX}/include -name "*.old" -type f -delete
     COMMAND cp -r -v -t ${CATKIN_DEVEL_PREFIX}/include ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
-    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+    WORKING_DIRECTORY "${jaustoolset_GUI_PATH}"
     DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
   )
 
@@ -185,7 +177,7 @@ macro(iop_code_generator)
     OUTPUT "jaus.cpp"
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.cpp" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
 #    DEPENDS "iop_extern.cpp"
-#    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+#    WORKING_DIRECTORY "${jaustoolset_GUI_PATH}"
 #  )
 #
 #  add_custom_command(
@@ -197,7 +189,7 @@ macro(iop_code_generator)
 #    COMMAND "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/iop_extern.cpp" "${IOP_COMPONENT_DIR}/../extern" ${iop_arg_OVERRIDE_SOURCES}
 #    COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     DEPENDS "jaus.headers"
-    WORKING_DIRECTORY "${JTS_GUI_PATH}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
 #  list(APPEND "IOP_GENERIC_EXTERN_SRC" "${CMAKE_CURRENT_BINARY_DIR}/iop_extern.cpp")

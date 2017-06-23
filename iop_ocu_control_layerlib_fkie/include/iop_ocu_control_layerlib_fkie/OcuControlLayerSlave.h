@@ -27,9 +27,9 @@ along with this program; or you can read the full license at
 #include <ros/ros.h>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
-#include <urn_jaus_jss_core_AccessControlClient_1_0/AccessControlClientService.h>
-#include <urn_jaus_jss_core_DiscoveryClient_1_0/DiscoveryClientService.h>
-#include <urn_jaus_jss_core_ManagementClient_1_0/ManagementClientService.h>
+#include <urn_jaus_jss_core_AccessControlClient/AccessControlClientService.h>
+#include <urn_jaus_jss_core_DiscoveryClient/DiscoveryClientService.h>
+#include <urn_jaus_jss_core_ManagementClient/ManagementClientService.h>
 #include <iop_ocu_controllib_fkie/OcuControlSlave.h>
 #include <iop_msgs_fkie/JausAddress.h>
 #include <iop_component_fkie/iop_component.h>
@@ -64,9 +64,9 @@ class OcuControlLayerSlave
   protected:
 	boost::function<void (unsigned short subsystem, unsigned char node, unsigned char component, unsigned char authority)> p_class_control_component_callback;
 	boost::function<void (JausAddress &address, unsigned char value)> p_class_access_state_callback;
-	urn_jaus_jss_core_AccessControlClient_1_0::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
-	urn_jaus_jss_core_ManagementClient_1_0::ManagementClient_ReceiveFSM *p_management_client;
-	urn_jaus_jss_core_DiscoveryClient_1_0::DiscoveryClient_ReceiveFSM *p_discovery_client;
+	urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
+	urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
+	urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *p_discovery_client;
 	OcuControlSlave p_ocu_control_slave;
 	JausAddress p_own_address;
 	JausAddress p_control_address;

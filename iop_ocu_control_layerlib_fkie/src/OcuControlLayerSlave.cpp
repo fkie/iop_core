@@ -20,11 +20,11 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-#include <iop_ocu_control_layerlib_1_0_fkie/OcuControlLayerSlave.h>
+#include <iop_ocu_control_layerlib_fkie/OcuControlLayerSlave.h>
 
-using namespace urn_jaus_jss_core_AccessControlClient_1_0;
-using namespace urn_jaus_jss_core_DiscoveryClient_1_0;
-using namespace urn_jaus_jss_core_ManagementClient_1_0;
+using namespace urn_jaus_jss_core_AccessControlClient;
+using namespace urn_jaus_jss_core_DiscoveryClient;
+using namespace urn_jaus_jss_core_ManagementClient;
 
 OcuControlLayerSlave::OcuControlLayerSlave()
 {
@@ -138,7 +138,7 @@ void OcuControlLayerSlave::pAccessControlClientReplyHandler(JausAddress &address
 	if (code == p_accesscontrol_client->ACCESS_STATE_CONTROL_ACCEPTED) { // ACCESS_STATE_CONTROL_ACCEPTED
 		if (p_do_resume && p_management_client != 0) {
 			p_management_client->resume(address);
-			p_do_resume = false;
+//			p_do_resume = false;
 		}
 	}
 }

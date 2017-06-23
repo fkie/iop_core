@@ -35,7 +35,7 @@
     </output_set>
   </message_set>
   <internal_events_set>
-    <event_def name="Timeout">
+    <event_def name="Timedout">
       <description> Occurs when access is not re-acquired periodically </description>
       <header name="Header"/>
       <body name="Body"/>
@@ -300,7 +300,7 @@
               </action>
             </transition>
 
-            <transition name="Timeout">
+            <transition name="Timedout">
               <guard condition="isControlAvailable()" interpretation="True if this service or
                 services related to this service are not engaged in other operations that would
                 prevent this service from performing its actions."/>

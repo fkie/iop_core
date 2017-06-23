@@ -434,7 +434,7 @@
         <record name="ServiceRec" optional="false">
           <variable_length_string name="URI" optional="false"
             interpretation="Service URI">
-            <count_field field_type_unsigned="unsigned byte"/>
+            <count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
           </variable_length_string>
           <fixed_field name="MajorVersionNumber" field_type="unsigned byte"
             field_units="one" optional="false" interpretation="Major version

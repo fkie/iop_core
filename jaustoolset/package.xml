@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>jaustoolset</name>
+  <version>2.2.0</version>
+  <description>JausToolSet</description>
+  <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>cmake</buildtool_depend>
+  <run_depend>ant</run_depend>
+  <run_depend>scons</run_depend>
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

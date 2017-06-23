@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+rootdir="$(cd "$(dirname "$0")"; pwd)"
+export JTS_COMMON_PATH="$rootdir/jaustoolset/GUI/templates/Common"
+if [ -e "$rootdir/.fullbuild" ];
+then
+    cd "$rootdir/jaustoolset/GUI"
+    ant bindmxGraph
+    ant bindJSIDLPlus
+    ant bind
+    ant compile-promela
+    ant compile
+    cd "$rootdir/jaustoolset/nodeManager"
+    scons
+    rm $rootdir/.fullbuild
+elif [ -e "$rootdir/.rebuild" ];
+then
+    cd "$rootdir/jaustoolset/GUI"
+    ant compile
+    cd "$rootdir/jaustoolset/nodeManager"
+    scons
+    rm $rootdir/.rebuild
+fi
+

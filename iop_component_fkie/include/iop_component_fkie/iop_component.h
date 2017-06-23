@@ -36,6 +36,15 @@ along with this program; or you can read the full license at
 
 namespace iop
 {
+	class IopJausRouter: public JTS::JausRouter
+	{
+	public:
+		IopJausRouter(JausAddress jausAddress, JTS::InternalEventHandler* ieHandler) : JTS::JausRouter(jausAddress, ieHandler) {}
+		~IopJausRouter() {}
+
+		TransportType getTransportType() { return transportType; }
+	};
+
 	class Component : public JTS::EventReceiver
 	{
 	public:
@@ -52,14 +61,31 @@ namespace iop
 
 		JTS::Service* get_service(std::string service_name);
 	protected:
+
+		struct ServiceInfo {
+			ServiceInfo(JTS::Service* si, std::string uri, bool is_transport_1_1) {
+				this->service = si;
+				this->uri = uri;
+				this->transport_type = is_transport_1_1;
+			}
+			ServiceInfo() {
+				this->service = 0;
+				this->uri = "";
+				this->transport_type = true;
+			}
+			JTS::Service* service;
+			std::string uri;
+			bool transport_type;
+		};
+
 		static Component* global_ptr;
 		virtual void processInternalEvent(JTS::InternalEvent* ie);
 
 		pluginlib::ClassLoader<iop::PluginInterface>* p_class_loader;
 		std::vector<boost::shared_ptr<iop::PluginInterface> > p_plugins;
 		std::map<std::string, iop::PluginInterface::ServiceInfo> p_cache_service_info;
-		std::vector<JTS::Service*> serviceList;
-		JTS::JausRouter* jausRouter;
+		std::vector<ServiceInfo> service_list;
+		IopJausRouter* jausRouter;
 		ros::NodeHandle p_pnh;
 
 		void load_plugins();

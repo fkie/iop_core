@@ -48,74 +48,67 @@
   </message_set>
   <internal_events_set/>
   <protocol_behavior is_stateless="false">
-    <start state_machine_name="events.transport.ReceiveFSM"
-      state_name="Receiving.Ready"/>
-    <state_machine name="events.transport.ReceiveFSM" interpretation="extending
-      ReceiveFSM of base       service (transport)">
-      <state name="Receiving" initial_state="Ready" interpretation="redefine
-        state in order to         extend">
+    <start state_machine_name="events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready">
           <default_state>
-            <transition name="transport.Receive">
-              <parameter type="QueryIdentification" value="msg"/>
-              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
-              <action name="transport.Send" interpretation="Send a Report
-                Identification                 message               to querying
-                client">
-                <argument value=" 'ReportIdentification' "/>
-                <argument value="transportData"/>
-              </action>
-            </transition>
-            <transition name="transport.Receive">
-              <parameter type="QueryConfiguration" value="msg"/>
-              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
-              <action name="transport.Send" interpretation="Send a Report
-                Configuration                 message               to querying
-                client">
-                <argument value=" 'ReportConfiguration' "/>
-                <argument value="transportData"/>
-              </action>
-            </transition>
-            <transition name="transport.Receive">
-              <parameter type="QuerySubsystemList" value="msg"/>
-              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
-              <action name="transport.Send" interpretation="Send a Report
-                Subsystem List                 message               to querying
-                client">
-                <argument value="'ReportSubsystemList'"/>
-                <argument value="transportData"/>
-              </action>
-            </transition>
-            <transition name="transport.Receive">
-              <parameter type="QueryServices" value="msg"/>
-              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
-              <action name="transport.Send" interpretation="Send a Report
-                Services message                 to querying client">
-                <argument value=" 'ReportServices' "/>
-                <argument value="transportData"/>
-              </action>
-            </transition>
-            <transition name="transport.Receive">
-              <parameter type="QueryServiceList" value="msg"/>
-              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
-              <action name="transport.Send" interpretation="Send a Report
-                Service List                    message to querying client">
-                <argument value=" 'ReportServiceList' "/>
-                <argument value="transportData"/>
-              </action>
-            </transition>
-            <transition name="transport.Receive">
+            <transition name="events.transport.Receive">
               <parameter type="RegisterServices" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
               <ns2:internal/>
-              <action name="PublishServices" interpretation="Add the component
-                that sent the message                 to the list of reported
-                services">
+              <action name="publishServices" interpretation="Add the component that sent the message
+                  to the list of reported services">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryIdentification" value="msg"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+              <ns2:internal/>
+              <action name="sendReportIdentification" interpretation="Send a Report
+                Identification message to querying client">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryConfiguration" value="msg"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+              <ns2:internal/>
+              <action name="sendReportConfiguration" interpretation="Send a Report
+                Configuration message to querying client">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QuerySubsystemList" value="msg"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+              <ns2:internal/>
+              <action name="sendReportSubsystemList" interpretation="Send a Report
+                Subsystem List message to querying client">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryServices" value="msg"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+              <ns2:internal/>
+              <action name="sendReportServices" interpretation="Send a Report
+                Services message to querying client">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryServiceList" value="msg"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+              <ns2:internal/>
+              <action name="sendReportServiceList" interpretation="Send a Report
+                Service List message to querying client">
                 <argument value="msg"/>
                 <argument value="transportData"/>
               </action>

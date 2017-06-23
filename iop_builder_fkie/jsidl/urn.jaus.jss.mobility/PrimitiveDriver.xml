@@ -24,60 +24,40 @@
   </message_set>
   <internal_events_set/>
     <protocol_behavior>
-        <start state_machine_name="management.accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled.StateA"/>
+        <start state_machine_name="management.accessControl.events.transport.ReceiveFSM"
+          state_name="Receiving.Ready.NotControlled"/>
         <state_machine name="management.accessControl.events.transport.ReceiveFSM">
             <state name="Receiving" initial_state="Ready">
                 <state name="Ready" initial_state="NotControlled">
-                    <state name="NotControlled" initial_state="StateA">
-                        <state name="StateA" initial_state="Init">
-                            <state name="Standby"/>
-                            <state name="Init"/>
-                            <state name="Failure"/>
-                            <state name="Shutdown"/>
-                            <state name="Emergency"/>
-                            <default_state>
-                                <transition name="management.accessControl.events.transport.Receive">
-                                    <parameter type="QueryWrenchEffort" value="msg" interpretation="enveloped query wrench effort                     message"/>
-                                    <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                                    <ns1:internal/>
-                                    <action name="sendReportWrenchEffort" interpretation="Send a Report                     Wrench Effort message">
-                                        <argument value="msg"/>
-                                        <argument value="transportData"/>
-                                    </action>
-                                </transition>
-                            </default_state>
-                        </state>
+                    <state name="NotControlled" initial_state="Standby">
+                         <state name="Standby"/>
                     </state>
-                    <state name="Controlled" initial_state="StateB">
-                        <state name="StateB" initial_state="Standby">
-                            <state name="Standby"/>
-                            <state name="Ready">
-                                <transition name="management.accessControl.events.transport.Receive">
-                                    <parameter type="SetWrenchEffort" value="msg" interpretation="enveloped set wrench                     effort message"/>
-                                    <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                                    <guard condition="isControllingClient( transportData )" interpretation="True if the message that triggered the                      transition is received from the client that is in control of this service."/>
-                                    <ns1:internal/>
-                                    <action name="setWrenchEffort" interpretation="Set the wrench effort for the platform.">
-                                        <argument value="msg"/>
-                                        <argument value="transportData"/>
-                                    </action>
-                                </transition>
-                            </state>
-                            <state name="Emergency"/>
-                            <default_state>
-                                <transition name="management.accessControl.events.transport.Receive">
-                                    <parameter type="QueryWrenchEffort" value="msg" interpretation="enveloped query wrench effort                     message"/>
-                                    <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                                    <ns1:internal/>
-                                    <action name="sendReportWrenchEffort" interpretation="Send a Report                     Wrench Effort message">
-                                        <argument value="msg"/>
-                                        <argument value="transportData"/>
-                                    </action>
-                                </transition>
-                            </default_state>
-                        </state>
+                    <state name="Controlled" initial_state="Standby">
+                          <state name="Standby"/>
+                          <state name="Ready">
+                              <transition name="management.accessControl.events.transport.Receive">
+                                  <parameter type="SetWrenchEffort" value="msg" interpretation="enveloped set wrench                     effort message"/>
+                                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                                  <guard condition="isControllingClient( transportData )" interpretation="True if the message that triggered the                      transition is received from the client that is in control of this service."/>
+                                  <ns1:internal/>
+                                  <action name="setWrenchEffort" interpretation="Set the wrench effort for the platform.">
+                                      <argument value="msg"/>
+                                      <argument value="transportData"/>
+                                  </action>
+                              </transition>
+                          </state>
                     </state>
-                    <default_state/>
+                    <default_state>
+                        <transition name="management.accessControl.events.transport.Receive">
+                            <parameter type="QueryWrenchEffort" value="msg" interpretation="enveloped query wrench effort                     message"/>
+                            <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                            <ns1:internal/>
+                            <action name="sendReportWrenchEffort" interpretation="Send a Report                     Wrench Effort message">
+                                <argument value="msg"/>
+                                <argument value="transportData"/>
+                            </action>
+                        </transition>
+                    </default_state>
                 </state>
             </state>
         </state_machine>
