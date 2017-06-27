@@ -302,11 +302,11 @@ void Component::processInternalEvent(InternalEvent *ie)
 				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
 			} else {
 				done = service_list.at(i-1).service->processTransitions(ie);
-				if (done) {
-					Receive* casted_ie = (Receive*) ie;
-					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+//				if (done) {
+//					Receive* casted_ie = (Receive*) ie;
+//					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
 //					std::cout << "PROCESSED: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
-				}
+//				}
 			}
 		}
 	}
@@ -317,11 +317,11 @@ void Component::processInternalEvent(InternalEvent *ie)
 				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
 			} else {
 				done = service_list.at(i-1).service->defaultTransitions(ie);
-				if (done) {
-					Receive* casted_ie = (Receive*) ie;
-					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+//				if (done) {
+//					Receive* casted_ie = (Receive*) ie;
+//					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
 //					std::cout << "PROCESSED DEF: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
-				}
+//				}
 			}
 		}
 	}
