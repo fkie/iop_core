@@ -39,7 +39,6 @@ macro(iop_init_paths)
   endif()
   
   find_package(jaustoolset REQUIRED)
-  #message(FATAL_ERROR "jaustoolset_GUI_PATH: ${jaustoolset_GUI_PATH}")
   message(STATUS "JAUS Toolkit GUI path is ${jaustoolset_GUI_PATH}")
 endmacro()
 
@@ -51,12 +50,18 @@ macro(iop_init)
   endif()
   _iop_capitalize_string("${PROJECT_NAME}" IOP_COMPONENT_NAME)
   set(IOP_COMPONENT_ID "${iop_arg_COMPONENT_ID}")
-  set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
-  file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
-  set(catkin_INCLUDE_DIRS "${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include;${catkin_INCLUDE_DIRS}")
-  message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
   message(STATUS "JAUS component name is ${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
-  message(STATUS "export IOP_INCLUDE_DIRS: ${IOP_INCLUDE_DIRS}")
+  set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
+  message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
+  file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
+  # we need the devel include path to avoid set the CPATH environment variable
+  set(DEVEL_SPACE "${CATKIN_DEVEL_PREFIX}")
+  get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
+  get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
+  set(DEVEL_INCLUDE "${DEVEL_SPACE}/include")
+  message(STATUS "DEVEL_INCLUDE: ${DEVEL_INCLUDE}")
+  set(catkin_INCLUDE_DIRS "${DEVEL_INCLUDE};${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include;${catkin_INCLUDE_DIRS}")
+  message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
   set(IOP_INIT_OK 1)
   find_program(IOP_DIFF diff)
   find_program(IOP_JAVA java)
@@ -127,7 +132,7 @@ macro(iop_code_generator)
   if(NOT "${IOP_INIT_OK}" EQUAL 1)
     message(FATAL_ERROR "You must call iop_init() first")
   endif()
-  list(APPEND "IOP_INCLUDE_DIRS" "${CATKIN_DEVEL_PREFIX}/include")
+  list(APPEND "IOP_INCLUDE_DIRS" "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}")
   message(STATUS "new IOP_INCLUDE_DIRS ${IOP_INCLUDE_DIRS}")
   cmake_parse_arguments(iop_arg "" "GENERATED_SOURCES;COMPONENT_ID" "IDLS;OWN_IDLS;OVERRIDES;EXTERN_SERVICES" ${ARGN})
   _iop_filter_list(iop_arg_OVERRIDE_SOURCES "cpp" ${iop_arg_OVERRIDES})
@@ -147,7 +152,7 @@ macro(iop_code_generator)
     OUTPUT "jaus.xml"
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" "${IOP_COMPONENT_ID}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/jaus/"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CATKIN_DEVEL_PREFIX}/include"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     DEPENDS ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
   )
@@ -167,8 +172,8 @@ macro(iop_code_generator)
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
-    COMMAND find ${CATKIN_DEVEL_PREFIX}/include -name "*.old" -type f -delete
-    COMMAND cp -r -v -t ${CATKIN_DEVEL_PREFIX}/include ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
+    COMMAND find ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION} -name "*.old" -type f -delete
+    COMMAND cp -r -v -t ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION} ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
     WORKING_DIRECTORY "${jaustoolset_GUI_PATH}"
     DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
   )
