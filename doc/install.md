@@ -97,7 +97,7 @@ wstool init src
 
 Merge the iop.rosinstall file and fetch code.
 ```
-wstool merge -t src https://raw.githubusercontent.com/fkie/iop_core_fkie/master/iop.rosinstall
+wstool merge -t src https://raw.githubusercontent.com/fkie/iop_core/master/iop.rosinstall
 wstool update -t src
 ```
 
@@ -105,7 +105,7 @@ wstool update -t src
 
 Go to the root folder of your ROS workspace and type:
 
-    catkin_make
+    catkin build
 
 >In case of "permission denied" errors you have to mark the \*.py files in *jaus\_builder\_fkie/cmake/* as runnable
 >You can also use `catkin build` instead of `catkin_make`, if you have [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) installed
