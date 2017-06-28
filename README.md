@@ -43,7 +43,7 @@ If you want to use a manipulator, you will have to install moveit:
 
 The sourcecode of the ROS/IOP-Bridge is splitted into different Git repositories. Depending on your configuration you need a different set of packages. An overview of existing packages you find [here](doc/other_packages.md)
 
-For donwload the ROS/IOP-Bridge sources we use the [wstool](http://wiki.ros.org/wstool):
+For download the ROS/IOP-Bridge sources we use the [wstool](http://wiki.ros.org/wstool):
   > If you do not already have an *.rosinstall* go into you ROS workspace and call
 ```
 cd catkin_ws/
