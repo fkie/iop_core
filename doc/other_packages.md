@@ -1,16 +1,18 @@
+## Main Repository of ROS/IOP Bridge
+Core pakages of the ROS/IOP-Bridge needed to build the bridge. You find the description of containing ROS packages [here](doc/other_packages.md).
+
+_git clone https://gihub.com/fkie/iop_core_
+
 ## Repositories with packages implementing the SEA JAUS Services
 
 - **core**: _urn.jaus.jss.core_ - services
     - _git clone https://gihub.com/fkie/iop_jaus_core_
-    - iop_accesscontrol_1_1_fkie
-    - iop_accesscontrol_1_0_fkie
-    - iop_discovery_1_0_fkie
-    - iop_events_1_1_fkie
-    - iop_events_1_0_fkie
-    - iop_liveness_1_0_fkie
-    - iop_management_1_0_fkie
-    - iop_transport_1_1_fkie
-    - iop_transport_1_0_fkie
+    - iop_accesscontrol_fkie
+    - iop_discovery_fkie
+    - iop_events_fkie
+    - iop_liveness_fkie
+    - iop_management_fkie
+    - iop_transport_fkie
 
 - **mobility**: _urn.jaus.jss.mobility_ - services
     - _git clone https://gihub.com/fkie/iop_jaus_mobility_
@@ -18,7 +20,7 @@
     - iop_local_pose_sensor_fkie
     - iop_primitive_driver_fkie
 
-- **sensing**: _urn.jaus.jss.environmentSensing - services
+- **sensing**: _urn.jaus.jss.environmentSensing_ - services
     - _git clone https://gihub.com/fkie/iop_jaus_sensing_
     - iop_digital_video_fkie
     - iop_range_sensor_fkie
@@ -34,7 +36,7 @@ The clients are used on the OCU side to control an IOP compliant robot.
     - iop_client_local_pose_sensor_fkie
     - iop_client_primitive_driver_fkie
 
-- **sensing_clients**: clients for _urn.jaus.jss.environmentSensing - services
+- **sensing_clients**: clients for _urn.jaus.jss.environmentSensing_ - services
     - _git clone https://gihub.com/fkie/iop_jaus_sensing_clients_
     - iop_client_range_sensor_fkie
 
