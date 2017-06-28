@@ -77,8 +77,7 @@ wstool update -t src
 
 On each host you run IOP components you need to start the JTS-`nodeManager`:
 
-```bash
-rosrun jaustoolset jaus_node_manager.sh start ```
+```bash rosrun jaustoolset jaus_node_manager.sh start ```
 
 >To exit the script type `bash rosrun jaustoolset jaus_node_manager.sh stop` in a new terminal window (`CTRL+C` won't work).
 >See example below how to integrate the JTS-`nodeManager`into launch-file.
