@@ -95,6 +95,6 @@ You can find the description to this example [here](https://github.com/fkie/iop_
 ----
 
 ## [How it works - an overview](doc/how_it_works.md)
+## [IOP packages - an overview](doc/other_packages.md)
+## [IOP core packages](doc/iop_core_packages.md)
 ## [Builder-package](doc/builder_package.md)
-## [IOP core packages - an overview](doc/iop_core_packages.md)
-## [Other IOP packages - an overview](doc/other_packages.md)
