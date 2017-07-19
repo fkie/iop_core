@@ -1,4 +1,6 @@
-For convenient usage of ROS environment use the `node_manager` of `multimaster_fkie`. You can install it from ROS apt repository or from  [https://github.com/fkie/multimaster_fkie](https://github.com/fkie/multimaster_fkie)
+For convenient usage of ROS environment use the `node_manager` of `multimaster_fkie`. You can install it from ROS apt repository or from  [https://github.com/fkie/multimaster_fkie](https://github.com/fkie/multimaster_fkie) using
+
+    git clone https://github.com/fkie/multimaster_fkie
 
 On each host you run IOP components you need to start the JTS-`nodeManager`:
 ```bash

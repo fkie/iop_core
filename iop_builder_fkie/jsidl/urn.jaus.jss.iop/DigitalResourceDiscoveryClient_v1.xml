@@ -7,10 +7,23 @@
         <inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.0"/>
         <client_of name="DigitalResourceDiscovery" id="urn:jaus:jss:iop:DigitalResourceDiscovery" version="1.0"/>
     </references>
+    <declared_type_set name="Types">
+      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+    </declared_type_set>
     <message_set>
         <input_set>
+            <declared_message_def name="ReportDigitalResourceEndpoint"
+              declared_type_ref="core.digitalResourceClass.ReportDigitalResourceEndpoint"/>
+            <declared_message_def name="ConfirmDigitalResourceEndpoint"
+              declared_type_ref="core.digitalResourceClass.ConfirmDigitalResourceEndpoint"/>
         </input_set>
         <output_set>
+            <declared_message_def name="QueryDigitalResourceEndpoint"
+              declared_type_ref="core.digitalResourceClass.QueryDigitalResourceEndpoint"/>
+            <declared_message_def name="RegisterDigitalResourceEndpoint"
+              declared_type_ref="core.digitalResourceClass.RegisterDigitalResourceEndpoint"/>
+            <declared_message_def name="RemoveDigitalResourceEndpoint"
+              declared_type_ref="core.digitalResourceClass.RemoveDigitalResourceEndpoint"/>
         </output_set>
     </message_set>
     <internal_events_set/>

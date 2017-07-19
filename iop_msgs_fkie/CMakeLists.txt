@@ -15,8 +15,10 @@ add_message_files(
   Identification.msg
   JausAddress.msg
   Node.msg
-  OcuControl.msg
-  OcuControlFeedback.msg
+  OcuCmd.msg
+  OcuCmdEntry.msg
+  OcuFeedback.msg
+  OcuServiceInfo.msg
   Service.msg
   Subsystem.msg
   System.msg

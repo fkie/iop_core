@@ -57,13 +57,12 @@ Component::~Component()
 	{
 		si = service_list.back();
 		service_list.pop_back();
-//		delete si.service;
+		delete si.service;
 	}
 
 	delete p_class_loader;
 	delete jausRouter;
 }
-
 
 void Component::load_plugins()
 {
@@ -173,7 +172,6 @@ void Component::load_plugins()
 					} catch (std::logic_error &no_plugin){
 						// The needed plugin is still not available, perhaps in the next iteration.
 						// The component stops if one_initialized was not set to true.
-						std::cout << "err while load: " << no_plugin.what() << std::endl;
 					}
 				}
 			}

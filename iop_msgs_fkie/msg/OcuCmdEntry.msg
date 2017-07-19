@@ -1,6 +1,15 @@
-# the address of the platform manager service. Only valid subsystem id is
-# possible. 0.0.0 is an invalid id.
+# The message is used by OCU GUI component to inform OCU clients what they should try to control.
+# At minimum a valid subsystem id must be defined. If component id is 0, it means all components 
+# should be controled. 
+# 0.0.0 is an invalid id.
 iop_msgs_fkie/JausAddress address
+
+# the name of the subsystem, node or component (depend on the specified address)
+string name
+
+# This command is for OCU client with given JAUS Address. It is usefull, if more then one
+# node can control available services (e.g. two PTU's)
+iop_msgs_fkie/JausAddress ocu_client
 
 # OWNER                    255      'root# user concept, analogous to the root user of an OS.
 # PRIMARY_OPERATOR         205-254  Only client role with mobility control. Can control/monitor any Component on the platform.
@@ -11,8 +20,8 @@ iop_msgs_fkie/JausAddress address
 uint8 authority
 
 # control the current access state
-# ACCESS_CONTROL_ON_DEMAND    10    the slave ocu node can request access if it is needed
-# ACCESS_CONTROL_REQUEST      11    force to request the access control
-# ACCESS_CONTROL_RELEASE      12    release the control and don not try to request (also not on demand)
+# ACCESS_CONTROL_RELEASE      10    release the control and don not try to request
+# ACCESS_CONTROL_MONITOR      11    do not request access control, only try to register the events with data
+# ACCESS_CONTROL_REQUEST      12    force to request the access control
 uint8 access_control
 

@@ -18,6 +18,6 @@ As an example we look at the JAUS PrimitiveDriver component. This component is l
 To reduce the implementation effort of included JAUS services like `AccessControl`, `Discovery` and other we implemented these as libraries wich are included by the component. Look at `package.xml` and `CMakeLists.txt` of `iop_primitive_driver_fkie` package to see how they can be included.
 
 ### Components on the OCU side
-The ROS/IOP-Bridge components on the OCU side consume the JAUS data, e.g. of the PrimitiveDriver. This components are located in packages beginning with `iop_client_` prefix and include the client services for `AccessControl`, `Discovery` and other. Additionally, we created `iop_ocu_controllib_fkie` and `iop_ocu_control_layerlib_fkie` packages to control the independent client components simultaneously. This is useful to release or get access for a whole robot for example.
+The ROS/IOP-Bridge components on the OCU side consume the JAUS data, e.g. of the PrimitiveDriver. This components are located in packages beginning with `iop_client_` prefix and include the client services for `AccessControl`, `Discovery` and other. Additionally, we created `iop_ocu_slavelib_fkie` and `ocu_rqt_access_control_fkie` packages to control the independent client components simultaneously. This is useful to release or get access for a whole robot for example.
 
 ![](images/iop-bridge-controllib-layer.png)

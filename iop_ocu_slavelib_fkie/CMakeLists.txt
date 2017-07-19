@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(iop_ocu_control_layerlib_fkie)
+project(iop_ocu_slavelib_fkie)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
                     iop_discovery_fkie
                     iop_management_fkie
                     iop_msgs_fkie
-                    iop_ocu_controllib_fkie
                     roscpp)
 find_package(Boost REQUIRED COMPONENTS system)
 
@@ -27,7 +26,6 @@ catkin_package(
           iop_discovery_fkie
           iop_management_fkie
           iop_msgs_fkie
-          iop_ocu_controllib_fkie
 )
 
 include_directories(include
@@ -36,7 +34,8 @@ include_directories(include
 )
 
 add_library(${PROJECT_NAME}
-            src/OcuControlLayerSlave.cpp
+            src/ServiceInfo.cpp
+            src/Slave.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
