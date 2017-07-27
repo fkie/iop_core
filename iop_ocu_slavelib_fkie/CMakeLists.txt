@@ -34,6 +34,7 @@ include_directories(include
 )
 
 add_library(${PROJECT_NAME}
+            src/Component.cpp
             src/ServiceInfo.cpp
             src/Slave.cpp
 )

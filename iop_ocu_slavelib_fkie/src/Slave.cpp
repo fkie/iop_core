@@ -45,7 +45,7 @@ Slave::Slave(JausAddress own_address)
 	p_management_client = NULL;
 	p_try_get_management = true;
 	p_default_authority = 205;
-	p_default_access_control = ServiceInfo::ACCESS_CONTROL_RELEASE;
+	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_own_address = own_address;
 	pInitRos();
 }
@@ -59,7 +59,7 @@ Slave::Slave(const Slave& other)
 	p_management_client = NULL;
 	p_try_get_management = true;
 	p_default_authority = 205;
-	p_default_access_control = ServiceInfo::ACCESS_CONTROL_RELEASE;
+	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 }
 
 Slave::~Slave(void)
@@ -76,7 +76,7 @@ DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 		if (discovery_srv != NULL) {
 			p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
 		} else {
-			throw std::runtime_error("[ocu::Slave] no DiscoveryClient found! Please include its plugin first (in the list)!");
+			throw std::runtime_error("[Slave] no DiscoveryClient found! Please include its plugin first (in the list)!");
 		}
 	}
 	return p_discovery_client;
@@ -91,7 +91,7 @@ AccessControlClient_ReceiveFSM *Slave::pGetAccesscontrolClient()
 			p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 			p_accesscontrol_client->add_reply_handler(&Slave::pAccessControlClientReplyHandler, this);
 		} else {
-			throw std::runtime_error("[ocu::Slave] no AccessControlClient found! Please include its plugin first (in the list)!");
+			throw std::runtime_error("[Slave] no AccessControlClient found! Please include its plugin first (in the list)!");
 		}
 	}
 	return p_accesscontrol_client;
@@ -106,7 +106,7 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 		if (management_srv != NULL) {
 			p_management_client = management_srv->pManagementClient_ReceiveFSM;
 		} else {
-			ROS_INFO_NAMED("ocu::Slave", "no management service available! Please include its plugin first (in the list)!");
+			ROS_INFO_NAMED("Slave", "no management service available! Please include its plugin first (in the list)!");
 		}
 		// set callbacks
 		if (p_management_client != 0) {
@@ -119,7 +119,6 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string service_uri, jUnsignedByte major_version, jUnsignedByte minor_version)
 {
 	ServiceInfo service_info(handler, p_own_address, service_uri, major_version, minor_version);
-	service_info.update_cmd(p_default_control_addr, p_default_access_control, p_default_authority);
 	p_services.push_back(service_info);
 	// start discovering
 	if (pGetDiscoveryClient() != NULL) {
@@ -131,7 +130,7 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 void Slave::pInitRos()
 {
 	ros::NodeHandle nh;
-	p_pub_control_feedback = nh.advertise<iop_msgs_fkie::OcuFeedback>("ocu_feedback", 1, true);
+	p_pub_control_feedback = nh.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
 	ros::NodeHandle pnh("~");
 	std::string control_addr;
 	if (!pnh.getParam("control_addr", control_addr)) {
@@ -142,6 +141,12 @@ void Slave::pInitRos()
 	}
 	if (!pnh.getParam("access_control", p_default_access_control)) {
 		nh.param("access_control", p_default_access_control, p_default_access_control);
+	}
+	if (!pnh.getParam("only_monitor", p_only_monitor)) {
+		nh.param("only_monitor", p_only_monitor, p_only_monitor);
+	}
+	if (!pnh.getParam("subsystem_restricted", p_subsystem_restricted)) {
+		nh.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
 	}
 	if (!control_addr.empty()) {
 		// try to get the address of the component specified for this slave to avoid discovering
@@ -165,6 +170,8 @@ void Slave::pInitRos()
 	ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %d.%d.%d", control_addr.c_str(),
 			p_default_control_addr.getSubsystemID(), p_default_control_addr.getNodeID(), p_default_control_addr.getComponentID());
 	ROS_INFO_ONCE_NAMED("Slave", "	authority:	%d", p_default_authority);
+	ROS_INFO_ONCE_NAMED("Slave", "	only_monitor:	%d", (int)p_only_monitor);
+	ROS_INFO_ONCE_NAMED("Slave", "	subsystem_restricted:	%d", p_subsystem_restricted);
 	std::string access_control_str = "ACCESS_CONTROL_RELEASE(10)";
 	if (p_default_access_control == 11) {
 		access_control_str = "ACCESS_CONTROL_MONITOR(11)";
@@ -173,111 +180,95 @@ void Slave::pInitRos()
 	}
 	ROS_INFO_ONCE_NAMED("Slave", "	access_control: %s", access_control_str.c_str());
 	// publish the feedback with settings
-	p_sub_control = nh.subscribe<iop_msgs_fkie::OcuCmd>("ocu_cmd", 10, &Slave::pRosControl, this);
-//	pFeedbackTimer = nh.createTimer(ros::Duration(15.0), &Slave::pFeedbackTimerHandler, this);
-//	pFeedbackTimer.start();
+	p_sub_control = nh.subscribe<iop_msgs_fkie::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
 }
 
 void Slave::pRosControl(const iop_msgs_fkie::OcuCmd::ConstPtr& control)
 {
 	// is the command for specific client?
+	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands;
 	for (unsigned int i = 0; i < control->cmds.size(); i++) {
 		iop_msgs_fkie::OcuCmdEntry cmd = control->cmds[i];
 		JausAddress ocu_client_addr = address_from_msg(cmd.ocu_client);
 		JausAddress control_addr = address_from_msg(cmd.address);
 		for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-			bool apply_cmd = false;
-			if (ocu_client_addr.getSubsystemID() != 0 && ocu_client_addr.getSubsystemID() != 65535) {
-				if (ocu_client_addr.getSubsystemID() == it->get_own_address().getSubsystemID()) {
-					if (ocu_client_addr.getNodeID() != 0 && ocu_client_addr.getNodeID() != 255) {
-						if (ocu_client_addr.getNodeID() == it->get_own_address().getNodeID()) {
-							if (ocu_client_addr.getComponentID() != 0 && ocu_client_addr.getComponentID() != 255) {
-								if (ocu_client_addr.getComponentID() == it->get_own_address().getComponentID()) {
-									apply_cmd = true;
-								}
-							} else {
-								apply_cmd = true;
-							}
-						}
-					} else {
-						apply_cmd = true;
-					}
-				}
-			} else {
-				apply_cmd = true;
-			}
-			if (p_only_monitor && cmd.access_control > ServiceInfo::ACCESS_CONTROL_MONITOR) {
+			bool apply_cmd = match_address(it->get_own_address(), ocu_client_addr);
+			if (p_only_monitor && cmd.access_control > Component::ACCESS_CONTROL_MONITOR) {
 				apply_cmd = false;
 			}
 			if (p_subsystem_restricted != 65535 && control_addr.getSubsystemID() != p_subsystem_restricted) {
 				apply_cmd = false;
 			}
 			if (apply_cmd) {
-				pApplyControl(*it, control_addr, cmd.access_control, cmd.authority);
+				for (std::vector<Component>::iterator it = p_components.begin(); it != p_components.end(); ++it) {
+					if (it->match(control_addr)) {
+						commands[it->get_address().get()] = std::make_pair(cmd.access_control, cmd.authority);
+					}
+				}
 			}
 		}
 	}
+	//apply commands to each component
+	pApplyCommands(commands);
 }
 
-void Slave::pApplyControl(ServiceInfo &service, JausAddress &control_addr, unsigned char access_control, unsigned char authority)
+void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands)
 {
-	JausAddress curr_addr = service.get_address();
-	unsigned char curr_state = service.get_state();
-	bool new_cmd = service.update_cmd(control_addr, access_control, authority);
-	if (new_cmd) {
-		switch (access_control) {
-		case ServiceInfo::ACCESS_CONTROL_RELEASE:
-//???					handler->access_deactivated(it->get_uri(), control_addr);
-			switch (curr_state) {
-//			case ServiceInfo::ACCESS_STATE_NOT_AVAILABLE:
-			case ServiceInfo::ACCESS_STATE_NOT_CONTROLLED:
-			case ServiceInfo::ACCESS_STATE_CONTROL_RELEASED:
-			case ServiceInfo::ACCESS_STATE_MONITORING:
-				service.set_state(ServiceInfo::ACCESS_STATE_NOT_CONTROLLED);
-				service.handler().access_deactivated(service.get_uri(), curr_addr);
-				break;
-			case ServiceInfo::ACCESS_STATE_CONTROL_ACCEPTED:
-				release_access(curr_addr);
-				break;
-			}
-			break;
-		case ServiceInfo::ACCESS_CONTROL_MONITOR:
-			switch (curr_state) {
-			case ServiceInfo::ACCESS_STATE_MONITORING:
-				// already on monitoring, do nothing
-				break;
-			case ServiceInfo::ACCESS_STATE_CONTROL_ACCEPTED:
-				// for monitoring we have to release access
-				release_access(curr_addr);
-				break;
-			default:
-				if (service.get_address().getComponentID() != 0) {
-					service.set_state(ServiceInfo::ACCESS_STATE_MONITORING);
-					service.handler().enable_monitoring_only(service.get_uri(), service.get_address());
+	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> >::iterator it;
+	for (it = commands.begin(); it != commands.end(); ++it) {
+		JausAddress addr(it->first);
+		Component* cmp = pGetComponent(addr);
+		if (cmp != NULL) {
+			// it is new control for the component or new authority
+			if (cmp->set_access_control(it->second.first) or cmp->set_authority(it->second.second)) {
+				switch (it->second.first) {
+				case Component::ACCESS_CONTROL_RELEASE:
+					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_RELEASE to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					pApplyToService(addr, it->second.first);
+					release_access(addr);
+					if (cmp->get_state() == Component::ACCESS_STATE_MONITORING) {
+						cmp->set_state(Component::ACCESS_STATE_NOT_CONTROLLED);
+					}
+					break;
+				case Component::ACCESS_CONTROL_MONITOR:
+					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					cmp->set_state(Component::ACCESS_STATE_MONITORING);
+					pApplyToService(addr, it->second.first);
+					break;
+				case Component::ACCESS_CONTROL_REQUEST:
+					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_REQUEST to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					// send request access
+					cmp->set_authority(it->second.second);
+					request_access(addr, it->second.second);
+					break;
 				}
 			}
-			break;
-		case ServiceInfo::ACCESS_CONTROL_REQUEST:
-			switch (curr_state) {
-			case ServiceInfo::ACCESS_STATE_MONITORING:
-				service.set_state(ServiceInfo::ACCESS_STATE_NOT_CONTROLLED);
-				service.handler().access_deactivated(service.get_uri(), curr_addr);
-				// send request access
-				if (service.get_address().getComponentID() != 0) {
-					request_access(service.get_address(), authority);
-				}
+		}
+	}
+
+}
+
+void Slave::pApplyToService(JausAddress &address, unsigned char control_state, unsigned char authority)
+{
+	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
+		if (it->has_component(address)) {
+			switch (control_state) {
+			case Component::ACCESS_CONTROL_RELEASE:
+				ROS_DEBUG_NAMED("Slave", "  inform %s about access_deactivated", it->get_uri().c_str());
+				it->handler().access_deactivated(it->get_uri(), address);
+				it->set_address(address);
 				break;
-			case ServiceInfo::ACCESS_STATE_CONTROL_ACCEPTED:
-				// we have already access, do nothing
-				// test for other authority
+			case Component::ACCESS_CONTROL_MONITOR:
+				ROS_DEBUG_NAMED("Slave", "  inform %s about enable_monitoring_only", it->get_uri().c_str());
+				it->handler().enable_monitoring_only(it->get_uri(), address);
+				it->set_address(address);
 				break;
-			default:
-				// in all other cases request control
-				if (service.get_address().getComponentID() != 0) {
-					request_access(service.get_address(), authority);
-				}
+			case Component::ACCESS_CONTROL_REQUEST:
+				ROS_DEBUG_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
+				it->handler().control_allowed(it->get_uri(), address, authority);
+				it->set_address(address);
+				break;
 			}
-			break;
 		}
 	}
 }
@@ -293,7 +284,8 @@ bool Slave::has_access(JausAddress &address)
 void Slave::request_access(JausAddress &address, unsigned char authority)
 {
 	if (pGetAccesscontrolClient() != 0 && address.get() != 0) {
-		pGetAccesscontrolClient()->requestAccess(address, &Slave::pAccessControlClientReplyHandler, this, authority);
+//		pGetAccesscontrolClient()->requestAccess(address, &Slave::pAccessControlClientReplyHandler, this, authority);
+		pGetAccesscontrolClient()->requestAccess(address, authority);
 	} else {
 	}
 }
@@ -302,7 +294,8 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 {
 	if (pGetAccesscontrolClient() != 0 && address.getComponentID() != 0) {
 		if (wait_for_reply) {
-			pGetAccesscontrolClient()->releaseAccess(address, &Slave::pAccessControlClientReplyHandler, this);
+//			pGetAccesscontrolClient()->releaseAccess(address, &Slave::pAccessControlClientReplyHandler, this);
+			pGetAccesscontrolClient()->releaseAccess(address);
 		} else {
 			pGetAccesscontrolClient()->releaseAccess(address);
 		}
@@ -312,44 +305,71 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char code)
 {
 	iop_msgs_fkie::OcuFeedback msg_feedback;
-	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-		if (it->get_state() != code && it->get_address().get() == address.get()) {
+	Component* cmp = pGetComponent(address);
+	unsigned char authority = 205;
+	if (cmp != NULL) {
+		authority = cmp->get_authority();
+		if (cmp->set_state(code)) {
 			switch (code) {
-			case ServiceInfo::ACCESS_STATE_NOT_CONTROLLED:
-			case ServiceInfo::ACCESS_STATE_CONTROL_RELEASED:
-			case ServiceInfo::ACCESS_STATE_TIMEOUT:
+			case Component::ACCESS_STATE_NOT_CONTROLLED:
+			case Component::ACCESS_STATE_CONTROL_RELEASED:
+			case Component::ACCESS_STATE_TIMEOUT:
 				// access released -> stop control
-				it->handler().access_deactivated(it->get_uri(), address);
-				if (it->get_access_control() == ServiceInfo::ACCESS_CONTROL_MONITOR) {
-					// access released, we have monitoring enabled
-					it->set_state(ServiceInfo::ACCESS_STATE_MONITORING);
-					it->handler().enable_monitoring_only(it->get_uri(), address);
-				}
+				// the services are informed before release access was send
+				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 				break;
-			case ServiceInfo::ACCESS_STATE_CONTROL_ACCEPTED:
-				it->handler().control_allowed(it->get_uri(), address, it->get_authority());
+			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
+				// pass authority to the handler
+				pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
 				if (pGetManagementClient() != 0) {
 					pGetManagementClient()->resume(address);
 				}
 				break;
 			}
-			it->set_state(code);
+			// send updated info to ROS
+			pSendFeedback();
 		}
 	}
-	// send updated info to ROS
-	pSendFeedback();
 }
 
-void Slave::pFeedbackTimerHandler(const ros::TimerEvent& event)
+void Slave::pAddComponent(JausAddress &address)
 {
-	pSendFeedback();
+	for (std::vector<Component>::iterator it = p_components.begin(); it != p_components.end(); ++it) {
+		if (it->get_address().get() == address.get()) {
+			return;
+		}
+	}
+	Component cmp(address);
+	cmp.set_access_control(p_default_access_control);
+	cmp.set_authority(p_default_authority);
+	p_components.push_back(cmp);
+}
+
+Component* Slave::pGetComponent(JausAddress &address)
+{
+
+	for (unsigned int i = 0; i < p_components.size(); i++) {
+		Component &cmp = p_components[i];
+		if (cmp.get_address().get() == address.get()) {
+			return &cmp;
+		}
+	}
+	return NULL;
 }
 
 void Slave::pSendFeedback()
 {
 	iop_msgs_fkie::OcuFeedback msg_feedback;
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-		msg_feedback.services.push_back(it->to_msg());
+		iop_msgs_fkie::OcuServiceInfo service_info;
+		service_info.uri = it->get_uri();
+		service_info.addr_control = address_to_msg(it->get_address());
+		Component* cmp = pGetComponent(it->get_address());
+		if (cmp != NULL) {
+			service_info.access_state = cmp->get_state();
+			service_info.authority = cmp->get_authority();
+		}
+		msg_feedback.services.push_back(service_info);
 	}
 	msg_feedback.reporter = address_to_msg(p_own_address);
 	msg_feedback.subsystem_restricted = p_subsystem_restricted;
@@ -359,7 +379,7 @@ void Slave::pSendFeedback()
 
 void Slave::pManagementStatusHandler(JausAddress &address, unsigned char code)
 {
-	ROS_INFO_NAMED("ocu::Slave", "management status of %d.%d.%d changed to %d",
+	ROS_INFO_NAMED("Slave", "management status of %d.%d.%d changed to %d",
 			address.getSubsystemID(), address.getNodeID(), address.getComponentID(), code);
 }
 
@@ -368,11 +388,12 @@ void Slave::pDiscovered(const std::string &uri, JausAddress &address)
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		if (uri.compare(it->get_uri()) == 0) {
 			if (it->add_discovered(address)) {
-				ROS_INFO_NAMED("ocu::Slave", "Discovered '%s' at address: %d.%d.%d", uri.c_str(),
+				ROS_INFO_NAMED("Slave", "Discovered '%s' at address: %d.%d.%d", uri.c_str(),
 						address.getSubsystemID(), address.getNodeID(), address.getComponentID());
 				//test for current control state, do we need to send access control request
-				pApplyControl(*it, it->get_address(), it->get_access_control(), it->get_authority());
+//				pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
 			}
 		}
 	}
+	pAddComponent(address);
 }

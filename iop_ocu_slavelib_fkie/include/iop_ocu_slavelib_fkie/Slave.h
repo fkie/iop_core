@@ -33,6 +33,7 @@ along with this program; or you can read the full license at
 #include <iop_msgs_fkie/JausAddress.h>
 #include <iop_msgs_fkie/OcuCmd.h>
 #include <iop_msgs_fkie/OcuFeedback.h>
+#include <iop_ocu_slavelib_fkie/Component.h>
 #include <iop_ocu_slavelib_fkie/ServiceInfo.h>
 #include <iop_ocu_slavelib_fkie/SlaveHandlerInterface.h>
 
@@ -42,7 +43,7 @@ namespace ocu {
 
 	class Slave
 	{
-	  public:
+	public:
 		static Slave& get_instance(JausAddress own_address)
 		{
 			if (global_ptr == 0) {
@@ -60,24 +61,13 @@ namespace ocu {
 		bool has_access(JausAddress &address);
 		void request_access(JausAddress &address, unsigned char authority);
 		void release_access(JausAddress &address, bool wait_for_reply=true);
-	//	JausAddress get_control_address();
-	//
-	//	/** Management methods **/
-	//	void resume();
-	//
-	//	/** Set this handler to be informed if the component given @init was discovered**/
-	//	template<class T>
-	//	void set_control_component_handler(void(T::*handler)(unsigned short subsystem, unsigned char node, unsigned char component, unsigned char authority), T*obj);
-	//	/** Set this handler be informed if accesses was granted or released. **/
-	//	template<class T>
-	//	void set_access_state_handler(void(T::*handler)(JausAddress &address, unsigned char value), T*obj);
-	//
-	  protected:
+
+	protected:
 		static Slave* global_ptr;
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *p_discovery_client;
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
-		jUnsignedShortInteger p_subsystem_restricted;
+		int p_subsystem_restricted;
 		bool p_only_monitor;
 		bool p_try_get_management;
 		JausAddress p_own_address;
@@ -85,6 +75,7 @@ namespace ocu {
 		int p_default_authority;
 		int p_default_access_control;
 		std::vector<ServiceInfo> p_services;
+		std::vector<Component> p_components;
 		ros::Publisher p_pub_control_feedback;
 		ros::Subscriber p_sub_control;
 		ros::Timer pFeedbackTimer;
@@ -95,19 +86,18 @@ namespace ocu {
 		void pAccessControlClientReplyHandler(JausAddress &address, unsigned char code);
 		void pManagementStatusHandler(JausAddress &address, unsigned char code);
 		void pDiscovered(const std::string &uri, JausAddress &address);
-//		void pReleaseAccess();
-//		void pOcuControlPlatformHandler(unsigned short subsystem, unsigned char node, unsigned char component, unsigned char authority);
-//		void pOcuControlComonentHandler(unsigned short subsystem, unsigned char node, unsigned char component, unsigned char authority);
-//		void pOcuAccessControlHandler(unsigned char value);
 
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *pGetDiscoveryClient();
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *pGetAccesscontrolClient();
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *pGetManagementClient();
+		void pAddComponent(JausAddress &address);
+		Component* pGetComponent(JausAddress &address);
+		void pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands);
+		void pApplyToService(JausAddress &addr, unsigned char control_state, unsigned char authority=205);
 		void pApplyControl(ServiceInfo &service, JausAddress &control_addr, unsigned char access_control, unsigned char authority);
-		void pFeedbackTimerHandler(const ros::TimerEvent& event);
 		void pSendFeedback();
 
-	  private:
+	private:
 		Slave(const Slave& other);
 	};
 
