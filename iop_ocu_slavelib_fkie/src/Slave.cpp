@@ -91,7 +91,7 @@ AccessControlClient_ReceiveFSM *Slave::pGetAccesscontrolClient()
 			p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 			p_accesscontrol_client->add_reply_handler(&Slave::pAccessControlClientReplyHandler, this);
 		} else {
-			ROS_INFO_NAMED("Slave", "no AccessControlClient found! Please include its plugin first (in the list), if you needs one!");
+			ROS_WARN_ONCE_NAMED("Slave", "no AccessControlClient found! Please include its plugin first (in the list), if you needs one!");
 		}
 	}
 	return p_accesscontrol_client;
@@ -106,7 +106,7 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 		if (management_srv != NULL) {
 			p_management_client = management_srv->pManagementClient_ReceiveFSM;
 		} else {
-			ROS_INFO_NAMED("Slave", "no management service available! Please include its plugin first (in the list), if you needs one!");
+			ROS_WARN_ONCE_NAMED("Slave", "no management service available! Please include its plugin first (in the list), if you needs one!");
 		}
 		// set callbacks
 		if (p_management_client != 0) {
