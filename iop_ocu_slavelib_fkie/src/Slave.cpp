@@ -238,8 +238,14 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 				case Component::ACCESS_CONTROL_REQUEST:
 					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_REQUEST to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 					// send request access
-					cmp->set_authority(it->second.second);
-					request_access(addr, it->second.second);
+					if (pGetAccesscontrolClient() != 0) {
+						cmp->set_authority(it->second.second);
+						request_access(addr, it->second.second);
+					} else {
+						ROS_WARN_NAMED("Slave", "no acces control available -> set to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+						cmp->set_state(Component::ACCESS_STATE_MONITORING);
+						pApplyToService(addr, it->second.first);
+					}
 					break;
 				}
 			}
