@@ -29,19 +29,13 @@
     </message_set>
     <internal_events_set/>
     <protocol_behavior>
-        <start
-            state_machine_name="management.accessControl.events.transport.ReceiveFSM"
-            state_name="Receiving.Ready.NotControlled.StateA"/>
-        <start
-            state_machine_name="management.accessControl.events.transport.SendFSM"
-            state_name="Sending"/>
-        <state_machine
-            name="management.accessControl.events.transport.ReceiveFSM">
+        <start state_machine_name="management.accessControl.events.transport.ReceiveFSM"
+          state_name="Receiving.Ready.NotControlled"/>
+        <state_machine name="management.accessControl.events.transport.ReceiveFSM">
             <state name="Receiving" initial_state="Ready">
                 <state name="Ready" initial_state="NotControlled">
-                    <state name="NotControlled" initial_state="StateA">
-                        <state name="StateA" initial_state="Init">
-                            <state name="Standby"/>
+                    <state name="NotControlled" initial_state="Standby">
+                        <state name="Standby"/>
                             <state name="Init"/>
                             <state name="Failure"/>
                             <state name="Shutdown"/>
@@ -103,12 +97,10 @@
                                    </action>
                                 </transition>
                             </default_state>
-                        </state>
                     </state>
-                    <state name="Controlled" initial_state="StateB">
-                        <state name="StateB" initial_state="Standby">
-                            <state name="Standby"/>
-                            <state name="Ready">
+                    <state name="Controlled" initial_state="Standby">
+                          <state name="Standby"/>
+                          <state name="Ready">
                                 <exit>
                                    <action name="stopMotion"
                                    interpretation="When leaving the Ready state, stop motion on all Stabilizers."
@@ -218,9 +210,7 @@
                                    </action>
                                 </transition>
                             </default_state>
-                        </state>
                     </state>
-                    <default_state/>
                 </state>
             </state>
         </state_machine>
