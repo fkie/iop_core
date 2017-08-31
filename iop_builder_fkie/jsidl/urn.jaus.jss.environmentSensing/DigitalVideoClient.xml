@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="DigitalVideoClient" id="urn:jaus:jss:environmentSensing:DigitalVideoClient" version="1.0"
+	xmlns="urn:jaus:jsidl:1.0">
+	<description xml:space="preserve">The client for DigitalVideo service in IOP Bridge. </description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+	<references>
+		<inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="environmentSensing" id="urn:jaus:jss:environmentSensing:MessageSet"
+			version="1.0"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ReportDigitalVideoSensorCapabilities"
+				declared_type_ref="environmentSensing.informClass.ReportDigitalVideoSensorCapabilities"/>
+			<declared_message_def name="ReportDigitalVideoSensorConfiguration"
+				declared_type_ref="environmentSensing.informClass.ReportDigitalVideoSensorConfiguration"/>
+		</input_set>
+
+		<output_set>
+			<declared_message_def name="ControlDigitalVideoSensorStream"
+				declared_type_ref="environmentSensing.commandClass.ControlDigitalVideoSensorStream"/>
+			<declared_message_def name="SetDigitalVideoSensorConfiguration"
+				declared_type_ref="environmentSensing.commandClass.SetDigitalVideoSensorConfiguration"/>
+			<declared_message_def name="QueryDigitalVideoSensorConfiguration"
+				declared_type_ref="environmentSensing.queryClass.QueryDigitalVideoSensorConfiguration"/>
+			<declared_message_def name="QueryDigitalVideoSensorCapabilities"
+				declared_type_ref="environmentSensing.queryClass.QueryDigitalVideoSensorCapabilities"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="accessControlClient.EventsClient.Transport.ReceiveFSM">
+			<state name="Receiving" initial_state="Ready">
+				<state name="Ready">
+					<default_state>
+						<transition name="ReportDigitalVideoSensorCapabilities">
+							<parameter type="ReportDigitalVideoSensorCapabilities" value="msg"
+								interpretation="enveloped ReportDigitalVideoSensorCapabilities message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportDigitalVideoSensorCapabilities" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportDigitalVideoSensorConfiguration">
+							<parameter type="ReportDigitalVideoSensorConfiguration" value="msg"
+								interpretation="enveloped ReportDigitalVideoSensorConfiguration message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData"
+								interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportDigitalVideoSensorConfiguration" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+					</default_state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
+</service_def>
