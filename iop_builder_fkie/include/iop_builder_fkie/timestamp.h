@@ -39,7 +39,9 @@ public:
 		this->minutes = minutes;
 		this->seconds = seconds;
 		this->milliseconds = milliseconds;
-		ros_time.sec =  seconds + minutes * 60 + hours * 3600 + days * 86400;
+		unsigned int now_sec = ros::Time::now().sec;
+		unsigned int days_mod = now_sec - now_sec % 86400;
+		ros_time.sec =  days_mod + seconds + minutes * 60 + hours * 3600 + days * 86400;
 		ros_time.nsec = milliseconds * 1000000;
 	}
 
