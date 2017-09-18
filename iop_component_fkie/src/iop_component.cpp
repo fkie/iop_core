@@ -38,6 +38,7 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 	this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler);
 	p_class_loader = NULL;
 	p_pnh = ros::NodeHandle("~");
+	ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
 	load_plugins();
 }
 
@@ -300,11 +301,11 @@ void Component::processInternalEvent(InternalEvent *ie)
 				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
 			} else {
 				done = service_list.at(i-1).service->processTransitions(ie);
-//				if (done) {
-//					Receive* casted_ie = (Receive*) ie;
-//					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-//					std::cout << "PROCESSED: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
-//				}
+				if (done) {
+					Receive* casted_ie = (Receive*) ie;
+					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED: %s - transport_type: %d, message type: %x", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id);
+				}
 			}
 		}
 	}
@@ -315,19 +316,19 @@ void Component::processInternalEvent(InternalEvent *ie)
 				ROS_WARN("Error while cast JAUS message to right transport version, result is 0");
 			} else {
 				done = service_list.at(i-1).service->defaultTransitions(ie);
-//				if (done) {
-//					Receive* casted_ie = (Receive*) ie;
-//					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-//					std::cout << "PROCESSED DEF: " << service_list.at(i-1).uri << " - " << service_list.at(i-1).transport_type << " MSG: " << std::hex << id << std::dec << std::endl;
-//				}
+				if (done) {
+					Receive* casted_ie = (Receive*) ie;
+					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED DEFAULT: %s - transport_type: %d, message type: %x", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id);
+				}
 			}
 		}
 	}
-//	if (!done) {
-//		Receive* casted_ie = (Receive*) ie;
-//		unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-//		std::cout << "NOT PROCESSED: " << std::hex << id << std::dec << "  trans: " << ie->getName() << " source: " << ie->getSource() << std::endl;
-//	}
+	if (!done) {
+		Receive* casted_ie = (Receive*) ie;
+		unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
+		ROS_DEBUG_NAMED("InternalProcess", "NOT PROCESSED: %x, transition: %s, source: %s", id, ie->getName().c_str(), ie->getSource().c_str());
+	}
 }
 
 iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string serviceid, std::string manifest)
