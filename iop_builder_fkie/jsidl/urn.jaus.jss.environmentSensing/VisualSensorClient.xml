@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="VisualSensorClient" id="urn:jaus:jss:environmentSensing:VisualSensorClient" version="1.0"
+	xmlns="urn:jaus:jsidl:1.0">
+	<description xml:space="preserve">Client service for visual sensor</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+	<references>
+		<inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="environmentSensing" id="urn:jaus:jss:environmentSensing:MessageSet"
+			version="1.0"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ConfirmSensorConfiguration"
+				declared_type_ref="environmentSensing.commandClass.ConfirmSensorConfiguration"/>
+			<declared_message_def name="ReportSensorGeometricProperties"
+				declared_type_ref="environmentSensing.informClass.ReportSensorGeometricProperties"/>
+			<declared_message_def name="ReportVisualSensorConfiguration"
+				declared_type_ref="environmentSensing.informClass.ReportVisualSensorConfiguration"/>
+			<declared_message_def name="ReportVisualSensorCapabilities"
+				declared_type_ref="environmentSensing.informClass.ReportVisualSensorCapabilities"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="QuerySensorGeometricProperties"
+				declared_type_ref="environmentSensing.queryClass.QuerySensorGeometricProperties"/>
+			<declared_message_def name="QueryVisualSensorConfiguration"
+				declared_type_ref="environmentSensing.queryClass.QueryVisualSensorConfiguration"/>
+			<declared_message_def name="QueryVisualSensorCapabilities"
+				declared_type_ref="environmentSensing.queryClass.QueryVisualSensorCapabilities"/>
+			<declared_message_def name="SetVisualSensorConfiguration"
+				declared_type_ref="environmentSensing.commandClass.SetVisualSensorConfiguration"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="accessControlClient.EventsClient.Transport.ReceiveFSM">
+			<state name="Receiving" initial_state="Ready">
+				<state name="Ready">
+					<default_state>
+
+						<transition name="ConfirmSensorConfiguration">
+							<parameter type="ConfirmSensorConfiguration" value="msg"
+								interpretation="enveloped ConfirmSensorConfiguration message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleConfirmSensorConfiguration" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportSensorGeometricProperties">
+							<parameter type="ReportSensorGeometricProperties" value="msg"
+								interpretation="enveloped ReportSensorGeometricProperties message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportSensorGeometricProperties" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportVisualSensorConfiguration">
+							<parameter type="ReportVisualSensorConfiguration" value="msg"
+								interpretation="enveloped ReportVisualSensorConfiguration message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportVisualSensorConfiguration" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportVisualSensorCapabilities">
+							<parameter type="ReportVisualSensorCapabilities" value="msg"
+								interpretation="enveloped ReportVisualSensorCapabilities message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportVisualSensorCapabilities" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+					</default_state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
+</service_def>

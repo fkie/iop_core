@@ -22,6 +22,8 @@ add_message_files(
   Service.msg
   Subsystem.msg
   System.msg
+  VisualSensorName.msg
+  VisualSensorNames.msg
 )
 
 add_service_files(
