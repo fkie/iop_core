@@ -44,6 +44,7 @@ Slave::Slave(JausAddress own_address)
 	p_accesscontrol_client = NULL;
 	p_management_client = NULL;
 	p_try_get_management = true;
+	p_use_queries = false;
 	p_default_authority = 205;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_own_address = own_address;
@@ -58,6 +59,7 @@ Slave::Slave(const Slave& other)
 	p_accesscontrol_client = NULL;
 	p_management_client = NULL;
 	p_try_get_management = true;
+	p_use_queries = false;
 	p_default_authority = 205;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 }
@@ -142,6 +144,9 @@ void Slave::pInitRos()
 	if (!pnh.getParam("access_control", p_default_access_control)) {
 		nh.param("access_control", p_default_access_control, p_default_access_control);
 	}
+	if (!pnh.getParam("use_queries", p_use_queries)) {
+		nh.param("use_queries", p_use_queries, p_use_queries);
+	}
 	if (!pnh.getParam("only_monitor", p_only_monitor)) {
 		nh.param("only_monitor", p_only_monitor, p_only_monitor);
 	}
@@ -170,6 +175,7 @@ void Slave::pInitRos()
 	ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %d.%d.%d", control_addr.c_str(),
 			p_default_control_addr.getSubsystemID(), p_default_control_addr.getNodeID(), p_default_control_addr.getComponentID());
 	ROS_INFO_ONCE_NAMED("Slave", "	authority:	%d", p_default_authority);
+	ROS_INFO_ONCE_NAMED("Slave", "	use_queries:	%d", (int)p_use_queries);
 	ROS_INFO_ONCE_NAMED("Slave", "	only_monitor:	%d", (int)p_only_monitor);
 	ROS_INFO_ONCE_NAMED("Slave", "	subsystem_restricted:	%d", p_subsystem_restricted);
 	std::string access_control_str = "ACCESS_CONTROL_RELEASE(10)";
@@ -263,16 +269,19 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				ROS_DEBUG_NAMED("Slave", "  inform %s about access_deactivated", it->get_uri().c_str());
 				it->handler().access_deactivated(it->get_uri(), address);
 				it->set_address(address);
+				it->handler().cancel_events(it->get_uri(), address, p_use_queries);
 				break;
 			case Component::ACCESS_CONTROL_MONITOR:
 				ROS_DEBUG_NAMED("Slave", "  inform %s about enable_monitoring_only", it->get_uri().c_str());
 				it->handler().enable_monitoring_only(it->get_uri(), address);
 				it->set_address(address);
+				it->handler().create_events(it->get_uri(), address, p_use_queries);
 				break;
 			case Component::ACCESS_CONTROL_REQUEST:
 				ROS_DEBUG_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
 				it->handler().control_allowed(it->get_uri(), address, authority);
 				it->set_address(address);
+				it->handler().create_events(it->get_uri(), address, p_use_queries);
 				break;
 			}
 		}

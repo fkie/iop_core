@@ -42,6 +42,8 @@ namespace ocu
 		virtual void control_allowed(std::string service_uri, JausAddress component, unsigned char authority) = 0;
 		virtual void enable_monitoring_only(std::string service_uri, JausAddress component) = 0;
 		virtual void access_deactivated(std::string service_uri, JausAddress component) = 0;
+		virtual void create_events(std::string service_uri, JausAddress component, bool by_query=false) = 0;
+		virtual void cancel_events(std::string service_uri, JausAddress component, bool by_query=false) = 0;
 		// ____________________________
 		// === must be overridden =====
 		// ============================
