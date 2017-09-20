@@ -36,7 +36,7 @@ namespace iop {
 template <class T>
 T *ros_init(int argc, char *argv[], const std::string& ros_node_name, int subsystem, int node, int component){
     ros::init(argc, argv, ros_node_name);
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
        ros::console::notifyLoggerLevelsChanged();
     }
     // Get the parameter for component identification

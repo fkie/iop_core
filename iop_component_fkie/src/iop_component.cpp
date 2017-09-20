@@ -35,11 +35,43 @@ Component* Component::global_ptr = 0;
 Component::Component(unsigned int subsystem, unsigned short node, unsigned short component)
 {
 	global_ptr = this;
-	this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler);
-	p_class_loader = NULL;
 	p_pnh = ros::NodeHandle("~");
-	ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
-	load_plugins();
+	std::string config("nm.cfg");
+	if (p_pnh.hasParam("jaus_config")) {
+		// read configuration from private parameter
+		p_pnh.getParam("jaus_config", config);
+	} else {
+		ros::NodeHandle nh;
+		if (nh.hasParam("jaus_config")) {
+			// read configuration from namespace parameter
+			nh.getParam("jaus_config", config);
+		} else {
+			// try to detect from jaustoolset package
+			// TODO: try to detect configuration path from jaustoolset package
+		}
+	}
+	if (config.compare("nm.cfg") == 0) {
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)) != NULL) {
+			ROS_INFO("JAUS configuration file: %s, pwd: %s", config.c_str(), cwd);
+		} else {
+			ROS_INFO("JAUS configuration file: %s", config.c_str());
+		}
+	} else {
+		ROS_INFO("JAUS configuration file: %s", config.c_str());
+	}
+	this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler, config);
+	while (ros::ok() && ! jausRouter->isConnected()) {
+		ROS_INFO("Try reconnect to JAUS nodeManager...");
+		sleep(1);
+		delete this->jausRouter;
+		this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler, config);
+	}
+	if (ros::ok() && jausRouter->isConnected()) {
+		p_class_loader = NULL;
+		ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
+		load_plugins();
+	}
 }
 
 Component::~Component()

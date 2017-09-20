@@ -39,7 +39,7 @@ namespace iop
 	class IopJausRouter: public JTS::JausRouter
 	{
 	public:
-		IopJausRouter(JausAddress jausAddress, JTS::InternalEventHandler* ieHandler) : JTS::JausRouter(jausAddress, ieHandler) {}
+		IopJausRouter(JausAddress jausAddress, JTS::InternalEventHandler* ieHandler, std::string config) : JTS::JausRouter(jausAddress, ieHandler, config) {}
 		~IopJausRouter() {}
 
 		TransportType getTransportType() { return transportType; }

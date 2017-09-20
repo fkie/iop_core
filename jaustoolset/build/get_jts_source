@@ -15,6 +15,6 @@ then
 	then
 		git -C "$rootdir/jaustoolset" pull
 		touch $rootdir/.rebuild
-        fi
+	fi
 fi
 
