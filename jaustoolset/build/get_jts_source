@@ -2,20 +2,26 @@
 set -e
 run_updates=1
 rootdir="$(cd "$(dirname "$0")"; pwd)"
+git_hash="$(cat $rootdir/jts_commit)"
 export JTS_COMMON_PATH="$rootdir/jaustoolset/GUI/templates/Common"
 if [ ! -d "$rootdir/jaustoolset" ]
 then
 	mkdir -p "$rootdir/jaustoolset"
 	git clone https://github.com/fkie-forks/jaustoolset.git "$rootdir/jaustoolset"
+	echo "Use JTS commit: $git_hash"
+	git checkout $git_hash
 	touch $rootdir/.fullbuild
 elif [ "$run_updates" -eq 1 ]
 then
-    git -C "$rootdir/jaustoolset" fetch
-    result="$(git -C "$rootdir/jaustoolset" diff fkie origin/fkie)"
-    if [ ! -z "$result" ];
-    then
-	git -C "$rootdir/jaustoolset" merge
-	touch $rootdir/.rebuild
-    fi
+	echo "Current JTS commit: $(git -C $rootdir/jaustoolset rev-parse HEAD)"
+	echo "New JTS commit:     $git_hash"
+	git -C "$rootdir/jaustoolset" fetch
+	result="$(git -C "$rootdir/jaustoolset" diff $git_hash)"
+	if [ ! -z "$result" ];
+	then
+		echo "Update JTS to commit: $git_hash"
+		git -C "$rootdir/jaustoolset" checkout $git_hash
+		touch $rootdir/.rebuild
+	fi
 fi
 
