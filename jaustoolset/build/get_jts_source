@@ -10,11 +10,12 @@ then
 	touch $rootdir/.fullbuild
 elif [ "$run_updates" -eq 1 ]
 then
-	result="$(git diff @{upstream})"
-	if [ ! -z "$result" ];
-	then
-		git -C "$rootdir/jaustoolset" pull
-		touch $rootdir/.rebuild
-	fi
+    git -C "$rootdir/jaustoolset" fetch
+    result="$(git -C "$rootdir/jaustoolset" diff fkie origin/fkie)"
+    if [ ! -z "$result" ];
+    then
+	git -C "$rootdir/jaustoolset" merge
+	touch $rootdir/.rebuild
+    fi
 fi
 

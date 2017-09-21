@@ -23,6 +23,7 @@ if(NOT ${get_jts_source_result} EQUAL 0)
 endif()
 
 add_custom_target(jaustoolset ALL
+    COMMAND "build/get_jts_source"
     COMMAND "build/build_jts"
     COMMAND "build/update_cmake_config" "${CMAKE_CURRENT_SOURCE_DIR}/build/jaustoolset/GUI" "${CMAKE_CURRENT_BINARY_DIR}/output" "${CMAKE_INSTALL_PREFIX}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
