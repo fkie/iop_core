@@ -45,37 +45,6 @@
     </output_set>
   </message_set>
   <internal_events_set>
-    <event_def name="EventOccurred">
-      <description> Received when an event occurs. </description>
-      <header name="Header"/>
-      <body name="Body"/>
-      <footer name="Footer"/>
-    </event_def>
-    <event_def name="EventError">
-      <description> Received when an event error occurs. </description>
-      <header name="Header"/>
-      <body name="Body"/>
-      <footer name="Footer"/>
-    </event_def>
-    <event_def name="Timeout">
-      <description> Received when a timeout occurs. </description>
-      <header name="Header"/>
-      <body name="Body"/>
-      <footer name="Footer"/>
-    </event_def>
-    <event_def name="CommandCompleted">
-      <description> Must occur when a command event is completed. </description>
-      <header name="Header"/>
-      <body name="Body"/>
-      <footer name="Footer"/>
-    </event_def>
-    <event_def name="CommandExpired">
-      <description> Must occur when a command event does not complete within its
-        specified period of time. </description>
-      <header name="Header"/>
-      <body name="Body"/>
-      <footer name="Footer"/>
-    </event_def>
   </internal_events_set>
   <protocol_behavior is_stateless="false">
     <start state_machine_name="transport.ReceiveFSM"
@@ -109,41 +78,18 @@
           <transition name="transport.Receive">
             <parameter type="CreateEvent" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="isSupported( msg ) &amp;&amp; ! eventExists( msg, transportData )" interpretation="True if parameters are supported and the event does not already exist."/>
             <ns2:internal/>
-            <action name="createAndConfirmEventRequest" interpretation="create the event and send Confirm Event Request message">
+            <action name="createEvent" interpretation="check for condition and then create/update and send Confirm or Reject Event message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
           </transition>
           
           <transition name="transport.Receive">
-            <parameter type="CreateEvent" value="msg"/>
-            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="isSupported( msg ) &amp;&amp; eventExists( msg, transportData )" interpretation="True if parameters are supported and the event already exists."/>
-            <ns2:internal/>
-            <action name="updateAndConfirmEventRequest" interpretation="update the event and send Confirm Event Request message">
-              <argument value="msg"/>
-              <argument value="transportData"/>
-            </action>
-          </transition>
-
-          <transition name="transport.Receive">
-            <parameter type="CreateEvent" value="msg"/>
-            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="! isSupported( msg )" interpretation="True if parameters are not supported."/>
-            <ns2:internal/>
-            <action name="sendRejectEventRequest" interpretation="Send Reject Event Request message">
-              <argument value="msg"/>
-              <argument value="transportData"/>
-            </action>
-          </transition>
-
-          <transition name="transport.Receive">
             <parameter type="CreateCommandEvent" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
             <ns2:internal/>
-            <action name="sendRejectCommandEventRequest" interpretation="Send Reject Event Request message">
+            <action name="createCommandEvent" interpretation="Send Reject Event Request message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
@@ -152,21 +98,8 @@
           <transition name="transport.Receive">
             <parameter type="UpdateEvent" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="isSupported( msg ) &amp;&amp; eventExists( msg, transportData )"
-              interpretation="True if parameters are supported and if the specified event exists"/>
             <ns2:internal/>
-            <action name="updateAndConfirmEventRequest" interpretation="update the event and send Confirm Event Request message">
-              <argument value="msg"/>
-              <argument value="transportData"/>
-            </action>
-          </transition>
-
-          <transition name="transport.Receive">
-            <parameter type="UpdateEvent" value="msg"/>
-            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="! isSupported( msg ) || ! eventExists( msg, transportData )"/>
-            <ns2:internal/>
-            <action name="sendRejectEventRequest" interpretation="Send Reject Event Request message">
+            <action name="updateEvent" interpretation="check for condition and then update and send Confirm or Reject Event message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
@@ -175,48 +108,13 @@
           <transition name="transport.Receive">
             <parameter type="CancelEvent" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="! eventExists( msg, transportData )"/>
             <ns2:internal/>
-            <action name="sendRejectEventRequest" interpretation="Send Reject Event Request message">
+            <action name="cancelEvent" interpretation="check for condition and then cancel and send Confirm or Reject Event message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
           </transition>
 
-          <transition name="transport.Receive">
-            <parameter type="CancelEvent" value="msg"/>
-            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <guard condition="eventExists( msg, transportData )"/>
-            <ns2:internal/>
-            <action name="cancelAndConfirmEventRequest" interpretation="cancel the event and send Confirm Event Request message">
-              <argument value="msg"/>
-              <argument value="transportData"/>
-            </action>
-          </transition>
-
-          <transition name="EventOccurred">
-            <guard condition="eventExists()"/>
-            <ns2:internal/>
-            <action name="sendEvent" interpretation="send an event notification"
-            />
-          </transition>
-
-          <transition name="EventError">
-            <guard condition="eventExists()"/>
-            <ns2:internal/>
-            <action name="sendRejectEventRequest" interpretation="Send Reject
-              Event Request message"/>
-          </transition>
-
-          <transition name="Timeout">
-            <ns2:internal/>
-            <action name="cancelEvent" interpretation="cancel the event"/>
-            <action name="timeoutConfirmEventRequest" interpretation="Send Confirm Event
-              Request message">
-            </action>
-            <action name="stopEventTimer" interpretation="Stop evaluating the
-              recurring event for timeouts."/>
-          </transition>
         </state>
       </state>
     </state_machine>
