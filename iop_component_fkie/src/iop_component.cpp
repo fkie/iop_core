@@ -76,25 +76,16 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 
 Component::~Component()
 {
-	boost::shared_ptr<iop::PluginInterface> plugin;
-	while (!p_plugins.empty())
-	{
-		plugin = p_plugins.back();
-		p_plugins.pop_back();
-		plugin.reset();
+	std::vector<boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	for (it = p_plugins.begin(); it != p_plugins.end(); ++it) {
+		std::cout << "  delete service:" << it->get()->get_service_uri() << std::endl;
+		delete it->get()->get_service();
 	}
-
-	ServiceInfo si;
-
-	while (!service_list.empty())
-	{
-		si = service_list.back();
-		service_list.pop_back();
-		delete si.service;
-	}
-
+	p_plugins.clear();
+	service_list.clear();
 	delete p_class_loader;
 	delete jausRouter;
+	std::cout << "Shutdown component finished" << std::endl;
 }
 
 void Component::load_plugins()
@@ -291,8 +282,10 @@ void Component::shutdown_component()
 {
 	Service* service;
 
+	std::cout << "Shutdown component..." << std::endl;
 	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
+		std::cout << "  stop service: " << service_list.at(i).uri << " ..."<< std::endl;
 		service = service_list.at(i).service;
 		service->stop();
 	}

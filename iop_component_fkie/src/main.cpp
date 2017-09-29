@@ -28,14 +28,6 @@ along with this program; or you can read the full license at
 
 #include <iop_builder_fkie/ros_init.h>
 
-// Create a static signal to catch interrupts
-static DeVivo::Junior::JrSignal exit_signal;
-static void handle_exit_signal( int signum )
-{
-  exit_signal.signal();
-  ros::shutdown();
-}
-
 int main(int argc, char *argv[])
 {
 	// Instantiate the component and start it.
@@ -43,18 +35,12 @@ int main(int argc, char *argv[])
 	{
 		iop::Component* cmpt = iop::ros_init<iop::Component>(argc, argv, "iop_component_default", 126, 0x40, 81);
 
-		// Catch exit signals
-		signal( SIGINT, handle_exit_signal );
-		signal( SIGTERM, handle_exit_signal );
-		signal( SIGABRT, handle_exit_signal );
-
 		// Start the component and the services
 		cmpt->start_component();
 
 		// Wait until signaled to exit
 		//    exit_signal.wait();
 		ros::spin();
-
 		// Shutdown the component and threads
 		cmpt->shutdown_component();
 
