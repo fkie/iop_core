@@ -29,6 +29,7 @@ along with this program; or you can read the full license at
 #include <ros/ros.h>
 #include <pluginlib/class_loader.h>
 #include <class_loader/multi_library_class_loader.h>
+#include <iop_component_fkie/iop_config.h>
 #include <iop_component_fkie/iop_plugin_interface.h>
 #include "EventReceiver.h"
 #include "Transport/JausTransport.h"

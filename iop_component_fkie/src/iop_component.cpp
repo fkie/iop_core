@@ -177,7 +177,7 @@ void Component::load_plugins()
 					{
 						boost::shared_ptr<iop::PluginInterface> base_plugin = p_get_plugin_str(p_plugins[i]->get_base_service_uri(), p_plugins[i]->get_base_version_manjor(), p_plugins[i]->get_base_min_version_minor());
 						if (base_plugin != NULL) {
-							ROS_INFO("Initialize IOP-plugin for %s, with base service %s", p_plugins[i]->get_service_uri().c_str(), base_plugin->get_service_uri().c_str());
+							ROS_INFO("Initialize IOP-plugin for %s <base service: %s>", p_plugins[i]->get_service_uri().c_str(), base_plugin->get_service_uri().c_str());
 							p_plugins[i]->set_base_plugin(base_plugin.get());
 							p_plugins[i]->create_service(this->jausRouter);
 							JTS::Service* iop_service = p_plugins[i]->get_service();
@@ -268,12 +268,14 @@ void Component::start_component()
 	jausRouter->start();
 	this->start();
 
+	ROS_INFO("Start Services...");
 	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
-		ROS_INFO("Start Service: %s", service_list.at(i).uri.c_str());
+		ROS_DEBUG("Start Service: %s", service_list.at(i).uri.c_str());
 		service = service_list.at(i).service;
 		service->start();
 	}
+	ROS_INFO("Start Services...done!");
 
 }
 

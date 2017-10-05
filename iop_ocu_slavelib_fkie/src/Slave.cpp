@@ -25,6 +25,7 @@ along with this program; or you can read the full license at
 #include <iop_ocu_slavelib_fkie/common.h>
 #include <iop_component_fkie/iop_component.h>
 #include <iop_msgs_fkie/OcuCmdEntry.h>
+#include <iop_component_fkie/iop_config.h>
 
 
 using namespace urn_jaus_jss_core_AccessControlClient;
@@ -131,28 +132,10 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 
 void Slave::pInitRos()
 {
-	ros::NodeHandle nh;
-	p_pub_control_feedback = nh.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
-	ros::NodeHandle pnh("~");
+	iop::Config cfg("~Slave");
+	p_pub_control_feedback = cfg.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
 	std::string control_addr;
-	if (!pnh.getParam("control_addr", control_addr)) {
-		nh.param("control_addr", control_addr, control_addr);
-	}
-	if (!pnh.getParam("authority", p_default_authority)) {
-		nh.param("authority", p_default_authority, p_default_authority);
-	}
-	if (!pnh.getParam("access_control", p_default_access_control)) {
-		nh.param("access_control", p_default_access_control, p_default_access_control);
-	}
-	if (!pnh.getParam("use_queries", p_use_queries)) {
-		nh.param("use_queries", p_use_queries, p_use_queries);
-	}
-	if (!pnh.getParam("only_monitor", p_only_monitor)) {
-		nh.param("only_monitor", p_only_monitor, p_only_monitor);
-	}
-	if (!pnh.getParam("subsystem_restricted", p_subsystem_restricted)) {
-		nh.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
-	}
+	cfg.param("control_addr", control_addr, control_addr);
 	if (!control_addr.empty()) {
 		// try to get the address of the component specified for this slave to avoid discovering
 		std::vector<std::string> strs;
@@ -170,23 +153,19 @@ void Slave::pInitRos()
 				p_default_control_addr.setComponentID(atoi(strs[2].c_str()));
 			}
 		}
+		ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %s", control_addr.c_str(), p_default_control_addr.str().c_str());
 	}
-	ROS_INFO_ONCE_NAMED("Slave", "OCU control slave parameter:");
-	ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %d.%d.%d", control_addr.c_str(),
-			p_default_control_addr.getSubsystemID(), p_default_control_addr.getNodeID(), p_default_control_addr.getComponentID());
-	ROS_INFO_ONCE_NAMED("Slave", "	authority:	%d", p_default_authority);
-	ROS_INFO_ONCE_NAMED("Slave", "	use_queries:	%d", (int)p_use_queries);
-	ROS_INFO_ONCE_NAMED("Slave", "	only_monitor:	%d", (int)p_only_monitor);
-	ROS_INFO_ONCE_NAMED("Slave", "	subsystem_restricted:	%d", p_subsystem_restricted);
-	std::string access_control_str = "ACCESS_CONTROL_RELEASE(10)";
-	if (p_default_access_control == 11) {
-		access_control_str = "ACCESS_CONTROL_MONITOR(11)";
-	} else if (p_default_access_control == 12) {
-		access_control_str = "ACCESS_CONTROL_REQUEST(12)";
-	}
-	ROS_INFO_ONCE_NAMED("Slave", "	access_control: %s", access_control_str.c_str());
+	cfg.param("authority", p_default_authority, p_default_authority);
+	std::map<int, std::string> access_control_map;
+	access_control_map[10] = "ACCESS_CONTROL_RELEASE";
+	access_control_map[11] = "ACCESS_CONTROL_MONITOR";
+	access_control_map[12] = "ACCESS_CONTROL_REQUEST";
+	cfg.param("access_control", p_default_access_control, p_default_access_control, true, true, "", access_control_map);
+	cfg.param("use_queries", p_use_queries, p_use_queries);
+	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
+	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
 	// publish the feedback with settings
-	p_sub_control = nh.subscribe<iop_msgs_fkie::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
+	p_sub_control = cfg.subscribe<iop_msgs_fkie::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
 }
 
 void Slave::pRosControl(const iop_msgs_fkie::OcuCmd::ConstPtr& control)
@@ -248,7 +227,7 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 						cmp->set_authority(it->second.second);
 						request_access(addr, it->second.second);
 					} else {
-						ROS_WARN_NAMED("Slave", "no acces control available -> set to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+						ROS_WARN_NAMED("Slave", "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 						cmp->set_state(Component::ACCESS_STATE_MONITORING);
 						pApplyToService(addr, it->second.first);
 					}
