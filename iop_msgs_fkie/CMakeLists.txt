@@ -14,6 +14,8 @@ add_message_files(
   DigitalResourceEndpoints.msg
   Identification.msg
   JausAddress.msg
+  Measurement.msg
+  MeasurementValue.msg
   Node.msg
   OcuCmd.msg
   OcuCmdEntry.msg

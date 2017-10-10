@@ -11,4 +11,6 @@
     id="urn:jaus:jss:iop:MessageSet:EnhancedAccessControlClass" version="1.0"/>
   <declared_type_set_ref name="CostMap2DClass"
     id="urn:jaus:jss:iop:MessageSet:CostMap2DClass" version="1.0"/>
+  <declared_type_set_ref name="MeasurementClass"
+    id="urn:jaus:jss:iop:MessageSet:MeasurementClass" version="1.0"/>
 </declared_type_set>

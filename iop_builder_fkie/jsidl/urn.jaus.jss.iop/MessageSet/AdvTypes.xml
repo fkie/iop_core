@@ -57,4 +57,66 @@
         <value_enum enum_index="7" enum_const="SCP"/>
     </value_set>
   </fixed_field>
+
+  <!-- GlobalPose -->
+  <record name="GlobalPoseRec" optional="false">
+    <presence_vector field_type_unsigned="unsigned short integer"/>
+    <fixed_field name="Latitude" field_type="unsigned integer" field_units="degree" optional="true">
+      <scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Longitude" field_type="unsigned integer" field_units="degree" optional="true">
+      <scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Altitude" field_type="unsigned integer" field_units="meter" optional="true">
+      <scale_range real_lower_limit="-10000" real_upper_limit="35000" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+                      interpretation="An RMS value indicating the validity of the position data.">
+      <scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+    </fixed_field> 
+    <fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>  
+    <fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>  
+    <fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+      interpretation="An RMS value indicating the validity of the orientation data.">
+      <scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>
+  </record>
+  <!-- LocalPose -->
+  <record name="LocalPoseRec" optional="false">
+    <presence_vector field_type_unsigned="unsigned short integer"/>
+    <fixed_field name="X" field_type="unsigned integer" field_units="meter" optional="true">
+      <scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Y" field_type="unsigned integer" field_units="meter" optional="true">
+      <scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Z" field_type="unsigned integer" field_units="meter" optional="true">
+      <scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+      interpretation="An RMS value indicating the validity of the position data.">
+      <scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+    </fixed_field> 
+    <fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>
+    <fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>  
+    <fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+      <scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>  
+    <fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+      interpretation="An RMS value indicating the validity of the orientation data.">
+      <scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+    </fixed_field>
+  </record>
+
 </declared_type_set>
