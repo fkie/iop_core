@@ -4,7 +4,7 @@
 	<description xml:space="preserve">The client for DigitalVideo service in IOP Bridge. </description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
-		<inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
+		<inherits_from name="visualSensorClient" id="urn:jaus:jss:environmentSensing:VisualSensorClient" version="1.0"/>
 	</references>
 	<declared_type_set name="Types">
 		<declared_type_set_ref name="environmentSensing" id="urn:jaus:jss:environmentSensing:MessageSet"
@@ -31,8 +31,8 @@
 	</message_set>
 	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="accessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
-		<state_machine name="accessControlClient.EventsClient.Transport.ReceiveFSM">
+		<start state_machine_name="VisualSensorClient.AccessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="VisualSensorClient.AccessControlClient.EventsClient.Transport.ReceiveFSM">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready">
 					<default_state>

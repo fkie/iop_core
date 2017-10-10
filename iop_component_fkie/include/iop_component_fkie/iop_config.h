@@ -73,6 +73,18 @@ namespace iop
 		}
 
 		template <class M>
+		ros::Publisher advertise(const std::string& topic, uint32_t queue_size,
+			const ros::SubscriberStatusCallback& connect_cb,
+			const ros::SubscriberStatusCallback& disconnect_cb = ros::SubscriberStatusCallback(),
+			const ros::VoidConstPtr& tracked_object = ros::VoidConstPtr(),
+			bool latch = false)
+		{
+			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, connect_cb, disconnect_cb, tracked_object, latch);
+			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			return result;
+		}
+
+		template <class M>
 		ros::Publisher advertise_p(const std::string& topic, uint32_t queue_size, bool latch = false)
 		{
 			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, latch);

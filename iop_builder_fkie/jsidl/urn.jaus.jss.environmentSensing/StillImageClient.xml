@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="StillImageClient" id="urn:jaus:jss:environmentSensing:StillImageClient" version="1.0"
+	xmlns="urn:jaus:jsidl:1.0">
+	<description xml:space="preserve">This service provides access to the capabilities and 
+		configuration of a camera, allowing the controlling component to set the camera 
+		to a particular operational profile and to obtain images from the camera.  While 
+		this service reports each image individually, the Events service can be used 
+		to automatically report images at a specified rate thereby simulating video 
+		(such as is typically done to create an MJPEG video stream).</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+	<references>
+		<inherits_from name="visualSensorClient" id="urn:jaus:jss:environmentSensing:VisualSensorClient" version="1.0"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="environmentSensing" id="urn:jaus:jss:environmentSensing:MessageSet"
+			version="1.0"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ReportStillImageData"
+				declared_type_ref="environmentSensing.informClass.ReportStillImageData"/>
+			<declared_message_def name="ReportStillImageSensorConfiguration"
+				declared_type_ref="environmentSensing.informClass.ReportStillImageSensorConfiguration"/>
+			<declared_message_def name="ReportStillImageSensorCapabilities"
+				declared_type_ref="environmentSensing.informClass.ReportStillImageSensorCapabilities"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="SetStillImageSensorConfiguration"
+				declared_type_ref="environmentSensing.commandClass.SetStillImageSensorConfiguration"/>
+			<declared_message_def name="QueryStillImageData"
+				declared_type_ref="environmentSensing.queryClass.QueryStillImageData"/>
+			<declared_message_def name="QueryStillImageSensorConfiguration"
+				declared_type_ref="environmentSensing.queryClass.QueryStillImageSensorConfiguration"/>
+			<declared_message_def name="QueryStillImageSensorCapabilities"
+				declared_type_ref="environmentSensing.queryClass.QueryStillImageSensorCapabilities"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="VisualSensorClient.AccessControlClient.EventsClient.Transport.ReceiveFSM"
+			state_name="Receiving.Ready"/>
+		<state_machine name="VisualSensorClient.AccessControlClient.EventsClient.Transport.ReceiveFSM">
+			<state name="Receiving" initial_state="Ready">
+				<state name="Ready">
+					<default_state>
+						<transition name="ReportStillImageData">
+							<parameter type="ReportStillImageData" value="msg"
+								interpretation="enveloped ReportStillImageData message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportStillImageData" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportStillImageSensorConfiguration">
+							<parameter type="ReportStillImageSensorConfiguration" value="msg"
+								interpretation="enveloped ReportStillImageSensorConfiguration message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportStillImageSensorConfiguration" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+						<transition name="ReportStillImageSensorCapabilities">
+							<parameter type="ReportStillImageSensorCapabilities" value="msg"
+								interpretation="enveloped ReportStillImageSensorCapabilities message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="handleReportStillImageSensorCapabilities" interpretation="">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+
+					</default_state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
+</service_def>

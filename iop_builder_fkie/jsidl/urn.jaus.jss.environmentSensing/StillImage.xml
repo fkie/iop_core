@@ -37,9 +37,9 @@
 	</message_set>
 	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="StillImage.VisualSensor.AccessControl.Events.Transport.ReceiveFSM"
+		<start state_machine_name="VisualSensor.AccessControl.Events.Transport.ReceiveFSM"
 			state_name="Receiving.Ready.NotControlled"/>
-		<state_machine name="StillImage.VisualSensor.AccessControl.Events.Transport.ReceiveFSM">
+		<state_machine name="VisualSensor.AccessControl.Events.Transport.ReceiveFSM">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready" initial_state="NotControlled">
 					<state name="NotControlled">
@@ -50,9 +50,9 @@
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageSensorCapabilities"
 									interpretation="Send a ReportStillImageSensorCapabilities message">
-									<argument value=" 'ReportStillImageSensorCapabilities' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -63,9 +63,9 @@
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageSensorConfiguration"
 									interpretation="Send a ReportStillImageSensorConfiguration message">
-									<argument value=" 'ReportStillImageSensorConfiguration' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -75,14 +75,14 @@
 									interpretation="enveloped QueryStillImageData message"/>
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
-								<guard condition="isCoordinateTransformSupported( )"
+								<guard condition="isCoordinateTransformSupported( msg )"
 									interpretation="True if the service supports coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageData"
 									interpretation="Send a ReportStillImageData message using 
 									the requested coordinate system">
-									<argument value=" 'ReportStillImageData' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -92,14 +92,14 @@
 									interpretation="enveloped QueryStillImageData message"/>
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
-								<guard condition="! isCoordinateTransformSupported( )"
+								<guard condition="! isCoordinateTransformSupported( msg )"
 									interpretation="True if the service does not support 
 									coordinate system transformations for data reports."/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageDataInNativeSystem"
 									interpretation="Send a ReportStillImageData message in 
 									native coordinate system">
-									<argument value=" 'ReportStillImageData' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -117,15 +117,16 @@
 									transition is received from the client that is in control 
 									of this service."/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendConfirmSensorConfiguration"
 									interpretation="Send sendConfirmSensorConfiguration message">
-									<argument value=" 'ConfirmSensorConfiguration' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 								<action name="updateStillImageSensorConfiguration"
-									interpretation="Update the sensor user controllable 
-									configuration parameters according to the ones specified."
-								/>
+									interpretation="Update the sensor user controllable
+									configuration parameters according to the ones specified.">
+									<argument value="msg"/>
+								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
@@ -134,9 +135,9 @@
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageSensorCapabilities"
 									interpretation="Send a ReportStillImageSensorCapabilities message">
-									<argument value=" 'ReportStillImageSensorCapabilities' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -147,9 +148,9 @@
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageSensorConfiguration"
 									interpretation="Send a ReportStillImageSensorConfiguration message">
-									<argument value=" 'ReportStillImageSensorConfiguration' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -159,14 +160,14 @@
 									interpretation="enveloped QueryStillImageData message"/>
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
-								<guard condition="isCoordinateTransformSupported( )"
+								<guard condition="isCoordinateTransformSupported( msg )"
 									interpretation="True if the service supports coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageData"
 									interpretation="Send a ReportStillImageData message using 
 									the requested coordinate system">
-									<argument value=" 'ReportStillImageData' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
@@ -176,14 +177,14 @@
 									interpretation="enveloped QueryStillImageData message"/>
 								<parameter type="Receive.Body.ReceiveRec" value="transportData"
 									interpretation="transport data"/>
-								<guard condition="! isCoordinateTransformSupported( )"
+								<guard condition="! isCoordinateTransformSupported( msg )"
 									interpretation="True if the service does not support 
 									coordinate system transformations for data reports."/>
 								<simple/>
-								<action name="accessControl.events.transport.Send"
+								<action name="sendReportStillImageDataInNativeSystem"
 									interpretation="Send a ReportStillImageData message 
 									in native coordinate system">
-									<argument value=" 'ReportStillImageData' "/>
+									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
