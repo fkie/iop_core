@@ -11,7 +11,7 @@ In the second case the ROS/IOP-Bridge components are used on the OCU side to pro
 ![](images/iop-bridge-case2.png)
 
 ### Component structure
-As an example we look at the JAUS PrimitiveDriver component. This component is located in `urn.jaus.jss.mobility/iop_primitive_driver_fkie` and implemnents the translation of `SetWrenchEffort` and `ReportWrenchEffort` to ROS messages:
+As an example we look at the PrimitiveDriver service plugin. This component is located in [iop_mobility](https://github.com/fkie/iop_jaus_mobility) and implemnents the translation of `SetWrenchEffort` and `ReportWrenchEffort` to ROS messages:
 
 ![](images/iop-bridge-component.png)
 
