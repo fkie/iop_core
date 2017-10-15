@@ -10,7 +10,7 @@ Contains the plugin interface for all IOP services. The services which implement
 
 ## iop_ocu_slavelib_fkie
 A helper library for ROS/IOP-Bridge OCU nodes. This library combines the IOP client services (AccessControlClient, DiscoveryClient and ManagementClient) and listen to the command of the master (ocu_rqt_access_control_fkie) to synchronize the access of multiple OCU client to robot services.
-Each OCU client needs to implement `SlaveHandlerInterface` interface class.
+Each OCU client needs to implement `SlaveHandlerInterface` interface class. All client plugins use the functionality of the same Slave instance.
 
 #### Parameter:
 
