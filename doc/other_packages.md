@@ -14,9 +14,17 @@ _git clone https://github.com/fkie/iop_core_
     - iop_management_fkie
     - iop_transport_fkie
 
+- **manipulator**: _urn.jaus.jss.manipulator-v2.0_ - services
+    - _git clone https://github.com/fkie/iop_jaus_manipulator
+    - iop_manipulator_specification_service_fkie
+    - iop_pantilt_joint_position_driver_fkie
+    - iop_primitive_endeffector_fkie
+    - iop_primitive_manipulator_fkie
+
 - **mobility**: _urn.jaus.jss.mobility_ - services
     - _git clone https://github.com/fkie/iop_jaus_mobility_
     - iop_global_pose_sensor_fkie
+    - iop_global_waypoint_driver_fkie
     - iop_local_pose_sensor_fkie
     - iop_primitive_driver_fkie
 
@@ -24,6 +32,8 @@ _git clone https://github.com/fkie/iop_core_
     - _git clone https://github.com/fkie/iop_jaus_sensing_
     - iop_digital_video_fkie
     - iop_range_sensor_fkie
+    - iop_still_image_fkie
+    - iop_visual_sensor_fkie:
 
 
 ## Repositories with packages implementing the **clients** for SEA JAUS Services
