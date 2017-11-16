@@ -9,7 +9,7 @@ then
 	mkdir -p "$rootdir/jaustoolset"
 	git clone https://github.com/fkie-forks/jaustoolset.git "$rootdir/jaustoolset"
 	echo "Use JTS commit: $git_hash"
-	git checkout $git_hash
+	git -C "$rootdir/jaustoolset" checkout $git_hash
 	touch $rootdir/.fullbuild
 elif [ "$run_updates" -eq 1 ]
 then
