@@ -102,16 +102,27 @@ void Component::load_plugins()
 	if (!v.valid()) {
 		throw std::logic_error("~service parameter seems to be invalid!");
 	}
+	bool has_range_sensor_service = false;
+	bool has_visual_sensor_service = false;
 	ROS_INFO("Load IOP plugin services specified by ~services parameter:");
 	for(int i = 0; i < v.size(); i++) {
 		if (v[i].getType() == XmlRpc::XmlRpcValue::TypeStruct) {
 			for(XmlRpc::XmlRpcValue::ValueStruct::iterator iterator = v[i].begin(); iterator != v[i].end(); iterator++) {
 				std::string package = iterator->first;
 				std::string service = iterator->second;
+				if (service.compare("RangeSensor") == 0 or service.compare("RangeSensorClient") == 0) {
+					has_range_sensor_service = true;
+				}
+				if (service.compare("VisualSensor") == 0 or service.compare("VisualSensorClient") == 0) {
+					has_visual_sensor_service = true;
+				}
 				service_package_list[service] = package;
 				plugin_names.push_back(service);
 			}
 		}
+	}
+	if (has_range_sensor_service & has_visual_sensor_service) {
+		throw std::logic_error("You can not use RangeSensor{Client} and VisualSensor{Client} in the same component, since they use the same GeometricProperties message type!");
 	}
 	// determine paths for xml files with plugin description
 	std::vector<std::string> p_xml_paths;
