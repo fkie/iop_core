@@ -61,6 +61,7 @@ namespace iop
 			std::string inherits_from;  //  <inherits_from id<=
 			unsigned char inherits_from_version_manjor;  //  <inherits_from version<=
 			unsigned char inherits_from_min_version_minor;  //  <inherits_from version<=
+			std::vector<std::string> depend; // <depend id<=
 		};
 
 		// ============================
@@ -110,6 +111,7 @@ namespace iop
 		void set_base_plugin(PluginInterface *base_plugin) { p_base_plugin = base_plugin; }
 		/** Returns the id of the based JTS service or an empty string if not defined. */
 		const std::string get_base_service_uri() { return p_service_info.inherits_from; }
+		std::vector<std::string> get_depends() { return p_service_info.depend; }
 		unsigned char get_base_version_manjor() { return p_service_info.inherits_from_version_manjor; }
 		unsigned char get_base_min_version_minor() { return p_service_info.inherits_from_min_version_minor; }
 		/** Returns the base plugin or NULL if not defined. */
@@ -134,7 +136,8 @@ namespace iop
 			}
 			return result;
 		}
-
+		// this variable is used from outside while initialization
+		std::string error_message;
 	protected:
 		PluginInterface() { p_base_plugin = NULL; }
 		PluginInterface *p_base_plugin;

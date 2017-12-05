@@ -92,6 +92,7 @@ namespace iop
 		void load_plugins();
 		iop::PluginInterface::ServiceInfo p_read_service_info(std::string serviceid, std::string manifest);
 		boost::shared_ptr<iop::PluginInterface> p_get_plugin_str(const std::string service_uri, unsigned char major_version=1, unsigned char min_minor_version=0);
+		void p_check_depends(const std::vector<std::string> depends);
 
 	};
 };

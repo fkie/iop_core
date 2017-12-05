@@ -189,6 +189,7 @@ void Component::load_plugins()
 						boost::shared_ptr<iop::PluginInterface> base_plugin = p_get_plugin_str(p_plugins[i]->get_base_service_uri(), p_plugins[i]->get_base_version_manjor(), p_plugins[i]->get_base_min_version_minor());
 						if (base_plugin != NULL) {
 							ROS_INFO("Initialize IOP-plugin for %s <base service: %s>", p_plugins[i]->get_service_uri().c_str(), base_plugin->get_service_uri().c_str());
+							p_check_depends(p_plugins[i]->get_depends());
 							p_plugins[i]->set_base_plugin(base_plugin.get());
 							p_plugins[i]->create_service(this->jausRouter);
 							JTS::Service* iop_service = p_plugins[i]->get_service();
@@ -201,12 +202,20 @@ void Component::load_plugins()
 							if (p_plugins[i]->is_discovery_client()) {
 								discovery_client = p_plugins[i];
 							}
+							p_plugins[i]->error_message = "";
+						} else {
+							p_plugins[i]->error_message = "Can not initialize plugin for " +
+									std::string(p_plugins[i]->get_service_name().c_str()) +
+									". Plugin for base service " +
+									std::string(p_plugins[i]->get_base_service_uri().c_str()) + " not found!";
 						}
 					} catch (std::runtime_error &rex){
 						throw rex;
 					} catch (std::logic_error &no_plugin){
 						// The needed plugin is still not available, perhaps in the next iteration.
 						// The component stops if one_initialized was not set to true.
+						p_plugins[i]->error_message = "Can not initialize plugin for " +
+								std::string(p_plugins[i]->get_service_name().c_str()) + ": " + no_plugin.what();
 					}
 				}
 			}
@@ -220,10 +229,7 @@ void Component::load_plugins()
 	for (unsigned int i = 0; i < p_plugins.size(); ++i)
 	{
 		if (p_plugins[i]->get_service() == NULL) {
-			throw std::runtime_error("Can not initialize plugin for " +
-					std::string(p_plugins[i]->get_service_name().c_str()) +
-					". Plugin for base service " +
-					std::string(p_plugins[i]->get_base_service_uri().c_str()) + " not found!");
+			throw std::runtime_error(p_plugins[i]->error_message);
 		}
 	}
 	ROS_INFO("... plugin loading complete!");
@@ -269,6 +275,25 @@ boost::shared_ptr<iop::PluginInterface> Component::p_get_plugin_str(const std::s
 		}
 	}
 	throw std::logic_error("plugin is not available");
+}
+
+void Component::p_check_depends(const std::vector<std::string> depends)
+{
+	for (unsigned int d = 0; d < depends.size(); ++d) {
+		std::string service_uri = depends[d];
+		bool found = false;
+		for (unsigned int i = 0; i < p_plugins.size(); ++i)
+		{
+			std::string suri = std::string(p_plugins[i]->get_service_uri());
+			if (suri.compare(service_uri) == 0
+					&& p_plugins[i]->get_service() != NULL) {
+				found = true;
+			}
+		}
+		if (!found) {
+			throw std::logic_error("required plugin with " + service_uri + " not available");
+		}
+	}
 }
 
 
@@ -469,9 +494,9 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 						if (inherits_from->Attribute("id") != NULL)
 						{
 							result.inherits_from = inherits_from->Attribute("id");
-							ROS_DEBUG("XML file specifies required service type = %s", result.inherits_from.c_str());
+							ROS_DEBUG("XML file specifies inherits_from type = %s", result.inherits_from.c_str());
 						} else {
-							ROS_DEBUG("XML file has no type in required_service tag.");
+							ROS_DEBUG("XML file has no id in inherits_from tag.");
 						}
 						// get version
 						result.inherits_from_version_manjor = 1;
@@ -488,11 +513,24 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 								result.inherits_from_version_manjor = p1;
 								ROS_DEBUG("XML file specifies only major min version = %d", p1);
 							} else {
-								ROS_DEBUG("XML file has for required service wrong version attribute value = %s", version.c_str());
+								ROS_DEBUG("XML file has for inherits_from wrong version attribute value = %s", version.c_str());
 							}
 						} else {
-							ROS_DEBUG("XML file has no min version for required service id %s, assume 1.0", result.inherits_from.c_str());
+							ROS_DEBUG("XML file has no min version for inherits_from id %s, assume 1.0", result.inherits_from.c_str());
 						}
+					}
+					// get plugins depend on, format: <depend id="urn:jaus:jss:core:Transport"/>
+					TiXmlElement* depend_on = service_element->FirstChildElement("depend");
+					while (depend_on) {
+						if (depend_on->Attribute("id") != NULL)
+						{
+							std::string depend_id = depend_on->Attribute("id");
+							result.depend.push_back(depend_id);
+							ROS_DEBUG("XML file specifies depend service type = %s", depend_id.c_str());
+						} else {
+							ROS_DEBUG("XML file has no id in depend tag.");
+						}
+						depend_on = depend_on->NextSiblingElement("depend");
 					}
 					p_cache_service_info[serviceid] = result;
 				} else {
