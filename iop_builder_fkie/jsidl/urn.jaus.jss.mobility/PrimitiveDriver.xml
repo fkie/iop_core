@@ -33,6 +33,9 @@
                          <state name="Standby"/>
                     </state>
                     <state name="Controlled" initial_state="Standby">
+                          <exit>
+                              <action name="stopMotion" interpretation="Stop motion of the pan tilt unit."/>
+                          </exit>
                           <state name="Standby"/>
                           <state name="Ready">
                               <transition name="management.accessControl.events.transport.Receive">

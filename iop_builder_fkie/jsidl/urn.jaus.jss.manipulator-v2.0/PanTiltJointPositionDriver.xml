@@ -56,12 +56,11 @@
 
           </state>
           <state name="Controlled" initial_state="Standby" interpretation="redefine state in order to extend">
+              <exit>
+                  <action name="stopMotion" interpretation="Stop motion of the pan tilt unit."/>
+              </exit>
               <state name="Standby"/>
               <state name="Ready">
-                <exit>
-                  <action name="stopMotion"
-                    interpretation="Stop motion of the pan tilt unit."/>
-                </exit>
                 <transition name="management.accessControl.events.transport.Receive">
                   <parameter type="SetPanTiltJointPositions" value="msg"
                     interpretation="enveloped set Pan Tilt joint efforts message"/>
