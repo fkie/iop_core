@@ -1,0 +1,53 @@
+<?xml version="1.1" encoding="UTF-8"?> <?oxygen RNGSchema="../../schema/JSIDL/jsidl.rnc" type="compact"?>
+<service_def name="PanTiltMotionProfileServiceClient"
+  id="urn:jaus:jss:manipulator:PanTiltMotionProfileServiceClient" version="2.0"
+  xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+  <description xml:space="preserve">
+    Client/Consumer Service for the Pan Tilt Motion Profile Service.
+  </description>
+  <assumptions> Messages may be delayed, lost, or reordered. </assumptions>
+  <references>
+    <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"
+    />
+  </references>
+  <declared_type_set name="types">
+    <declared_type_set_ref name="manipulator" id="urn:jaus:jss:manipulator:MessageSet"
+      version="2.0"/>
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportPanTiltMotionProfile"
+        declared_type_ref="manipulator.informClass.ReportPanTiltMotionProfile"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="QueryPanTiltMotionProfile"
+        declared_type_ref="manipulator.queryClass.QueryPanTiltMotionProfile"/>
+      <declared_message_def name="SetPanTiltMotionProfile"
+        declared_type_ref="manipulator.commandClass.SetPanTiltMotionProfile"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior is_stateless="false">
+    <start state_machine_name="accessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="accessControlClient.EventsClient.Transport.ReceiveFSM">
+      <state name="Receiving" initial_state="Ready">
+        <state name="Ready">
+          <default_state>
+
+            <transition name="ReportPanTiltMotionProfile">
+              <parameter type="ReportPanTiltMotionProfile" value="msg"
+                interpretation="enveloped ReportPanTiltMotionProfile message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <simple/>
+              <action name="handleReportPanTiltMotionProfile" interpretation="">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+
+          </default_state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>
