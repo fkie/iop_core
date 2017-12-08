@@ -305,6 +305,11 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 		authority = cmp->get_authority();
 		if (cmp->set_state(code)) {
 			switch (code) {
+			case Component::ACCESS_STATE_NOT_AVAILABLE:
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->set_current_client(address);
+				}
+				break;
 			case Component::ACCESS_STATE_NOT_CONTROLLED:
 			case Component::ACCESS_STATE_CONTROL_RELEASED:
 			case Component::ACCESS_STATE_TIMEOUT:
