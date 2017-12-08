@@ -123,6 +123,22 @@
                 <argument value="transportData"/>
               </action>
             </transition>
+ 
+            <transition name="events.transport.Receive">
+              <parameter type="ReleaseControl" value="msg" interpretation="enveloped release control message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <guard condition="! isControlAvailable() &amp;&amp; ! isEmergencyClient( transportData )"
+                interpretation="True if this service or
+                services related to this service are engaged in other operations that would
+                prevent this service from performing its actions."/>
+              <ns2:internal/>
+              <action name="sendRejectControl" interpretation="Send a Reject component control
+                message with the specified response code (NOT_AVAILABLE:1) to requesting client">
+                <argument value="msg"/>
+                <argument value=" 'NOT_AVAILABLE' "/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
 
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped release control message"/>
@@ -260,7 +276,7 @@
                 <argument value="msg"/>
               </action>
             </transition>
-
+<!-- 
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped request control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
@@ -274,7 +290,7 @@
                 <argument value="transportData"/>
               </action>
             </transition>
-
+ -->
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped release control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>

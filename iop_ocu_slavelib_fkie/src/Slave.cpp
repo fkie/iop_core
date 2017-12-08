@@ -311,12 +311,16 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 				// access released -> stop control
 				// the services are informed before release access was send
 				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->set_current_client(JausAddress(0));
+				}
 				break;
 			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 				// pass authority to the handler
 				pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
 				if (pGetManagementClient() != 0) {
 					pGetManagementClient()->resume(address);
+					pGetManagementClient()->set_current_client(address);
 				}
 				break;
 			}
