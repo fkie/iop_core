@@ -64,11 +64,15 @@
                     </state>
 
                     <state name="Controlled" initial_state="Standby">
-                          <state name="Standby"/>
+                          <exit>
+                             <action name="resetTravelSpeed" interpretation="When leaving the Ready state, reset the travel speed to zero."/>
+                          </exit>
+                          <state name="Standby">
+                            <entry>
+                              <action name="resetTravelSpeed" interpretation="reset speed."/>
+                            </entry>
+                          </state>
                           <state name="Ready">
-                              <exit>
-                                <action name="resetTravelSpeed" interpretation="When leaving the Ready state, reset the travel speed to zero."/>
-                              </exit>
                               <transition name="management.accessControl.events.transport.Receive">
                                   <parameter type="SetTravelSpeed" value="msg" interpretation="enveloped set travel speed message"/>
                                   <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
