@@ -1,11 +1,15 @@
 #!/bin/bash
-set -e
 run_updates=1
+if [ $JTS_UPDATE ]
+then
+run_updates=$JTS_UPDATE
+fi
 rootdir="$(cd "$(dirname "$0")"; pwd)"
 git_hash="$(cat $rootdir/jts_commit)"
 export JTS_COMMON_PATH="$rootdir/jaustoolset/GUI/templates/Common"
 if [ ! -d "$rootdir/jaustoolset" ]
 then
+	set -e
 	mkdir -p "$rootdir/jaustoolset"
 	git clone https://github.com/fkie-forks/jaustoolset.git "$rootdir/jaustoolset"
 	echo "Use JTS commit: $git_hash"
