@@ -367,7 +367,7 @@ void Component::processInternalEvent(InternalEvent *ie)
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED: %s - transport_type: %d, message type: %x", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id);
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED: %s - transport_type: %d, message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id, casted_ie->getName().c_str());
 				}
 			}
 		}
@@ -382,7 +382,7 @@ void Component::processInternalEvent(InternalEvent *ie)
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED DEFAULT: %s - transport_type: %d, message type: %x", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id);
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED DEFAULT: %s - transport_type: %d, message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id, casted_ie->getName().c_str());
 				}
 			}
 		}
