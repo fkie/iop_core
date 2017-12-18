@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-model href="../../schema/AS5684/jaus_service_interface_definition_language.rnc" type="application/relax-ng-compact-syntax"?>
+<service_def version="1.1" id="urn:jaus:jss:iop:PathReporter" name="PathReporter" xmlns="urn:jaus:jsidl:1.0">
+	<description xml:space="preserve">
+		The Path Reporter Service provides a mechanism for reporting the past and/or future expected path of the vehicle.  
+		The service is used in cooperation with Global Waypoint Driver, Local Waypoint Driver, Global Waypoint List Driver, 
+		Local Waypoint List Driver, Global Pose Sensor and/or Local Pose Sensor.  Clients may limit the amount of data 
+		reported by the service by specifying a maximum number of data points, maximum time, maximum distance, and/or path 
+		resolution, within the limits of the implementation’s reported capabilities.
+		
+		Note that the historical path is assumed to be represented by a FIFO queue; as a result, the Report Path message 
+		may be limited by the storage capabilities of the underlying implementation to reporting only the most recent data, 
+		e.g. the points nearest the current position.  Older data may be discarded as needed by the implementation.  Such 
+		limits should be specified in the ReportPathReporterCapabilities message.
+		
+		Also note that the future path may be valid only at that instance in time.  It represents the current planned path, 
+		at the given resolution.  However, some waypoint drivers may frequently update the planned path, based on new 
+		information about the environment.  As a result, planned path information may quickly become stale.  Furthermore, 
+		the planned path represents the actual path the vehicle expects to follow.  It does not replace the Waypoint 
+		Driver’s Query Waypoint messages.  Rather, it provides additional information about how the vehicle plans to 
+		achieve the desired waypoints. 
+	</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+	<references>
+		<inherits_from name="events" id="urn:jaus:jss:core:Events" version="1.1"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="QueryPathReporterCapabilities" declared_type_ref="core.PathReporterClass.QueryPathReporterCapabilities"/>
+			<declared_message_def name="QueryPath" declared_type_ref="core.PathReporterClass.QueryPath"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="ReportPathReporterCapabilities" declared_type_ref="core.PathReporterClass.ReportPathReporterCapabilities"/>
+			<declared_message_def name="ReportPath" declared_type_ref="core.PathReporterClass.ReportPath"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="Events.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="Events.Transport.ReceiveFSM">
+			<state name="Receiving" initial_state="Ready">
+				<state name="Ready">	
+					<default_state>
+						<transition name="events.transport.Receive">
+							<parameter type="QueryPathReporterCapabilities" value="msg" interpretation="enveloped query message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<simple/>
+							<action name="sendReportPathReporterCapabilities" interpretation="Send a PathReporterCapabilities message">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>	
+						<transition name="events.transport.Receive">
+							<parameter type="QueryPath" value="msg" interpretation="enveloped query message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+							<guard condition="isSupported( msg )" interpretation="Underlying implementation supports the 
+								PathType specified in the incoming QueryPath message"/>
+							<simple/>
+							<action name="sendReportPath" interpretation="Send a ReportPath message">
+								<argument value="msg"/>
+								<argument value="transportData"/>
+							</action>
+						</transition>
+					</default_state>
+				</state>
+			</state>
+		</state_machine>	
+	</protocol_behavior>
+</service_def>

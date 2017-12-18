@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="PathReporterClass"
+	id="urn:jaus:jss:iop:MessageSet:PathReporterClass" version="1.1">
+	<declared_type_set_ref name="basicTypes"
+		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0" />
+	<declared_type_set_ref name="advTypes"
+		id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0" />
+
+	<message_def is_command="false" message_id="DEF0" name="QueryPathReporterCapabilities">
+		<description xml:space="preserve">This message is used to query the capabilities of the implementation.</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body"/>
+		<footer name="Footer"/>
+	</message_def>
+
+	<message_def is_command="false" message_id="DEF1" name="QueryPath">
+		<description xml:space="preserve">This message is used to query a path.  If the specified PathType is not 
+			supported, as given in the ReportPathReporterCapabilities message, no response will be generated.  
+			If multiple constraints are specified, the service will return the path data based on the most 
+			stringent constraints, i.e. the smallest number of data points.</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body">
+			<record name="QueryPathRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned byte"/>
+				<fixed_field name="PathType" field_type="unsigned byte" field_units="one" optional="false" 
+					interpretation="Enumeration for desired path type.">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="HistoricalGlobalPath"/>
+						<value_enum enum_index="1" enum_const="HistoricalLocalPath"/>
+						<value_enum enum_index="2" enum_const="PlannedGlobalPath"/>
+						<value_enum enum_index="3" enum_const="PlannedLocalPath"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="TargetResolution" field_type="unsigned short integer" field_units="meter" optional="true" 
+					interpretation="The desired distance between reported path points.">
+					<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
+				</fixed_field>
+				<fixed_field name="MaximumPoints" field_type="unsigned short integer" field_units="one" optional="true" 
+					interpretation="The maximum number of elements for the list of points to be returned."/>
+				<fixed_field name="MaximumDistance" field_type="unsigned integer" field_units="meter" optional="true" 
+					interpretation="The maximum planned distance for the list of points to be returned"/>
+				<fixed_field name="MaximumTime" field_type="unsigned integer" field_units="second" optional="true" 
+					interpretation="The maximum planned time for the list of points to be returned."/>
+			</record>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+
+	<message_def is_command="false" message_id="DEF2" name="ReportPathReporterCapabilities">
+		<description xml:space="preserve">This message is used to report the capabilities for the service.  
+			This implementation may support one or more PathTypes, and specify further limitations on the 
+			constraints used in the QueryPath message.  For example, an implementation may specify that 
+			it only supports a certain maximum number of points, and/or a fixed target resolution.</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body">
+			<list name="PathReporterCapabilitiesList" optional="false">
+				<count_field field_type_unsigned="unsigned byte"/>
+				<record name="PathReporterCapabilitiesRec" optional="false">
+					<presence_vector field_type_unsigned="unsigned byte"/>
+					<fixed_field name="PathType" field_type="unsigned byte" field_units="one" optional="false" 
+						interpretation="Enumeration for desired path type.">
+						<value_set offset_to_lower_limit="false">
+							<value_enum enum_index="0" enum_const="HistoricalGlobalPath"/>
+							<value_enum enum_index="1" enum_const="HistoricalLocalPath"/>
+							<value_enum enum_index="2" enum_const="PlannedGlobalPath"/>
+							<value_enum enum_index="3" enum_const="PlannedLocalPath"/>
+						</value_set>
+					</fixed_field>
+					<fixed_field name="MinTargetResolution" field_type="unsigned short integer" field_units="meter" optional="true" 
+						interpretation="The minimum supported distance between reported path points.  For implementations 
+						that do not support interpolation, the Min and Max should be identical.">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
+					</fixed_field>
+					<fixed_field name="MaxTargetResolution" field_type="unsigned short integer" field_units="meter" optional="true" 
+						interpretation="The maximum supported distance between reported path points.  For implementations 
+						that do not support interpolation, the Min and Max should be identical.">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
+					</fixed_field>
+					<fixed_field name="MaximumPoints" field_type="unsigned short integer" field_units="one" optional="true" 
+						interpretation="The maximum supported element count for the list of points to be returned."/>
+					<fixed_field name="MaximumDistance" field_type="unsigned integer" field_units="meter" optional="true" 
+						interpretation="The maximum supported distance for the list of points to be returned."/>
+					<fixed_field name="MaximumTime" field_type="unsigned integer" field_units="second" optional="true" 
+						interpretation="The maximum supported time for the list of points to be returned."/>
+				</record>
+			</list>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+
+	<message_def is_command="false" message_id="DEF3" name="ReportPath">
+		<description xml:space="preserve">This message is used to report a path.  Implementations 
+			should attempt to satisfy all constraints specified in the QueryPath message.</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body">
+			<variant name="PathVar" optional="false">
+				<vtag_field field_type_unsigned="unsigned byte" min_count="0" max_count="3"/>
+				<list name="HistoricalGlobalPath" optional="false">
+					<count_field field_type_unsigned="unsigned short integer"/>
+					<record name="GlobalPoseRec" optional="false">
+						<presence_vector field_type_unsigned="unsigned short integer"/>
+						<fixed_field name="Latitude" field_type="unsigned integer" field_units="degree" optional="true">
+							<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Longitude" field_type="unsigned integer" field_units="degree" optional="true">
+							<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Altitude" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-10000" real_upper_limit="35000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+							interpretation="An RMS value indicating the validity of the position data.">
+							<scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+						</fixed_field> 
+						<fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+							interpretation="An RMS value indicating the validity of the orientation data.">
+							<scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<bit_field name="TimeStamp" field_type_unsigned="unsigned integer" optional="true">
+							<sub_field name="Milliseconds">
+								<bit_range from_index="0" to_index="9"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="999"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Seconds">
+								<bit_range from_index="10" to_index="15"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Minutes">
+								<bit_range from_index="16" to_index="21"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Hour">
+								<bit_range from_index="22" to_index="26"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="23"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Day">
+								<bit_range from_index="27" to_index="31"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="1" upper_limit="31"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+						</bit_field>
+					</record>
+				</list>
+				<list name="HistoricalLocalPath" optional="false">
+					<count_field field_type_unsigned="unsigned short integer"/>
+					<record name="LocalPoseRec" optional="false">
+						<presence_vector field_type_unsigned="unsigned short integer"/>
+						<fixed_field name="X" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Y" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Z" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+							interpretation="An RMS value indicating the validity of the position data.">
+							<scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+						</fixed_field> 
+						<fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+							interpretation="An RMS value indicating the validity of the orientation data.">
+							<scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<bit_field name="TimeStamp" field_type_unsigned="unsigned integer" optional="true">
+							<sub_field name="Milliseconds">
+								<bit_range from_index="0" to_index="9"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="999"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Seconds">
+								<bit_range from_index="10" to_index="15"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Minutes">
+								<bit_range from_index="16" to_index="21"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Hour">
+								<bit_range from_index="22" to_index="26"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="23"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Day">
+								<bit_range from_index="27" to_index="31"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="1" upper_limit="31"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+						</bit_field>
+					</record>
+				</list>
+				<list name="PlannedGlobalPath" optional="false">
+					<count_field field_type_unsigned="unsigned short integer"/>
+					<record name="GlobalPoseRec" optional="false">
+						<presence_vector field_type_unsigned="unsigned short integer"/>
+						<fixed_field name="Latitude" field_type="unsigned integer" field_units="degree" optional="true">
+							<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Longitude" field_type="unsigned integer" field_units="degree" optional="true">
+							<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Altitude" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-10000" real_upper_limit="35000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+							interpretation="An RMS value indicating the validity of the position data.">
+							<scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+						</fixed_field> 
+						<fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+							interpretation="An RMS value indicating the validity of the orientation data.">
+							<scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<bit_field name="TimeStamp" field_type_unsigned="unsigned integer" optional="true">
+							<sub_field name="Milliseconds">
+								<bit_range from_index="0" to_index="9"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="999"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Seconds">
+								<bit_range from_index="10" to_index="15"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Minutes">
+								<bit_range from_index="16" to_index="21"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Hour">
+								<bit_range from_index="22" to_index="26"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="23"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Day">
+								<bit_range from_index="27" to_index="31"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="1" upper_limit="31"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+						</bit_field>
+					</record>
+				</list>
+				<list name="PlannedLocalPath" optional="false">
+					<count_field field_type_unsigned="unsigned short integer"/>
+					<record name="LocalPoseRec" optional="false">
+						<presence_vector field_type_unsigned="unsigned short integer"/>
+						<fixed_field name="X" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Y" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Z" field_type="unsigned integer" field_units="meter" optional="true">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Position_RMS" field_type="unsigned integer" field_units="meter" optional="true" 
+							interpretation="An RMS value indicating the validity of the position data.">
+							<scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+						</fixed_field> 
+						<fixed_field name="Roll" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<fixed_field name="Pitch" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Yaw" field_type="unsigned short integer" field_units="radian" optional="true">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>  
+						<fixed_field name="Attitude_RMS" field_type="unsigned short integer" field_units="radian" optional="true" 
+							interpretation="An RMS value indicating the validity of the orientation data.">
+							<scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+						</fixed_field>
+						<bit_field name="TimeStamp" field_type_unsigned="unsigned integer" optional="true">
+							<sub_field name="Milliseconds">
+								<bit_range from_index="0" to_index="9"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="999"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Seconds">
+								<bit_range from_index="10" to_index="15"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Minutes">
+								<bit_range from_index="16" to_index="21"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="59"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Hour">
+								<bit_range from_index="22" to_index="26"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="0" upper_limit="23"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+							<sub_field name="Day">
+								<bit_range from_index="27" to_index="31"/>
+								<value_set offset_to_lower_limit="false">
+									<value_range lower_limit_type="inclusive" lower_limit="1" upper_limit="31"
+										upper_limit_type="inclusive"/>
+								</value_set>
+							</sub_field>
+						</bit_field>
+					</record>
+				</list>
+			</variant>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+
+
+</declared_type_set>
