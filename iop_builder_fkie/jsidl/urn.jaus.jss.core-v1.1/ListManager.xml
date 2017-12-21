@@ -108,6 +108,7 @@
           </state>
 
           <state name="Controlled" initial_state="Standby">
+              <state name="Standby"/>
               <default_state>
                 <transition name="management.accessControl.events.transport.Receive">
                   <parameter type="QueryElement" value="msg"
