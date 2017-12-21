@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service_def name="GlobalWaypointListDriverClient"
+  id="urn:jaus:jss:mobility:GlobalWaypointListDriverClient" version="1.0"
+  xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+  <description> Client for GlobalWaypointListDriver service used in e.g. OCU. </description>
+  <assumptions>Messages may be delayed, lost or reordered.</assumptions>
+  <references>
+    <inherits_from name="listManagerClient" id="urn:jaus:jss:core:ListManagerClient" version="1.1"
+    />
+  </references>
+  <declared_type_set name="Types">
+    <declared_type_set_ref name="mobility" id="urn:jaus:jss:mobility:MessageSet"
+      version="1.0"/>
+  </declared_type_set>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportTravelSpeed"
+        declared_type_ref="mobility.informClass.ReportTravelSpeed"/>
+      <declared_message_def name="ReportGlobalWaypoint"
+        declared_type_ref="mobility.informClass.ReportGlobalWaypoint"/>
+      <declared_message_def name="ReportActiveElement"
+        declared_type_ref="mobility.informClass.ReportActiveElement"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="ExecuteList"
+        declared_type_ref="mobility.commandClass.ExecuteList"/>
+      <declared_message_def name="QueryTravelSpeed"
+        declared_type_ref="mobility.queryClass.QueryTravelSpeed"/>
+      <declared_message_def name="QueryGlobalWaypoint"
+        declared_type_ref="mobility.queryClass.QueryGlobalWaypoint"/>
+      <declared_message_def name="QueryActiveElement"
+        declared_type_ref="mobility.queryClass.QueryActiveElement"/>
+      <declared_message_def name="SetGlobalWaypoint"
+        declared_type_ref="mobility.commandClass.SetGlobalWaypoint"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior>
+    <start state_machine_name="listManagerClient.managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="listManagerClient.managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+        <state name="Receiving" initial_state="Ready">
+            <state name="Ready">
+              <default_state>
+                  <transition name="ReportTravelSpeed">
+                      <parameter type="ReportTravelSpeed" value="msg" interpretation="enveloped ReportTravelSpeed message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                      <ns1:internal/>
+                      <action name="handleReportTravelSpeed" interpretation="handle a ReportTravelSpeed message">
+                          <argument value="msg"/>
+                          <argument value="transportData"/>
+                      </action>
+                  </transition>
+
+                  <transition name="ReportGlobalWaypoint">
+                      <parameter type="ReportGlobalWaypoint" value="msg" interpretation="enveloped ReportGlobalWaypoint message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                      <ns1:internal/>
+                      <action name="handleReportGlobalWaypoint" interpretation="handle a ReportGlobalWaypoint message">
+                          <argument value="msg"/>
+                          <argument value="transportData"/>
+                      </action>
+                  </transition>
+
+                  <transition name="ReportActiveElement">
+                      <parameter type="ReportActiveElement" value="msg" interpretation="enveloped ReportActiveElement message"/>
+                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                      <ns1:internal/>
+                      <action name="handleReportActiveElement" interpretation="handle a ReportActiveElement message">
+                          <argument value="msg"/>
+                          <argument value="transportData"/>
+                      </action>
+                  </transition>
+              </default_state>
+            </state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>
