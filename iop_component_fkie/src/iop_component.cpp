@@ -150,7 +150,7 @@ void Component::load_plugins()
 		if (!found_xml)
 		{
 			ROS_ERROR("No xml with service definition for '%s' in package '%s' found!", plugin_names[i].c_str(), service_package_list[plugin_names[i]].c_str());
-			throw std::logic_error("no manifest found");
+			throw std::logic_error("No xml with service definition for '" + plugin_names[i] + "' in package '" + service_package_list[plugin_names[i]] + "' found!");
 		}
 	}
 	try
@@ -274,7 +274,7 @@ boost::shared_ptr<iop::PluginInterface> Component::p_get_plugin_str(const std::s
 			}
 		}
 	}
-	throw std::logic_error("plugin is not available");
+	throw std::logic_error("base plugin for service '" + service_uri + "' not found");
 }
 
 void Component::p_check_depends(const std::vector<std::string> depends)
@@ -291,7 +291,7 @@ void Component::p_check_depends(const std::vector<std::string> depends)
 			}
 		}
 		if (!found) {
-			throw std::logic_error("required plugin with " + service_uri + " not available");
+			throw std::logic_error("required plugin for service '" + service_uri + "' not found");
 		}
 	}
 }
