@@ -249,18 +249,27 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				it->handler().access_deactivated(it->get_uri(), address);
 				it->set_address(address);
 				it->handler().cancel_events(it->get_uri(), address, p_use_queries);
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->set_current_client(JausAddress(0));
+				}
 				break;
 			case Component::ACCESS_CONTROL_MONITOR:
 				ROS_DEBUG_NAMED("Slave", "  inform %s about enable_monitoring_only", it->get_uri().c_str());
 				it->handler().enable_monitoring_only(it->get_uri(), address);
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->set_current_client(address);
+				}
 				break;
 			case Component::ACCESS_CONTROL_REQUEST:
 				ROS_DEBUG_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
 				it->handler().control_allowed(it->get_uri(), address, authority);
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->set_current_client(address);
+				}
 				break;
 			}
 		}
@@ -306,26 +315,18 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 		if (cmp->set_state(code)) {
 			switch (code) {
 			case Component::ACCESS_STATE_NOT_AVAILABLE:
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->set_current_client(address);
-				}
-				break;
 			case Component::ACCESS_STATE_NOT_CONTROLLED:
 			case Component::ACCESS_STATE_CONTROL_RELEASED:
 			case Component::ACCESS_STATE_TIMEOUT:
 				// access released -> stop control
 				// the services are informed before release access was send
 				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->set_current_client(JausAddress(0));
-				}
 				break;
 			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 				// pass authority to the handler
 				pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
 				if (pGetManagementClient() != 0) {
 					pGetManagementClient()->resume(address);
-					pGetManagementClient()->set_current_client(address);
 				}
 				break;
 			}
