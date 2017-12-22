@@ -1,5 +1,5 @@
 ## Main Repository of ROS/IOP Bridge
-Core pakages of the ROS/IOP-Bridge needed to build the bridge. For interface description of core packages see [here](doc/iop_core_packages.md). The interface description of other services is located in corresponding repository.
+Core pakages of the ROS/IOP-Bridge needed to build the bridge. For interface description of core packages see [here](iop_core_packages.md). The interface description of other services is located in corresponding repository.
 
 _git clone https://github.com/fkie/iop_core_
 
