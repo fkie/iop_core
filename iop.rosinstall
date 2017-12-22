@@ -20,6 +20,9 @@
     local-name: iop_jaus_manipulator
     uri: https://github.com/fkie/iop_jaus_manipulator
 - git:
+    local-name: iop_jaus_manipulator_clients
+    uri: https://github.com/fkie/iop_jaus_manipulator_clients
+- git:
     local-name: iop_jaus_mobility
     uri: https://github.com/fkie/iop_jaus_mobility
 - git:
