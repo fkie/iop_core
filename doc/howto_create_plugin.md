@@ -68,7 +68,7 @@ Now we can implement the functionality for the service by extending the two file
 ### Add plugin functionality
 
 Additionally we have to add the plugin functionality! We have to create a plugin class inherited from `iop::PluginInterface` which is localted at `iop_component_fkie/iop_plugin_interface.h`. The plugin class should create an instance of our new JAUS service by providing the needed parameter to it. We create two files `src/VisualSensorPlugin.h` and `src/VisualSensorPlugin.cpp` with folling content:
-####src/VisualSensorPlugin.h:
+#### src/VisualSensorPlugin.h:
 ```cpp
 #ifndef VISUALSENSORPLUGIN_H
 #define VISUALSENSORPLUGIN_H
@@ -104,7 +104,7 @@ protected:
 #endif
 ```
 
-####src/VisualSensorPlugin.cpp:
+#### src/VisualSensorPlugin.cpp:
 ```cpp
 #include <pluginlib/class_list_macros.h>
 #include "VisualSensorPlugin.h"
