@@ -41,4 +41,4 @@ The `depend` tag specifies services which should be included into the component 
 
 ### 2. Create a subclass for `iop::PluginInterface`
 
-You have to subclass the `iop::PluginInterface` and overwrite at least two methods `create_service()` and `get_service()`. The `create_service` method is used to create the JAUS service we create by our plugin. See an example in [howto create plugin]([https://github.com/fkie/iop_core/blob/master/doc/howto_create_plugin.md#add-plugin-functionality)
+You have to subclass the `iop::PluginInterface` and overwrite at least two methods `create_service()` and `get_service()`. The `create_service` method is used to create the JAUS service we create by our plugin. See an example in [howto create plugin](https://github.com/fkie/iop_core/blob/master/doc/howto_create_plugin.md#add-plugin-functionality)
