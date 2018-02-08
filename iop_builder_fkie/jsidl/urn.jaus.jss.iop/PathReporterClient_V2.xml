@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?xml-model href="../../schema/AS5684/jaus_service_interface_definition_language.rnc" type="application/relax-ng-compact-syntax"?>
-<service_def version="1.1" id="urn:jaus:jss:iop:PathReporterClient" name="PathReporterClient" xmlns="urn:jaus:jsidl:1.0">
+<service_def version="1.1" id="urn:jaus:jss:iop:PathReporterClient" name="PathReporterClient"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 	<description xml:space="preserve">
 		Client for Path Reporter Service used in e.g. an OCU.
 	</description>
@@ -9,7 +10,7 @@
 		<inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>

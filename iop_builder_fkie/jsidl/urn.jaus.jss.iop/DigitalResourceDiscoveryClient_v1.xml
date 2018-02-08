@@ -1,60 +1,61 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="DigitalResourceDiscoveryClient" id="urn:jaus:jss:iop:DigitalResourceDiscoveryClient" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
-    <description xml:space="preserve">The Digital Resource Discovery Client service provides a mechanism for SAE JAUS-based components to 
-      register their digital resources to Digital Resource Discovery. </description>
-    <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
-    <references>
-        <inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.0"/>
-        <client_of name="DigitalResourceDiscovery" id="urn:jaus:jss:iop:DigitalResourceDiscovery" version="1.0"/>
-    </references>
-    <declared_type_set name="Types">
-      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
-    </declared_type_set>
-    <message_set>
-        <input_set>
-            <declared_message_def name="ReportDigitalResourceEndpoint"
-              declared_type_ref="core.digitalResourceClass.ReportDigitalResourceEndpoint"/>
-            <declared_message_def name="ConfirmDigitalResourceEndpoint"
-              declared_type_ref="core.digitalResourceClass.ConfirmDigitalResourceEndpoint"/>
-        </input_set>
-        <output_set>
-            <declared_message_def name="QueryDigitalResourceEndpoint"
-              declared_type_ref="core.digitalResourceClass.QueryDigitalResourceEndpoint"/>
-            <declared_message_def name="RegisterDigitalResourceEndpoint"
-              declared_type_ref="core.digitalResourceClass.RegisterDigitalResourceEndpoint"/>
-            <declared_message_def name="RemoveDigitalResourceEndpoint"
-              declared_type_ref="core.digitalResourceClass.RemoveDigitalResourceEndpoint"/>
-        </output_set>
-    </message_set>
-    <internal_events_set/>
-    <protocol_behavior is_stateless="false">
-        <start state_machine_name="eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
-        <state_machine name="eventsClient.transport.ReceiveFSM" interpretation = "Extending ReceiveFSM from base.">
-            <state name="Receiving" initial_state="Ready">
-                <state name="Ready">
-                  <default_state>
-                    <transition name="ReportDigitalResourceEndpoint">
-                      <parameter type="ReportDigitalResourceEndpoint" value="msg" interpretation="enveloped ReportDigitalResourceEndpoint message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="reportDigitalResourceEndpoint" interpretation="handle ReportDigitalResourceEndpoint from server">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-
-                    <transition name="ConfirmDigitalResourceEndpoint">
-                      <parameter type="ConfirmDigitalResourceEndpoint" value="msg" interpretation="enveloped ConfirmDigitalResourceEndpoint message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="confirmDigitalResourceEndpoint" interpretation="handle ConfirmDigitalResourceEndpoint from server">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-                  </default_state>
-                </state>
-            </state>
-        </state_machine>
-    </protocol_behavior>
+<service_def name="DigitalResourceDiscoveryClient" id="urn:jaus:jss:iop:DigitalResourceDiscoveryClient" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">The Digital Resource Discovery Client service provides a mechanism for SAE JAUS-based components to 
+		register their digital resources to Digital Resource Discovery. </description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+	<references>
+		<inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
+		<client_of name="DigitalResourceDiscovery" id="urn:jaus:jss:iop:DigitalResourceDiscovery" version="1.1"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ReportDigitalResourceEndpoint"
+				declared_type_ref="core.digitalResourceClass.ReportDigitalResourceEndpoint"/>
+			<declared_message_def name="ConfirmDigitalResourceEndpoint"
+				declared_type_ref="core.digitalResourceClass.ConfirmDigitalResourceEndpoint"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="QueryDigitalResourceEndpoint"
+				declared_type_ref="core.digitalResourceClass.QueryDigitalResourceEndpoint"/>
+			<declared_message_def name="RegisterDigitalResourceEndpoint"
+				declared_type_ref="core.digitalResourceClass.RegisterDigitalResourceEndpoint"/>
+			<declared_message_def name="RemoveDigitalResourceEndpoint"
+				declared_type_ref="core.digitalResourceClass.RemoveDigitalResourceEndpoint"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="eventsClient.transport.ReceiveFSM" interpretation = "Extending ReceiveFSM from base.">
+			<state name="Receiving" initial_state="Ready">
+				<state name="Ready">
+					<default_state>
+						<transition name="ReportDigitalResourceEndpoint">
+							<parameter type="ReportDigitalResourceEndpoint" value="msg" interpretation="enveloped ReportDigitalResourceEndpoint message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="reportDigitalResourceEndpoint" interpretation="handle ReportDigitalResourceEndpoint from server">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+							</action>
+						</transition>
+	
+						<transition name="ConfirmDigitalResourceEndpoint">
+							<parameter type="ConfirmDigitalResourceEndpoint" value="msg" interpretation="enveloped ConfirmDigitalResourceEndpoint message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="confirmDigitalResourceEndpoint" interpretation="handle ConfirmDigitalResourceEndpoint from server">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+							</action>
+						</transition>
+					</default_state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
 </service_def>

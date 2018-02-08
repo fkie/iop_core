@@ -1,56 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="PlatformStateClient" id="urn:jaus:jss:iop:PlatformStateClient" version="1.0" xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
-    <description xml:space="preserve">The Platform State Service manages the state of a platform by issuing commands to and monitoring the JSS Core Management service residing on all component on-board the platform.  It is expected that there is no more than one Platform State Service per platform.</description>
-    <assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
-    <references>
-        <inherits_from name="AccessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
-    </references>
-    <declared_type_set name="Types">
-      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
-    </declared_type_set>
-    <message_set>
-        <input_set>
-            <declared_message_def name="ConfirmPlatformStateRequest"
-              declared_type_ref="core.platformClass.ConfirmPlatformStateRequest"/>
-            <declared_message_def name="ReportPlatformState"
-              declared_type_ref="core.platformClass.ReportPlatformState"/>
-        </input_set>
-        <output_set>
-            <declared_message_def name="SetPlatformState"
-              declared_type_ref="core.platformClass.SetPlatformState"/>
-            <declared_message_def name="QueryPlatformState"
-              declared_type_ref="core.platformClass.QueryPlatformState"/>
-        </output_set>
-    </message_set>
-    <internal_events_set/>
-    <protocol_behavior is_stateless="false">
-      <start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
-      <state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
-          <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
-              <state name="Ready">
-                  <default_state>
-                    <transition name="ConfirmPlatformStateRequest">
-                      <parameter type="ConfirmPlatformStateRequest" value="msg" interpretation="enveloped ConfirmPlatformStateRequest message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="handleConfirmPlatformStateRequest">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
+<service_def name="PlatformStateClient" id="urn:jaus:jss:iop:PlatformStateClient" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
+	<description xml:space="preserve">The Platform State Service manages the state of a platform by issuing commands to and monitoring the JSS Core Management service residing on all component on-board the platform.	It is expected that there is no more than one Platform State Service per platform.</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="AccessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+		<client_of name="PlatformState" id="urn:jaus:jss:iop:PlatformState" version="1.1"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ConfirmPlatformStateRequest"
+				declared_type_ref="core.platformClass.ConfirmPlatformStateRequest"/>
+			<declared_message_def name="ReportPlatformState"
+				declared_type_ref="core.platformClass.ReportPlatformState"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="SetPlatformState"
+				declared_type_ref="core.platformClass.SetPlatformState"/>
+			<declared_message_def name="QueryPlatformState"
+				declared_type_ref="core.platformClass.QueryPlatformState"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+			<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+				<state name="Ready">
+					<default_state>
+					<transition name="ConfirmPlatformStateRequest">
+						<parameter type="ConfirmPlatformStateRequest" value="msg" interpretation="enveloped ConfirmPlatformStateRequest message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="handleConfirmPlatformStateRequest">
+						<argument value="msg"/>
+						<argument value="transportData"/>
+						</action>
+					</transition>
 
-                    <transition name="ReportPlatformState">
-                      <parameter type="ReportPlatformState" value="msg" interpretation="enveloped ReportPlatformState message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="handleReportPlatformState">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-                  </default_state>
-              </state>
-          </state>
-    </state_machine>
-    </protocol_behavior>
+					<transition name="ReportPlatformState">
+						<parameter type="ReportPlatformState" value="msg" interpretation="enveloped ReportPlatformState message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="handleReportPlatformState">
+						<argument value="msg"/>
+						<argument value="transportData"/>
+						</action>
+					</transition>
+					</default_state>
+				</state>
+			</state>
+	</state_machine>
+	</protocol_behavior>
 </service_def>

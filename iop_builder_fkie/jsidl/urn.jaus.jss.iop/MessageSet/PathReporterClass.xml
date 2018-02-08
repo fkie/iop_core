@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="PathReporterClass"
-	id="urn:jaus:jss:iop:MessageSet:PathReporterClass" version="1.1">
-	<declared_type_set_ref name="basicTypes"
-		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0" />
-	<declared_type_set_ref name="advTypes"
-		id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0" />
+<declared_type_set name="PathReporterClass" id="urn:jaus:jss:iop:MessageSet:PathReporterClass" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 
 	<message_def is_command="false" message_id="DEF0" name="QueryPathReporterCapabilities">
 		<description xml:space="preserve">This message is used to query the capabilities of the implementation.</description>
@@ -16,7 +12,6 @@
 		<body name="Body"/>
 		<footer name="Footer"/>
 	</message_def>
-
 	<message_def is_command="false" message_id="DEF1" name="QueryPath">
 		<description xml:space="preserve">This message is used to query a path.  If the specified PathType is not 
 			supported, as given in the ReportPathReporterCapabilities message, no response will be generated.  
@@ -53,7 +48,6 @@
 		</body>
 		<footer name="Footer"/>
 	</message_def>
-
 	<message_def is_command="false" message_id="DEF2" name="ReportPathReporterCapabilities">
 		<description xml:space="preserve">This message is used to report the capabilities for the service.  
 			This implementation may support one or more PathTypes, and specify further limitations on the 
@@ -99,7 +93,6 @@
 		</body>
 		<footer name="Footer"/>
 	</message_def>
-
 	<message_def is_command="false" message_id="DEF3" name="ReportPath">
 		<description xml:space="preserve">This message is used to report a path.  Implementations 
 			should attempt to satisfy all constraints specified in the QueryPath message.</description>

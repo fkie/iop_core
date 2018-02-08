@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set name="HealthClass" id="urn:jaus:jss:iop:MessageSet:HealthClass" version="1.4"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+
+	<message_def name="QueryUGVSummary" message_id="ED10" is_command="false">
+		<description xml:space="preserve">This query requests a ReportUGVSummary message in response, allowing a client to request a summary report of health status.  The summary report is described in ReportHealthSummary.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body"/>
+		<footer name="Footer"/>
+	</message_def>
+	<message_def name="UpdateUGVSummary" message_id="DD10" is_command="true">
+		<description xml:space="preserve">This command requests that the HealthMonitor update its health report summary.  The way in which the health report summary is updated is implementation specific.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body"/>
+		<footer name="Footer"/>
+	</message_def>
+	<message_def name="ReportUGVSummary" message_id="FD10" is_command="false">
+		<description xml:space="preserve">ReportUGVSummary provides a simple summary of the health status of the UGV to any requestor. The summary contains a list of (NodeID, severityCode) pairs, one per CM, in which the highest active severityCode is reported for each CM. This list is preceded in the message by a single severityCode for the UGV, which is the highest severity code reported by any CM in the UGV. This allows a HealthMonitor client to identify the CMs responsible for any UGV faults, and to subsequently query the HealthReporter of the responsible CM or (CMs) for full details.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+			</record>
+		</header>
+		<body name="Body">
+			<sequence name="UGVHealthSummarySequence" optional="false">
+				<record name="UGVSeverityRec" optional="false">
+					<fixed_field name="severity" optional="false" field_units="one" field_type="unsigned byte"
+								 interpretation="Enumeration of severity codes, as defined below:">
+						<value_set offset_to_lower_limit="false">
+							<value_enum enum_index="0" enum_const="NONE" interpretation="This indicates that no error condition exists."/>
+							<value_enum enum_index="1" enum_const="INFO" interpretation="An error condition is reported, but impact on operation and performance is minimal."/>
+							<value_enum enum_index="2" enum_const="WARN" interpretation="An error condition is reported and expected to have significant impact on component or device performance."/>
+							<value_enum enum_index="3" enum_const="ERR" interpretation="An error condition is reported and expected to seriously compromise use of the reporting component or device."/>
+							<value_enum enum_index="4" enum_const="FAIL" interpretation="An error condition is reported with severity indicating component or device failure."/>
+						</value_set>
+					</fixed_field>
+				</record>
+						<list name="SeverityList" optional="false" interpretation="List of Node Severity Levels">
+							<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+							<sequence name="SeveritySequence" optional="false">
+								<record name="NodeID" optional="false">
+									<fixed_field name="NodeID" optional="false" field_units="one" field_type="unsigned byte"
+								   interpretation="JAUS Node ID"/>
+								</record>
+								<record name="SeverityRec" optional="false">
+					  <fixed_field name="severity" optional="false" field_units="one" field_type="unsigned byte"
+								 interpretation="Enumeration of severity codes, as defined below:">
+						<value_set offset_to_lower_limit="false">
+						  <value_enum enum_index="0" enum_const="NONE" interpretation="This indicates that no error condition exists."/>
+						  <value_enum enum_index="1" enum_const="INFO" interpretation="An error condition is reported, but impact on operation and performance is minimal."/>
+						  <value_enum enum_index="2" enum_const="WARN" interpretation="An error condition is reported and expected to have significant impact on component or device performance."/>
+						  <value_enum enum_index="3" enum_const="ERR" interpretation="An error condition is reported and expected to seriously compromise use of the reporting component or device."/>
+						  <value_enum enum_index="4" enum_const="FAIL" interpretation="An error condition is reported with severity indicating component or device failure."/>
+						</value_set>
+					  </fixed_field>
+								</record>
+							</sequence>
+						</list>
+			</sequence>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+</declared_type_set>
+

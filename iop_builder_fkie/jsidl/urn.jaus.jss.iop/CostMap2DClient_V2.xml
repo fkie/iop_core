@@ -1,67 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?xml-model href="../../schema/AS5684/iop_service_interface_definition_language.rnc" type="application/relax-ng-compact-syntax"?>
-<service_def name="CostMap2DClient" id="urn:jaus:jss:iop:CostMap2DClient" version="1.0" xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
-    <description xml:space="preserve">
-        A client of Cost Map 2D Service to use on OCU side.
-    </description>
-    <assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
-    <references>
-        <inherits_from name="AccessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.0"/>
-        <client_of name="CostMap2D" id="urn:jaus:jss:iop:CostMap2D" version="1.0" />
-    </references>
-    <declared_type_set name="Types">
-      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
-    </declared_type_set>
-    <message_set>
-        <input_set>
-          <declared_message_def name="ReportCostMap2D" declared_type_ref="core.CostMap2DClass.ReportCostMap2D"/>
-          <declared_message_def name="ReportNoGoZones" declared_type_ref="core.CostMap2DClass.ReportNoGoZones"/>
-          <declared_message_def name="AddNoGoZoneResponse" declared_type_ref="core.CostMap2DClass.AddNoGoZoneResponse"/>
-        </input_set>
-        <output_set>
-          <declared_message_def name="QueryCostMap2D" declared_type_ref="core.CostMap2DClass.QueryCostMap2D"/>
-          <declared_message_def name="QueryNoGoZones" declared_type_ref="core.CostMap2DClass.QueryNoGoZones"/>
-          <declared_message_def name="AddNoGoZone" declared_type_ref="core.CostMap2DClass.AddNoGoZone"/>
-          <declared_message_def name="RemoveNoGoZone" declared_type_ref="core.CostMap2DClass.RemoveNoGoZone"/>
-        </output_set>
-    </message_set>
-    <internal_events_set/>
-    <protocol_behavior is_stateless="false">
-        <start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
-        <state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
-            <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
-                <state name="Ready">
-                  <default_state>
-                    <transition name="ReportCostMap2D">
-                      <parameter type="ReportCostMap2D" value="msg" interpretation="enveloped ReportCostMap2D message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="handleReportCostMap2D">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-                    <transition name="ReportNoGoZones">
-                      <parameter type="ReportNoGoZones" value="msg" interpretation="enveloped ReportNoGoZones message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="handleReportNoGoZones">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-                    <transition name="AddNoGoZoneResponse">
-                      <parameter type="AddNoGoZoneResponse" value="msg" interpretation="enveloped AddNoGoZoneResponse message"/>
-                      <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                      <simple/>
-                      <action name="handleAddNoGoZoneResponse">
-                        <argument value="msg"/>
-                        <argument value="transportData"/>
-                      </action>
-                    </transition>
-                  </default_state>
-                </state>
-            </state>
-        </state_machine>
-    </protocol_behavior>
+<service_def name="CostMap2DClient" id="urn:jaus:jss:iop:CostMap2DClient" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">
+		A client of Cost Map 2D Service to use on OCU side.
+	</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="AccessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+		<client_of name="CostMap2D" id="urn:jaus:jss:iop:CostMap2D" version="1.1" />
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="ReportCostMap2D" declared_type_ref="core.CostMap2DClass.ReportCostMap2D"/>
+			<declared_message_def name="ReportNoGoZones" declared_type_ref="core.CostMap2DClass.ReportNoGoZones"/>
+			<declared_message_def name="AddNoGoZoneResponse" declared_type_ref="core.CostMap2DClass.AddNoGoZoneResponse"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="QueryCostMap2D" declared_type_ref="core.CostMap2DClass.QueryCostMap2D"/>
+			<declared_message_def name="QueryNoGoZones" declared_type_ref="core.CostMap2DClass.QueryNoGoZones"/>
+			<declared_message_def name="AddNoGoZone" declared_type_ref="core.CostMap2DClass.AddNoGoZone"/>
+			<declared_message_def name="RemoveNoGoZone" declared_type_ref="core.CostMap2DClass.RemoveNoGoZone"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+		<state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+			<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+				<state name="Ready">
+					<default_state>
+						<transition name="ReportCostMap2D">
+							<parameter type="ReportCostMap2D" value="msg" interpretation="enveloped ReportCostMap2D message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="handleReportCostMap2D">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+							</action>
+						</transition>
+						<transition name="ReportNoGoZones">
+							<parameter type="ReportNoGoZones" value="msg" interpretation="enveloped ReportNoGoZones message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="handleReportNoGoZones">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+							</action>
+						</transition>
+						<transition name="AddNoGoZoneResponse">
+							<parameter type="AddNoGoZoneResponse" value="msg" interpretation="enveloped AddNoGoZoneResponse message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="handleAddNoGoZoneResponse">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+							</action>
+						</transition>
+					</default_state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
 </service_def>

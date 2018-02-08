@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?xml-model href="../../schema/AS5684/jaus_service_interface_definition_language.rnc" type="application/relax-ng-compact-syntax"?>
-<service_def version="1.1" id="urn:jaus:jss:iop:PathReporter" name="PathReporter" xmlns="urn:jaus:jsidl:1.0">
+<service_def version="1.1" id="urn:jaus:jss:iop:PathReporter" name="PathReporter"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 	<description xml:space="preserve">
 		The Path Reporter Service provides a mechanism for reporting the past and/or future expected path of the vehicle.  
 		The service is used in cooperation with Global Waypoint Driver, Local Waypoint Driver, Global Waypoint List Driver, 
@@ -25,7 +26,7 @@
 		<inherits_from name="events" id="urn:jaus:jss:core:Events" version="1.1"/>
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>

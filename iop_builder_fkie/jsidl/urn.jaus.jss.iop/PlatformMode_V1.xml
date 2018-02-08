@@ -1,93 +1,92 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="PlatformMode" id="urn:jaus:jss:iop:PlatformMode" version="1.1" xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
-    <description xml:space="preserve">The PlatformMode service manages and reports a platform's mode of operation.</description>
-    <assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
-    <references>
-        <inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.0"/>
-        <client_of name="Management" id="urn:jaus:jss:core:Management" version="1.0"/>
-    </references>
-    <declared_type_set name="Types">
-      <declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
-    </declared_type_set>
-    <message_set>
-        <input_set>
-            <declared_message_def name="SetPlatformMode"
-              declared_type_ref="core.platformClass.SetPlatformMode"/>
-            <declared_message_def name="QueryPlatformMode"
-              declared_type_ref="core.platformClass.QueryPlatformMode"/>
-            <declared_message_def name="QuerySupportedPlatformModes"
-              declared_type_ref="core.platformClass.QuerySupportedPlatformModes"/>
-        </input_set>
-        <output_set>
-            <declared_message_def name="ReportPlatformMode"
-              declared_type_ref="core.platformClass.ReportPlatformMode"/>
-            <declared_message_def name="ReportSupportedPlatformModes"
-              declared_type_ref="core.platformClass.ReportSupportedPlatformModes"/>
-        </output_set>
-    </message_set>
-    <internal_events_set/>
-     <protocol_behavior is_stateless="false">
-      <start state_machine_name="accessControl.events.transport.ReceiveFSM"
-      state_name="Receiving.Ready.NotControlled"/>
-      <state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
-      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
-        <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
-          <state name="NotControlled" interpretation="redefine state in order to extend">
-             <default_state>
-                 <transition name="events.transport.Receive">
-                        <parameter type="QueryPlatformMode" value="msg" interpretation="enveloped Query Platform Mode message"/>
-                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                        <simple/>
-                        <action name="events.transport.Send" interpretation="Send a Report Platform Mode message to querying client">
-                        	<argument value=" 'ReportPlatformMode' "/>
-                        	<argument value="transportData"/>
-                        </action>
-                  </transition>
-                  <transition name="events.transport.Receive">
-                        <parameter type="QuerySupportedPlatformModes" value="msg" interpretation="enveloped Query Supported Platform Modes message"/>
-                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                        <simple/>
-                        <action name="events.transport.Send" interpretation="Send a Report Supported Platform Modes message to querying client">
-                        	<argument value=" 'ReportSupportedPlatformModes' "/>
-                        	<argument value="transportData"/>
-                        </action>
-                  </transition>
-              </default_state>
-          </state>
-          <state name="Controlled" interpretation="redefine state in order to extend">
-              <default_state>
-                  <transition name="events.transport.Receive">
-                        <parameter type="QueryPlatformMode" value="msg" interpretation="enveloped Query Platform Mode message"/>
-                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                        <simple/>
-                        <action name="events.transport.Send" interpretation="Send a Report Platform Mode message to querying client">
-                          <argument value=" 'ReportPlatformMode' "/>
-                          <argument value="transportData"/>
-                        </action>
-                  </transition>
-                  <transition name="events.transport.Receive">
-                        <parameter type="QuerySupportedPlatformModes" value="msg" interpretation="enveloped Query Supported Platform Modes message"/>
-                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                        <simple/>
-                        <action name="events.transport.Send" interpretation="Send a Report Supported Platform Modes message to querying client">
-                          <argument value=" 'ReportSupportedPlatformModes' "/>
-                          <argument value="transportData"/>
-                        </action>
-                  </transition>
-                  <transition name="events.transport.Receive">
-                        <parameter type="SetPlatformMode" value="msg" interpretation="enveloped Set Platform Mode message"/>
-                        <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-                        <guard condition="isControllingClient( transportData )" interpretation="True if requestor currently holds access control of the Component enclosing the Service"/>
-                        <simple/>
-                        <action name="SetPlatformMode" interpretation="Sets the platform mode, sending messages as needed to kick off the platform mode transition.">
-                          <argument value="msg"/>
-                          <argument value="transportData"/>
-                        </action>
-                  </transition>
-              </default_state>
-          </state>
-        </state>
-      </state>
-      </state_machine>
-    </protocol_behavior>
+<service_def name="PlatformMode" id="urn:jaus:jss:iop:PlatformMode" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
+	<description xml:space="preserve">The PlatformMode service manages and reports a platform's mode of operation.</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.1"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="SetPlatformMode"
+				declared_type_ref="core.platformClass.SetPlatformMode"/>
+			<declared_message_def name="QueryPlatformMode"
+				declared_type_ref="core.platformClass.QueryPlatformMode"/>
+			<declared_message_def name="QuerySupportedPlatformModes"
+				declared_type_ref="core.platformClass.QuerySupportedPlatformModes"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="ReportPlatformMode"
+				declared_type_ref="core.platformClass.ReportPlatformMode"/>
+			<declared_message_def name="ReportSupportedPlatformModes"
+				declared_type_ref="core.platformClass.ReportSupportedPlatformModes"/>
+		</output_set>
+	</message_set>
+	<internal_events_set/>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+		<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+		<state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+			<state name="NotControlled" interpretation="redefine state in order to extend">
+				<default_state>
+					<transition name="events.transport.Receive">
+						<parameter type="QueryPlatformMode" value="msg" interpretation="enveloped Query Platform Mode message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="events.transport.Send" interpretation="Send a Report Platform Mode message to querying client">
+							<argument value=" 'ReportPlatformMode' "/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="events.transport.Receive">
+						<parameter type="QuerySupportedPlatformModes" value="msg" interpretation="enveloped Query Supported Platform Modes message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="events.transport.Send" interpretation="Send a Report Supported Platform Modes message to querying client">
+							<argument value=" 'ReportSupportedPlatformModes' "/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+				</default_state>
+			</state>
+			<state name="Controlled" interpretation="redefine state in order to extend">
+				<default_state>
+					<transition name="events.transport.Receive">
+						<parameter type="QueryPlatformMode" value="msg" interpretation="enveloped Query Platform Mode message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="events.transport.Send" interpretation="Send a Report Platform Mode message to querying client">
+							<argument value=" 'ReportPlatformMode' "/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="events.transport.Receive">
+						<parameter type="QuerySupportedPlatformModes" value="msg" interpretation="enveloped Query Supported Platform Modes message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="events.transport.Send" interpretation="Send a Report Supported Platform Modes message to querying client">
+							<argument value=" 'ReportSupportedPlatformModes' "/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="events.transport.Receive">
+						<parameter type="SetPlatformMode" value="msg" interpretation="enveloped Set Platform Mode message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<guard condition="isControllingClient( transportData )" interpretation="True if requestor currently holds access control of the Component enclosing the Service"/>
+						<simple/>
+						<action name="SetPlatformMode" interpretation="Sets the platform mode, sending messages as needed to kick off the platform mode transition.">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+				</default_state>
+			</state>
+		</state>
+		</state>
+		</state_machine>
+	</protocol_behavior>
 </service_def>

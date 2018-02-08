@@ -1,315 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<declared_type_set xmlns="urn:jaus:jsidl:1.0" name="CostMap2DClass"
-	id="urn:jaus:jss:iop:MessageSet:CostMap2DClass" version="1.0">
-	<declared_type_set_ref name="basicTypes"
-		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0" />
-	<declared_type_set_ref name="advTypes"
-		id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0" />
+<declared_type_set name="CostMap2DClass" id="urn:jaus:jss:iop:MessageSet:CostMap2DClass" version="1.1"
+		xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 
-	<message_def name="QueryCostMap2D" message_id="D738"
-		is_command="false">
+	<message_def name="QueryCostMap2D" message_id="D738" is_command="false">
 		<description xml:space="preserve">This message is used to query for cost map data.  An optional maximum map size may be specified to limit the amount of data returned.  If no values are specified, the service may still return a subset of the cost map stored internally, with emphasis on the immediate vicinity of the platform.  An optional map center and orientation may be specified.  If the map center lies outside the bounds of the known cost map, the data returned should reflect the unknown (zero confidence) elements.  If the map center is specified in an unsupported coordinate frame, or the map center is not specified, the returned map should be based on the current vehicle location.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<sequence name="QueryCostMap2DSeq" optional="false">
-				<presence_vector field_type_unsigned="unsigned byte" />
+				<presence_vector field_type_unsigned="unsigned byte"/>
 				<record name="QueryCostMap2DRec" optional="true">
-					<fixed_field name="MaxWidth" optional="false"
-						field_type="unsigned short integer" field_units="meter">
-						<scale_range real_lower_limit="0" real_upper_limit="10000"
-							integer_function="round" />
+					<fixed_field name="MaxWidth" optional="false" field_type="unsigned short integer" field_units="meter">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
 					</fixed_field>
-					<fixed_field name="MaxHeight" optional="false"
-						field_type="unsigned short integer" field_units="meter">
-						<scale_range real_lower_limit="0" real_upper_limit="10000"
-							integer_function="round" />
+					<fixed_field name="MaxHeight" optional="false" field_type="unsigned short integer" field_units="meter">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
 					</fixed_field>
 				</record>
 				<variant name="QueryCostMap2DCenterVar" optional="true">
-					<vtag_field min_count="0" max_count="1"
-						field_type_unsigned="unsigned byte" />
+					<vtag_field min_count="0" max_count="1" field_type_unsigned="unsigned byte"/>
 					<record name="CostMap2DGlobalPoseRec" optional="false">
-						<fixed_field name="MapCenterLatitude" optional="false"
-							field_type="unsigned integer" field_units="degree">
-							<scale_range real_lower_limit="-90" real_upper_limit="90"
-								integer_function="round" />
+						<fixed_field name="MapCenterLatitude" optional="false" field_type="unsigned integer" field_units="degree">
+							<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapCenterLongitude" optional="false"
-							field_type="unsigned integer" field_units="degree">
-							<scale_range real_lower_limit="-180"
-								real_upper_limit="180" integer_function="round" />
+						<fixed_field name="MapCenterLongitude" optional="false" field_type="unsigned integer" field_units="degree">
+							<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapRotation" optional="false"
-							field_type="unsigned short integer" field_units="radian"
-							interpretation="Rotation about the global Z axis.">
-							<scale_range real_lower_limit="-3.14159265358979323846"
-								real_upper_limit="3.14159265358979323846" integer_function="round" />
+						<fixed_field name="MapRotation" optional="false" field_type="unsigned short integer" field_units="radian"
+									 interpretation="Rotation about the global Z axis.">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
 						</fixed_field>
 					</record>
 					<record name="CostMap2DLocalPoseRec" optional="false">
-						<fixed_field name="MapCenterX" optional="false"
-							field_type="unsigned integer" field_units="meter">
-							<scale_range real_lower_limit="-100000"
-								real_upper_limit="100000" integer_function="round" />
+						<fixed_field name="MapCenterX" optional="false" field_type="unsigned integer" field_units="meter">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapCenterY" optional="false"
-							field_type="unsigned integer" field_units="meter">
-							<scale_range real_lower_limit="-100000"
-								real_upper_limit="100000" integer_function="round" />
+						<fixed_field name="MapCenterY" optional="false" field_type="unsigned integer" field_units="meter">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapRotation" optional="false"
-							field_type="unsigned short integer" field_units="radian"
-							interpretation="Rotation about the local Z axis.">
-							<scale_range real_lower_limit="-3.14159265358979323846"
-								real_upper_limit="3.14159265358979323846" integer_function="round" />
+						<fixed_field name="MapRotation" optional="false" field_type="unsigned short integer" field_units="radian"
+									 interpretation="Rotation about the local Z axis.">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
 						</fixed_field>
 					</record>
 				</variant>
 			</sequence>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-	<message_def name="QueryNoGoZones" message_id="D739"
-		is_command="false">
+	<message_def name="QueryNoGoZones" message_id="D739" is_command="false">
 		<description xml:space="preserve">This message is used to query the vertex list for a specified no-go zone, or all zones.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<record name="ZoneIDRec" optional="false">
-				<fixed_field name="ZoneID" optional="false"
-					interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported."
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="ZoneID" optional="false" interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported." field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-	<message_def name="AddNoGoZone" message_id="D740"
-		is_command="true">
+	<message_def name="AddNoGoZone" message_id="D740" is_command="true">
 		<description xml:space="preserve">This message is used to request a client-specified no-go zone.  Upon acceptance by the service, the cells traversed or contained by the polygon formed by imaginary lines connecting the sequenced list of vertices shall be considered maximum cost (non-traversable).</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<sequence name="NoGoZoneSeq" optional="false">
 				<record name="RequestIDRec" optional="false">
-					<fixed_field name="RequestID" optional="false"
-						interpretation="This value will be returned in the AddNoGoZoneResponse message to enable a client to match set and response pairs.  The value is established by the client."
-						field_type="unsigned short integer" field_units="one" />
+					<fixed_field name="RequestID" optional="false" interpretation="This value will be returned in the AddNoGoZoneResponse message to enable a client to match set and response pairs.  The value is established by the client." field_type="unsigned short integer" field_units="one"/>
 				</record>
 				<variant name="VertexVar" optional="false">
-					<vtag_field min_count="0" max_count="1"
-						field_type_unsigned="unsigned byte" />
+					<vtag_field min_count="0" max_count="1" field_type_unsigned="unsigned byte"/>
 					<list name="GlobalVertexList" optional="false">
-						<count_field min_count="0" max_count="255"
-							field_type_unsigned="unsigned byte" />
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
 						<record name="GlobalVertexRec" optional="false">
-							<fixed_field name="Latitude" optional="false"
-								field_type="unsigned integer" field_units="degree">
-								<scale_range real_lower_limit="-90"
-									real_upper_limit="90" integer_function="round" />
+							<fixed_field name="Latitude" optional="false" field_type="unsigned integer" field_units="degree">
+								<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
 							</fixed_field>
-							<fixed_field name="Longitude" optional="false"
-								field_type="unsigned integer" field_units="degree">
-								<scale_range real_lower_limit="-180"
-									real_upper_limit="180" integer_function="round" />
+							<fixed_field name="Longitude" optional="false" field_type="unsigned integer" field_units="degree">
+								<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
 							</fixed_field>
 						</record>
 					</list>
 					<list name="LocalVertexList" optional="false">
-						<count_field min_count="0" max_count="255"
-							field_type_unsigned="unsigned byte" />
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
 						<record name="LocalVertexRec" optional="false">
-							<fixed_field name="X" optional="false" field_type="unsigned integer"
-								field_units="meter">
-								<scale_range real_lower_limit="-100000"
-									real_upper_limit="100000" integer_function="round" />
+							<fixed_field name="X" optional="false" field_type="unsigned integer" field_units="meter">
+								<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 							</fixed_field>
-							<fixed_field name="Y" optional="false" field_type="unsigned integer"
-								field_units="meter">
-								<scale_range real_lower_limit="-100000"
-									real_upper_limit="100000" integer_function="round" />
+							<fixed_field name="Y" optional="false" field_type="unsigned integer" field_units="meter">
+								<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 							</fixed_field>
 						</record>
 					</list>
 				</variant>
 			</sequence>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-	<message_def name="RemoveNoGoZone" message_id="D741"
-		is_command="true">
+	<message_def name="RemoveNoGoZone" message_id="D741" is_command="true">
 		<description xml:space="preserve">This message is used to remove the specified no-go zone from the cost map.  Once removed, the cells shall return to their normal values, or to an uncertain (zero confidence) state.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<record name="ZoneIDRec" optional="false">
-				<fixed_field name="ZoneID" optional="false"
-					interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported."
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="ZoneID" optional="false" interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported." field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-
-
-	<message_def name="ReportCostMap2D" message_id="D742"
-		is_command="false">
+	<message_def name="ReportCostMap2D" message_id="D742" is_command="false">
 		<description xml:space="preserve">This message is used to report the cost map data in accordance to the received QueryCostMap2D message.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<sequence name="CostMap2DSeq" optional="false">
 				<record name="CostMap2DRec" optional="false">
-					<fixed_field name="NumberOfRows" optional="false"
-						interpretation="Number of rows in the map data." field_type="unsigned short integer"
-						field_units="one" />
-					<fixed_field name="NumberOfColumns" optional="false"
-						interpretation="Number of columns in the map data." field_type="unsigned short integer"
-						field_units="one" />
-					<fixed_field name="MapWidth" optional="false"
-						field_type="unsigned short integer" field_units="meter"
-						interpretation="Total width of the cost map.">
-						<scale_range real_lower_limit="0" real_upper_limit="10000"
-							integer_function="round" />
+					<fixed_field name="NumberOfRows" optional="false" interpretation="Number of rows in the map data." field_type="unsigned short integer" field_units="one"/>
+					<fixed_field name="NumberOfColumns" optional="false" interpretation="Number of columns in the map data." field_type="unsigned short integer" field_units="one"/>
+					<fixed_field name="MapWidth" optional="false" field_type="unsigned short integer" field_units="meter"
+								 interpretation="Total width of the cost map.">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
 					</fixed_field>
-					<fixed_field name="MapHeight" optional="false"
-						field_type="unsigned short integer" field_units="meter"
-						interpretation="Total height of the cost map.">
-						<scale_range real_lower_limit="0" real_upper_limit="10000"
-							integer_function="round" />
+					<fixed_field name="MapHeight" optional="false" field_type="unsigned short integer" field_units="meter"
+								 interpretation="Total height of the cost map.">
+						<scale_range real_lower_limit="0" real_upper_limit="10000" integer_function="round"/>
 					</fixed_field>
 				</record>
 				<variant name="CostMap2DPoseVar" optional="false">
-					<vtag_field min_count="0" max_count="1"
-						field_type_unsigned="unsigned byte" />
+					<vtag_field min_count="0" max_count="1" field_type_unsigned="unsigned byte"/>
 					<record name="CostMap2DGlobalPoseRec" optional="false">
-						<fixed_field name="MapCenterLatitude" optional="false"
-							field_type="unsigned integer" field_units="degree">
-							<scale_range real_lower_limit="-90" real_upper_limit="90"
-								integer_function="round" />
+						<fixed_field name="MapCenterLatitude" optional="false" field_type="unsigned integer" field_units="degree">
+							<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapCenterLongitude" optional="false"
-							field_type="unsigned integer" field_units="degree">
-							<scale_range real_lower_limit="-180"
-								real_upper_limit="180" integer_function="round" />
+						<fixed_field name="MapCenterLongitude" optional="false" field_type="unsigned integer" field_units="degree">
+							<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapRotation" optional="false"
-							field_type="unsigned short integer" field_units="radian">
-							<scale_range real_lower_limit="-3.14159265358979323846"
-								real_upper_limit="3.14159265358979323846" integer_function="round" />
+						<fixed_field name="MapRotation" optional="false" field_type="unsigned short integer" field_units="radian">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
 						</fixed_field>
 					</record>
 					<record name="CostMap2DLocalPoseRec" optional="false">
-						<fixed_field name="MapCenterX" optional="false"
-							field_type="unsigned integer" field_units="meter">
-							<scale_range real_lower_limit="-100000"
-								real_upper_limit="100000" integer_function="round" />
+						<fixed_field name="MapCenterX" optional="false" field_type="unsigned integer" field_units="meter">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapCenterY" optional="false"
-							field_type="unsigned integer" field_units="meter">
-							<scale_range real_lower_limit="-100000"
-								real_upper_limit="100000" integer_function="round" />
+						<fixed_field name="MapCenterY" optional="false" field_type="unsigned integer" field_units="meter">
+							<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 						</fixed_field>
-						<fixed_field name="MapRotation" optional="false"
-							field_type="unsigned short integer" field_units="radian">
-							<scale_range real_lower_limit="-3.14159265358979323846"
-								real_upper_limit="3.14159265358979323846" integer_function="round" />
+						<fixed_field name="MapRotation" optional="false" field_type="unsigned short integer" field_units="radian">
+							<scale_range real_lower_limit="-3.14159265358979323846" real_upper_limit="3.14159265358979323846" integer_function="round"/>
 						</fixed_field>
 					</record>
 				</variant>
 				<variant name="CostMap2DDataVar" optional="false">
-					<vtag_field min_count="0" max_count="2"
-						field_type_unsigned="unsigned byte" />
+					<vtag_field min_count="0" max_count="2" field_type_unsigned="unsigned byte"/>
 					<list name="CostDataList" optional="false">
-						<count_field min_count="0" max_count="65535"
-							field_type_unsigned="unsigned short integer" />
+						<count_field min_count="0" max_count="65535" field_type_unsigned="unsigned short integer"/>
 						<record name="CostDataRec" optional="false">
-							<fixed_field name="Cost" optional="false"
-								interpretation="Value 0-254: A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone).  A value of 255 means the cost of the cell is known."
-								field_type="unsigned byte" field_units="one">
+							<fixed_field name="Cost" optional="false" interpretation="Value 0-254: A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone).  A value of 255 means the cost of the cell is known." field_type="unsigned byte" field_units="one">
 								<value_set offset_to_lower_limit="false">
-									<value_range lower_limit="0" lower_limit_type="inclusive"
-										upper_limit="254" upper_limit_type="inclusive"
-										interpretation="Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone)." />
-									<value_range lower_limit="255" lower_limit_type="inclusive"
-										upper_limit="255" upper_limit_type="inclusive"
-										interpretation="A value of 255 means the cost of the cell is unknown." />
+									<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="254" upper_limit_type="inclusive" interpretation="Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone)."/>
+									<value_range lower_limit="255" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="A value of 255 means the cost of the cell is unknown."/>
 								</value_set>
 							</fixed_field>
 						</record>
 					</list>
 					<list name="CostAndConfidenceDataList" optional="false">
-						<count_field min_count="0" max_count="65535"
-							field_type_unsigned="unsigned short integer" />
+						<count_field min_count="0" max_count="65535" field_type_unsigned="unsigned short integer"/>
 						<record name="CostAndConfidenceDataRec" optional="false">
-							<fixed_field name="Cost" optional="false"
-								interpretation="Value 0-254: Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone).  Value 255: A value of 255 is not allowed."
-								field_type="unsigned byte" field_units="one">
+							<fixed_field name="Cost" optional="false" interpretation="Value 0-254: Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 254 means maximum cost (non-traversable or no-go zone).  Value 255: A value of 255 is not allowed." field_type="unsigned byte" field_units="one">
 								<value_set offset_to_lower_limit="false">
-									<value_range lower_limit="0" lower_limit_type="inclusive"
-										upper_limit="254" upper_limit_type="inclusive"
-										interpretation="Cost value associated with the cell.  " />
+									<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="254" upper_limit_type="inclusive" interpretation="Cost value associated with the cell.  "/>
 								</value_set>
 							</fixed_field>
-							<fixed_field name="Confidence" optional="false"
-								interpretation="Confidence value associated with the cost of the cell.  A value of 0 means there is no confidence in the specified cost (unknown cost).  A value of 100 means the cost of the cell is known perfectly."
-								field_type="unsigned byte" field_units="one">
-								<scale_range real_lower_limit="0" real_upper_limit="100"
-									integer_function="round" />
+							<fixed_field name="Confidence" optional="false" interpretation="Confidence value associated with the cost of the cell.  A value of 0 means there is no confidence in the specified cost (unknown cost).  A value of 100 means the cost of the cell is known perfectly." field_type="unsigned byte" field_units="one">
+								<scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
 							</fixed_field>
 						</record>
 					</list>
 					<list name="RunLengthEncodedDataList" optional="false">
-						<count_field min_count="0" max_count="65535"
-							field_type_unsigned="unsigned short integer" />
+						<count_field min_count="0" max_count="65535" field_type_unsigned="unsigned short integer"/>
 						<record name="RunLengthEncodedDataRec" optional="false">
-							<bit_field name="CostAndRunLength" optional="false"
-								field_type_unsigned="unsigned short integer">
-								<sub_field name="CostSubField"
-									interpretation="Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 7 means maximum cost (non-traversable or no-go zone).">
-									<bit_range from_index="0" to_index="2"
-										interpretation="CostSubField.  Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 7 means maximum cost (non-traversable or no-go zone)." />
+							<bit_field name="CostAndRunLength" optional="false" field_type_unsigned="unsigned short integer">
+								<sub_field name="CostSubField" interpretation="Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 7 means maximum cost (non-traversable or no-go zone).">
+									<bit_range from_index="0" to_index="2" interpretation="CostSubField.  Cost value associated with the cell.  A value of 0 indicates no cost (no restriction).  A value of 7 means maximum cost (non-traversable or no-go zone)."/>
 									<value_set offset_to_lower_limit="false">
-										<value_range lower_limit="0" lower_limit_type="inclusive"
-											upper_limit="7" upper_limit_type="inclusive" />
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="7" upper_limit_type="inclusive"/>
 									</value_set>
 								</sub_field>
-								<sub_field name="CertaintySubField"
-									interpretation="A value of one (1) means the cost is known (valid).  A value of zero means the costs in unknown (invalid).">
-									<bit_range from_index="3" to_index="3"
-										interpretation="CertaintySubField.  A value of one (1) means the cost is known (valid).  A value of zero means the costs in unknown (invalid)." />
+								<sub_field name="CertaintySubField" interpretation="A value of one (1) means the cost is known (valid).  A value of zero means the costs in unknown (invalid).">
+									<bit_range from_index="3" to_index="3" interpretation="CertaintySubField.  A value of one (1) means the cost is known (valid).  A value of zero means the costs in unknown (invalid)."/>
 									<value_set offset_to_lower_limit="false">
-										<value_enum enum_index="0" enum_const="Unknown" />
-										<value_enum enum_index="1" enum_const="Known" />
+										<value_enum enum_index="0" enum_const="Unknown"/>
+										<value_enum enum_index="1" enum_const="Known"/>
 									</value_set>
 								</sub_field>
-								<sub_field name="NumberCellsSubField"
-									interpretation="The number of cells, including this one, for which the cost and certainty apply.">
-									<bit_range from_index="4" to_index="15"
-										interpretation="The number of cells, including this one, for which the cost and certainty apply." />
+								<sub_field name="NumberCellsSubField" interpretation="The number of cells, including this one, for which the cost and certainty apply.">
+									<bit_range from_index="4" to_index="15" interpretation="The number of cells, including this one, for which the cost and certainty apply."/>
 									<value_set offset_to_lower_limit="false">
-										<value_range lower_limit="0" lower_limit_type="inclusive"
-											upper_limit="4095" upper_limit_type="inclusive" />
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="4095" upper_limit_type="inclusive"/>
 									</value_set>
 								</sub_field>
 							</bit_field>
@@ -318,59 +221,43 @@
 				</variant>
 			</sequence>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-	<message_def name="ReportNoGoZones" message_id="D743"
-		is_command="false">
+	<message_def name="ReportNoGoZones" message_id="D743" is_command="false">
 		<description xml:space="preserve">This message is used to report the no-go zones specified in the cost map.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<list name="NoGoZonesList" optional="false">
-				<count_field min_count="0" max_count="65535"
-					field_type_unsigned="unsigned short integer" />
+				<count_field min_count="0" max_count="65535" field_type_unsigned="unsigned short integer"/>
 				<sequence name="NoGoZoneSeq" optional="false">
 					<record name="ZoneIDRec" optional="false">
-						<fixed_field name="ZoneID" optional="false"
-							interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported."
-							field_type="unsigned short integer" field_units="one" />
+						<fixed_field name="ZoneID" optional="false" interpretation="ID of the zone to be reported.  If the specified value is zero (0), all zones will be reported." field_type="unsigned short integer" field_units="one"/>
 					</record>
 					<variant name="VertexVar" optional="false">
-						<vtag_field min_count="0" max_count="1"
-							field_type_unsigned="unsigned byte" />
+						<vtag_field min_count="0" max_count="1" field_type_unsigned="unsigned byte"/>
 						<list name="GlobalVertexList" optional="false">
-							<count_field min_count="0" max_count="255"
-								field_type_unsigned="unsigned byte" />
+							<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
 							<record name="GlobalVertexRec" optional="false">
-								<fixed_field name="Latitude" optional="false"
-									field_type="unsigned integer" field_units="degree">
-									<scale_range real_lower_limit="-90"
-										real_upper_limit="90" integer_function="round" />
+								<fixed_field name="Latitude" optional="false" field_type="unsigned integer" field_units="degree">
+									<scale_range real_lower_limit="-90" real_upper_limit="90" integer_function="round"/>
 								</fixed_field>
-								<fixed_field name="Longitude" optional="false"
-									field_type="unsigned integer" field_units="degree">
-									<scale_range real_lower_limit="-180"
-										real_upper_limit="180" integer_function="round" />
+								<fixed_field name="Longitude" optional="false" field_type="unsigned integer" field_units="degree">
+									<scale_range real_lower_limit="-180" real_upper_limit="180" integer_function="round"/>
 								</fixed_field>
 							</record>
 						</list>
 						<list name="LocalVertexList" optional="false">
-							<count_field min_count="0" max_count="255"
-								field_type_unsigned="unsigned byte" />
+							<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
 							<record name="LocalVertexRec" optional="false">
-								<fixed_field name="X" optional="false" field_type="unsigned integer"
-									field_units="meter">
-									<scale_range real_lower_limit="-100000"
-										real_upper_limit="100000" integer_function="round" />
+								<fixed_field name="X" optional="false" field_type="unsigned integer" field_units="meter">
+									<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 								</fixed_field>
-								<fixed_field name="Y" optional="false" field_type="unsigned integer"
-									field_units="meter">
-									<scale_range real_lower_limit="-100000"
-										real_upper_limit="100000" integer_function="round" />
+								<fixed_field name="Y" optional="false" field_type="unsigned integer" field_units="meter">
+									<scale_range real_lower_limit="-100000" real_upper_limit="100000" integer_function="round"/>
 								</fixed_field>
 							</record>
 						</list>
@@ -378,36 +265,29 @@
 				</sequence>
 			</list>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
-	<message_def name="AddNoGoZoneResponse" message_id="D744"
-		is_command="false">
+	<message_def name="AddNoGoZoneResponse" message_id="D744" is_command="false">
 		<description xml:space="preserve">This message is used to report the success or failure for a corresponding AddNoGoZone message.</description>
 		<header name="JTS_DefaultHeader">
 			<record name="DefaultHeaderRec" optional="false">
-				<fixed_field name="MessageID" optional="false"
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</header>
 		<body name="Body">
 			<record name="AddNoGoZoneResponseRec" optional="false">
-				<fixed_field name="RequestID" optional="false"
-					interpretation="This value will be returned in the AddNoGoZoneResponse message to enable a client to match set and response pairs.  The value is established by the client."
-					field_type="unsigned short integer" field_units="one" />
-				<fixed_field name="ResponseCode" optional="false"
-					field_type="unsigned byte" field_units="one">
+				<fixed_field name="RequestID" optional="false" interpretation="This value will be returned in the AddNoGoZoneResponse message to enable a client to match set and response pairs.  The value is established by the client." field_type="unsigned short integer" field_units="one"/>
+				<fixed_field name="ResponseCode" optional="false" field_type="unsigned byte" field_units="one">
 					<value_set offset_to_lower_limit="false">
-						<value_enum enum_index="0" enum_const="Success" />
-						<value_enum enum_index="1" enum_const="GlobalVerticesNotSupported" />
-						<value_enum enum_index="2" enum_const="LocalVerticesNotSupported" />
+						<value_enum enum_index="0" enum_const="Success"/>
+						<value_enum enum_index="1" enum_const="GlobalVerticesNotSupported"/>
+						<value_enum enum_index="2" enum_const="LocalVerticesNotSupported"/>
 					</value_set>
 				</fixed_field>
-				<fixed_field name="ZoneID" optional="false"
-					interpretation="This field shall be zero (invalid) unless the ResponseCode is zero (Success).  Otherwise, Global ID of the newly defined no go zone."
-					field_type="unsigned short integer" field_units="one" />
+				<fixed_field name="ZoneID" optional="false" interpretation="This field shall be zero (invalid) unless the ResponseCode is zero (Success).  Otherwise, Global ID of the newly defined no go zone." field_type="unsigned short integer" field_units="one"/>
 			</record>
 		</body>
-		<footer name="Footer" />
+		<footer name="Footer"/>
 	</message_def>
 
 </declared_type_set>

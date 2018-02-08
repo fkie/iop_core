@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="MeasurementSensorClient" id="urn:jaus:jss:iop:MeasurementSensorClient"
-	version="1.0" xmlns="urn:jaus:jsidl:1.0">
+<service_def name="MeasurementSensorClient" id="urn:jaus:jss:iop:MeasurementSensorClient" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 	<description xml:space="preserve">The Measurement Sensor service reports single measurement values of different sensors.
          The sensors can be types of weather, nuclear, biological or chemical. The type of the measurement is specified in the report.
          It is also possible to report a whole measurement spectrum of values.</description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
 	<references>
-		<inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient"
-			version="1.1" />
+		<inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1" />
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.0"/>
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>
