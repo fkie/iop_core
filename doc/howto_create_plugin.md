@@ -1,4 +1,4 @@
-## Howto create your own plugin for ROS/IOP-Bridge
+## How to create your own plugin for ROS/IOP-Bridge
 
 Let's see all the steps we need to create a plugin to use within ROS/IOP-Bridge. For this example we take an existing service which offers own functionality and also exports a library which is used by other services: *urn:jaus:jss:environmentSensing:VisualSensor*.
 

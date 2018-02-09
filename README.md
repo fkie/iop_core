@@ -96,4 +96,5 @@ You can find the description to this example [here](https://github.com/fkie/iop_
 ## [IOP packages - an overview](doc/other_packages.md)
 ## [IOP core packages](doc/iop_core_packages.md)
 ## [Builder-package](doc/builder_package.md)
-## [Howto create own plugin](doc/howto_create_plugin.md)
+## [How to start with own configuration](doc/howto_minimal_config.md)
+## [How to create own plugin](doc/howto_create_plugin.md)
