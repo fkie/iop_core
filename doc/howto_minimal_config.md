@@ -1,10 +1,10 @@
 ## How to start with own configuration
 
-First of all you need a running `JAUS Node Manager` on **each host** you start ROS/IOP components. `JAUS Node Manager` is part of JTS, but we created a script, so you can include it into ROS launch files, see [jaus_node_manager.launch](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/launch/jaus_node_manager.launch). Or you run it directly `JTSNodeManager path/to/nm.cfg`.
+First of all you need a running `JAUS Node Manager` on **each host** where you start ROS/IOP components. `JAUS Node Manager` is part of JTS, but we created a script, so you can include it into ROS launch files, see [jaus_node_manager.launch](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/launch/jaus_node_manager.launch). Or you run it directly `JTSNodeManager path/to/nm.cfg`.
 
 ### Create configuration for robot
 
-In JAUS/IOP build a robot with all his payloads and computers a subsystem. For a whole subsystem we have to setup exact one component, which manage the discovering of all IOP/JAUS services. Usually it is a component named `platfrom_manager` with `node id` **15**.
+In JAUS/IOP a robot represents a subsystem with all his payloads and computers. For a whole subsystem we have to setup exact one component, which manage the discovering of all IOP/JAUS services. Usually it is a component named `platfrom_manager` with `node id` **15**.
 ```
     <param name="name_subsystem" value="Bob"/>
     <node name="iop_platform_manager" pkg="iop_component_fkie" type="iop_component">
