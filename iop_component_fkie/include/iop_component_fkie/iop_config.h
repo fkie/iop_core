@@ -25,7 +25,6 @@ along with this program; or you can read the full license at
 #define IOP_CONFIG_H
 
 #include <map>
-#include <boost/type_index.hpp>
 #include <ros/ros.h>
 
 namespace iop
@@ -68,7 +67,7 @@ namespace iop
 		ros::Publisher advertise(const std::string& topic, uint32_t queue_size, bool latch = false)
 		{
 			ros::Publisher result = p_nh.advertise<M>(topic, queue_size, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name()  << " ");
 			return result;
 		}
 
@@ -80,7 +79,7 @@ namespace iop
 			bool latch = false)
 		{
 			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, connect_cb, disconnect_cb, tracked_object, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
 
@@ -88,7 +87,7 @@ namespace iop
 		ros::Publisher advertise_p(const std::string& topic, uint32_t queue_size, bool latch = false)
 		{
 			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
 
@@ -96,7 +95,7 @@ namespace iop
 		ros::ServiceServer advertiseService(const std::string& service, bool(T::*srv_func)(MReq &, MRes &), T *obj)
 		{
 			ros::ServiceServer result = p_pnh.advertiseService(service, srv_func, obj);
-			ROS_INFO_STREAM("ROS service[" << p_ns << "]: " << service << " <" << boost::typeindex::type_id<MReq>().pretty_name()  << "> - <" << boost::typeindex::type_id<MRes>().pretty_name() << "");
+			ROS_INFO_STREAM("ROS service[" << p_ns << "]: " << service << " <" << typeid(MReq).name() << "> - <" << typeid(MRes).name() << "");
 			return result;
 		}
 
@@ -106,7 +105,7 @@ namespace iop
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
 			ros::Subscriber result = p_nh.subscribe(topic, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
 
@@ -115,7 +114,7 @@ namespace iop
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
 			ros::Subscriber result = p_nh.subscribe(topic, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
 
@@ -125,7 +124,7 @@ namespace iop
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
 			ros::Subscriber result = p_pnh.subscribe(topic, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << boost::typeindex::type_id<M>().pretty_name()  << " ");
+			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
 
