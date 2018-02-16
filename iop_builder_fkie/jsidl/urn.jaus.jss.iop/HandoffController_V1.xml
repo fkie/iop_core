@@ -1,64 +1,84 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="HandoffController" id="urn:jaus:jss:iop:HandoffController"
-	version="0.1" xmlns="urn:jaus:jsidl:1.0">
+<service_def name="HandoffController" id="urn:jaus:jss:iop:HandoffController" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 	<description xml:space="preserve">The Handoff Controller service runs on an entity such as an OCU that support handing off control.</description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
 	<references>
-		<inherits_from name="Transport" id="urn:jaus:jss:core:Transport"
-			version="1.0" />
+		<inherits_from name="Transport" id="urn:jaus:jss:core:Transport" version="1.1"/>
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="iop"
-			id="urn:jaus:jss:iop:MessageSet" version="1.0" />
+		<declared_type_set_ref name="iop" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>
 			<declared_message_def name="RequestReleaseControl"
-				declared_type_ref="iop.handoffControllerClass.RequestReleaseControl" />
+				declared_type_ref="iop.HandoffClass.RequestReleaseControl"/>
+			<declared_message_def name="ConfirmHandoffRequest"
+				declared_type_ref="iop.HandoffClass.ConfirmHandoffRequest"/>
+			<declared_message_def name="ReportHandoffTimeout"
+				declared_type_ref="iop.HandoffClass.ReportHandoffTimeout"/>
+			<declared_message_def name="ReportEnhancedTimeout"
+				declared_type_ref="iop.HandoffClass.ReportEnhancedTimeout"/>
 		</input_set>
 		<output_set>
 			<declared_message_def name="ConfirmReleaseControl"
-				declared_type_ref="iop.handoffControllerClass.ConfirmReleaseControl" />
+				declared_type_ref="iop.HandoffClass.ConfirmReleaseControl"/>
+			<declared_message_def name="RequestHandoff"
+				declared_type_ref="iop.HandoffClass.RequestHandoff"/>
+			<declared_message_def name="QueryHandoffTimeout"
+				declared_type_ref="iop.HandoffClass.QueryHandoffTimeout"/>
+			<declared_message_def name="QueryEnhancedTimeout"
+				declared_type_ref="iop.HandoffClass.QueryEnhancedTimeout"/>
+			<declared_message_def name="RemoveHandoffRequest"
+				declared_type_ref="iop.HandoffClass.RemoveHandoffRequest"/>
 		</output_set>
 	</message_set>
-	<internal_events_set>
-		<event_def name="HandoffDecisionMade">
-			<description>Occurs when a decision on requested handoffs has been
-				made.</description>
-			<header name="Header" />
-			<body name="Body" />
-			<footer name="Footer" />
-		</event_def>
-	</internal_events_set>
+	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="transport.ReceiveFSM" state_name="Receiving"
-			interpretation="Extending ReceiveFSM from base." />
-		<state_machine name="transport.ReceiveFSM"
-			interpretation="redefine state in order to extend">
+		<start state_machine_name="transport.ReceiveFSM" state_name="Receiving" interpretation="Extending ReceiveFSM from base."/>
+		<state_machine name="transport.ReceiveFSM" interpretation="redefine state in order to extend">
 			<state name="Receiving">
 				<default_state>
 					<transition name="transport.Receive">
-						<parameter type="RequestReleaseControl" value="msg"
-							interpretation="enveloped Request Release Control message" />
-						<parameter type="Receive.Body.ReceiveRec" value="transportData"
-							interpretation="transportData" />
-						<simple />
-						<action name="processHandoffRequests"
-							interpretation="Process the handoff requests, determining if they should be denied, accepted, or delayed.  This may involve displaying to the human operator all handoff requests so he can make his decision(s).  This could also mean 'convey for processing' in the case that a non-human operator is responding to the hand-off request.">
-							<argument value="msg" />
-							<argument value="transportData" />
+						<parameter type="RequestReleaseControl" value="msg" interpretation="enveloped Request Release Control message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processHandoffRequests" interpretation="Process the handoff requests, determining if they should be denied, accepted, or delayed.
+							This may involve displaying to the human operator all handoff requests so he can make his decision(s).
+							This could also mean 'convey for processing' in the case that a non-human operator is responding to the hand-off request.">
+							<argument value="msg"/>
+							<argument value="transportData"/>
 						</action>
 					</transition>
-
-					<transition name="HandoffDecisionMade">
-						<simple />
-						<action name="transport.Send"
-							interpretation="Send a ConfirmReleaseControl message to requesting client">
-							<argument value=" 'ConfirmReleaseControl' " />
+					<transition name="transport.Receive">
+						<parameter type="ConfirmHandoffRequest" value="msg" interpretation="enveloped ConfirmHandoffRequest message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processConfirmHandoffRequest" interpretation="Process the ConfirmHandoffRequest">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="transport.Receive">
+						<parameter type="ReportHandoffTimeout" value="msg" interpretation="enveloped ReportHandoffTimeout message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processReportHandoffTimeout" interpretation="Process the ReportHandoffTimeout">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="transport.Receive">
+						<parameter type="ReportEnhancedTimeout" value="msg" interpretation="enveloped ReportEnhancedTimeout message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processReportEnhancedTimeout" interpretation="Process the ReportEnhancedTimeout">
+							<argument value="msg"/>
+							<argument value="transportData"/>
 						</action>
 					</transition>
 				</default_state>
-			</state> <!--Receiving -->
+			</state> <!--Receiving-->
 		</state_machine>
 	</protocol_behavior>
 </service_def>

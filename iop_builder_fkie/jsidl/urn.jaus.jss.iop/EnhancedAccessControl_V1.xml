@@ -1,390 +1,258 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="EnhancedAccessControl" id="urn:jaus:jss:iop:EnhancedAccessControl"
-	version="0.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
-	<description xml:space="preserve">The EnhancedAccessControl service extends Access Control to allow for handoff of control from one client to another.</description>
+<service_def name="EnhancedAccessControl" id="urn:jaus:jss:iop:EnhancedAccessControl" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">The EnhancedAccessControl service extends Access Control to allow for handoff of control from one client to another.
+
+		*** INSERT DIAGRAMS ****
+	</description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
 	<references>
-		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl"
-			version="1.0" />
-		<client_of name="HandoffController" id="urn:jaus:jss:iop:HandoffController"
-			version="0.1" />
+		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.1"/>
+		<client_of name="HandoffController" id="urn:jaus:jss:iop:HandoffController" version="1.1"/>
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="iop"
-			id="urn:jaus:jss:iop:MessageSet" version="1.0" />
+		<declared_type_set_ref name="iop" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>
 			<declared_message_def name="RequestHandoff"
-				declared_type_ref="iop.enhancedAccessControlClass.RequestHandoff" />
+				declared_type_ref="iop.HandoffClass.RequestHandoff"/>
 			<declared_message_def name="QueryHandoffTimeout"
-				declared_type_ref="iop.enhancedAccessControlClass.QueryHandoffTimeout" />
+				declared_type_ref="iop.HandoffClass.QueryHandoffTimeout"/>
 			<declared_message_def name="QueryEnhancedTimeout"
-				declared_type_ref="iop.enhancedAccessControlClass.QueryEnhancedTimeout" />
+				declared_type_ref="iop.HandoffClass.QueryEnhancedTimeout"/>
 			<declared_message_def name="RemoveHandoffRequest"
-				declared_type_ref="iop.enhancedAccessControlClass.RemoveHandoffRequest" />
+				declared_type_ref="iop.HandoffClass.RemoveHandoffRequest"/>
+			<declared_message_def name="ConfirmReleaseControl"
+				declared_type_ref="iop.HandoffClass.ConfirmReleaseControl"/>
 		</input_set>
 		<output_set>
 			<declared_message_def name="ConfirmHandoffRequest"
-				declared_type_ref="iop.enhancedAccessControlClass.ConfirmHandoffRequest" />
+				declared_type_ref="iop.HandoffClass.ConfirmHandoffRequest"/>
 			<declared_message_def name="ReportHandoffTimeout"
-				declared_type_ref="iop.enhancedAccessControlClass.ReportHandoffTimeout" />
+				declared_type_ref="iop.HandoffClass.ReportHandoffTimeout"/>
 			<declared_message_def name="ReportEnhancedTimeout"
-				declared_type_ref="iop.enhancedAccessControlClass.ReportEnhancedTimeout" />
+				declared_type_ref="iop.HandoffClass.ReportEnhancedTimeout"/>
 		</output_set>
 	</message_set>
-	<internal_events_set>
-		<event_def name="HandoffTimeout">
-			<description>Occurs when the current controller fails to respond to a
-				RequestReleaseControl request within a certain amount of time.
-			</description>
-			<header name="Header" />
-			<body name="Body" />
-			<footer name="Footer" />
-		</event_def>
-		<event_def name="EnhancedTimeout">
-			<description>Occurs when a handoff request made using the
-				RequestHandoff message is not re-made within the time specified.
-			</description>
-			<header name="Header" />
-			<body name="Body" />
-			<footer name="Footer" />
-		</event_def>
-	</internal_events_set>
+	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="accessControl.events.transport.ReceiveFSM"
-			state_name="Receiving.Ready.NotControlled" />
-		<state_machine name="accessControl.events.transport.ReceiveFSM"
-			interpretation="Extending ReceiveFSM from base">
-			<state name="Receiving" initial_state="Ready"
-				interpretation="redefine state in order to extend">
-				<state name="Ready" initial_state="NotControlled"
-					interpretation="redefine state in order to extend">
+		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+			<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+				<state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
 					<state name="NotControlled">
 						<!-- A: Receive query messages -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="QueryHandoffTimeout" value="msg"
-								interpretation="enveloped Query Handoff Timeout message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ReportHandoffTimeout message to querying client">
-								<argument value=" 'ReportHandoffTimeout' " />
-								<argument value="transportData" />
+							<parameter type="QueryHandoffTimeout" value="msg" interpretation="enveloped Query Handoff Timeout message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="sendReportHandoffTimeout" interpretation="Send a ReportHandoffTimeout message to querying client">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="QueryEnhancedTimeout" value="msg"
-								interpretation="enveloped Query Enhanced Timeout message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ReportEnhancedTimeout message to querying client">
-								<argument value=" 'ReportEnhancedTimeout' " />
-								<argument value="transportData" />
+							<parameter type="QueryEnhancedTimeout" value="msg" interpretation="enveloped Query Enhanced Timeout message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="sendReportEnhancedTimeout" interpretation="Send a ReportEnhancedTimeout message to querying client">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<!-- B -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard condition="isControlAvailable()" interpretation="True if control is available." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'DENIED' " />
-								<argument value="transportData" />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isControlAvailable()" interpretation="True if control is available."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'DENIED' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RemoveHandoffRequest" value="msg"
-								interpretation="enveloped Remove Handoff Request message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard condition="isControlAvailable()" interpretation="True if control is available." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'DENIED' " />
-								<argument value="transportData" />
+							<parameter type="RemoveHandoffRequest" value="msg" interpretation="enveloped Remove Handoff Request message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isControlAvailable()" interpretation="True if control is available."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'DENIED' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard condition="!isControlAvailable()" interpretation="True if control is NOT available." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'NOT_AVAILABLE' " />
-								<argument value="transportData" />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isControlAvailable()" interpretation="True if control is NOT available."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'NOT_AVAILABLE' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RemoveHandoffRequest" value="msg"
-								interpretation="enveloped Remove Handoff Request message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard condition="!isControlAvailable()" interpretation="True if control is NOT available." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'NOT_AVAILABLE' " />
-								<argument value="transportData" />
+							<parameter type="RemoveHandoffRequest" value="msg" interpretation="enveloped Remove Handoff Request message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isControlAvailable()" interpretation="True if control is NOT available."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'NOT_AVAILABLE' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
-
-					</state> <!--NotControlled -->
+					</state> <!--NotControlled-->
 
 					<state name="Controlled">
 						<!-- A -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="QueryHandoffTimeout" value="msg"
-								interpretation="enveloped Query Handoff Timeout message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ReportHandoffTimeout message to querying client">
-								<argument value=" 'ReportHandoffTimeout' " />
-								<argument value="transportData" />
+							<parameter type="QueryHandoffTimeout" value="msg" interpretation="enveloped Query Handoff Timeout message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="sendReportHandoffTimeout" interpretation="Send a ReportHandoffTimeout message to querying client">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="QueryEnhancedTimeout" value="msg"
-								interpretation="enveloped Query Enhanced Timeout message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ReportEnhancedTimeout message to querying client">
-								<argument value=" 'ReportEnhancedTimeout' " />
-								<argument value="transportData" />
+							<parameter type="QueryEnhancedTimeout" value="msg" interpretation="enveloped Query Enhanced Timeout message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<simple/>
+							<action name="sendReportEnhancedTimeout" interpretation="Send a ReportEnhancedTimeout message to querying client">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<!-- C -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="!isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; isQueued( transportData ) &amp;&amp; isControlAvailable()"
-								interpretation="True is requesting client is not the current controller and has at least the default authority and the source of the request is queued and control is available." />
-							<simple />
-							<action name="updateHandoffRequest"
-								interpretation="Updates the request for handoff identified by ID to the queue of clients requesting handoff.">
-								<argument value=" 'ID' " />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; isQueued( transportData ) &amp;&amp; isControlAvailable()" interpretation="True is requesting client is not the current controller and has at least the default authority and the source of the request is queued and control is available."/>
+							<simple/>
+							<action name="updateHandoffRequest" interpretation="Updates the request for handoff identified by ID to the queue of clients requesting handoff.">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
-							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer." />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'QUEUED' " />
-								<argument value="transportData" />
-							</action>
-							<action name="sendRequestReleaseControl"
-								interpretation="Sends a RequestReleaseControl message to the current controller" />
+<!-- 							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer."/> -->
+<!-- 							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client"> -->
+<!-- 								<argument value=" 'QUEUED' "/> -->
+<!-- 								<argument value="transportData"/> -->
+<!-- 							</action> -->
+							<action name="sendRequestReleaseControl" interpretation="Sends a HandoffController.RequestReleaseControl message to the current controller"/>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="!isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; !isQueued( transportData ) &amp;&amp; isControlAvailable()"
-								interpretation="True is requesting client is not the current controller and has at least the default authority and the source of the request is NOT queued and control is available." />
-							<simple />
-							<action name="queueHandoffRequest"
-								interpretation="Adds the request for handoff identified by ID to the queue of clients requesting handoff.">
-								<argument value=" 'ID' " />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; !isQueued( transportData ) &amp;&amp; isControlAvailable()" interpretation="True is requesting client is not the current controller and has at least the default authority and the source of the request is NOT queued and control is available."/>
+							<simple/>
+							<action name="queueHandoffRequest" interpretation="Adds the request for handoff identified by ID to the queue of clients requesting handoff.">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
-							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer." />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'QUEUED' " />
-								<argument value="transportData" />
-							</action>
-							<action name="sendRequestReleaseControl"
-								interpretation="Sends a RequestReleaseControl message to the current controller" />
+<!-- 							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer."/> -->
+<!-- 							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client"> -->
+<!-- 								<argument value=" 'QUEUED' "/> -->
+<!-- 								<argument value="transportData"/> -->
+<!-- 							</action> -->
+							<action name="sendRequestReleaseControl" interpretation="Sends a HandoffController.RequestReleaseControl message to the current controller"/>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="isQueued( transportData ) &amp;&amp; isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()"
-								interpretation="True if the source specified by a JAUS address is in the handoff queue AND default authority is greater than requesting authority and control is avilable." />
-							<simple />
-							<action name="removeHandoffRequest"
-								interpretation="Removes the request for handoff identified by ID to the queue of clients requesting handoff.">
-								<argument value=" 'ID' " />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isQueued( transportData ) &amp;&amp; isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()" interpretation="True if the source specified by a JAUS address is in the handoff queue AND default authority is greater than requesting authority and control is avilable."/>
+							<simple/>
+							<action name="removeHandoffRequest" interpretation="Removes the request for handoff identified by ID to the queue of clients requesting handoff.">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
-							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer." />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'INSUFFICIENT_AUTHORITY' " />
-								<argument value="transportData" />
+<!-- 							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer."/> -->
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'INSUFFICIENT_AUTHORITY' "/>
+								<argument value="transportData"/>
 							</action>
-							<action name="sendRequestReleaseControl"
-								interpretation="Sends a RequestReleaseControl message to the current controller" />
+							<action name="sendRequestReleaseControl" interpretation="Sends a HandoffController.RequestReleaseControl message to the current controller"/>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="!isQueued( transportData ) &amp;&amp; isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()"
-								interpretation="True if the source specified by a JAUS address is NOT in the handoff queue AND default authority is greater than requesting authority and control is avilable." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'INSUFFICIENT_AUTHORITY' " />
-								<argument value="transportData" />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isQueued( transportData ) &amp;&amp; isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()" interpretation="True if the source specified by a JAUS address is NOT in the handoff queue AND default authority is greater than requesting authority and control is avilable."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'INSUFFICIENT_AUTHORITY' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()"
-								interpretation="True if the requesting client is the current controller AND the default authority is NOT greater than that of requesting client AND Control is avilable." />
-							<simple />
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isControllingClient( transportData ) &amp;&amp; !isDefaultAuthorityGreater(msg) &amp;&amp; isControlAvailable()" interpretation="True if the requesting client is the current controller AND the default authority is NOT greater than that of requesting client AND Control is avilable."/>
+							<simple/>
 							<action name="accessControl.setAuthority">
-								<argument value="msg" />
+								<argument value="msg"/>
 							</action>
-							<action name="accessControl.resetTimer" />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'GRANTED' " />
-								<argument value="transportData" />
+<!-- 							<action name="accessControl.resetTimer"/> -->
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'GRANTED' "/>
+								<argument value="transportData"/>
 							</action>
-						</transition>
-
-						<!-- Handoff timeout with control available -->
-						<transition name="HandoffTimeout">
-							<guard condition="isControlAvailable()" interpretation="Returns True if Control is avilable." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'TIMEOUT' " />
-							</action>
-						</transition>
-
-						<!-- Enhanced timeout with control available -->
-						<transition name="EnhancedTimeout">
-							<guard condition="isControlAvailable()" interpretation="Returns True if Control is avilable." />
-							<simple />
-							<action name="removeHandoffRequest"
-								interpretation="Removes the request for handoff identified by ID to the queue of clients requesting handoff.">
-								<argument value=" 'ID' " />
-							</action>
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'DENIED' " />
-							</action>
-							<action name="sendRequestReleaseControl"
-								interpretation="Sends a RequestReleaseControl message to the current controller" />
 						</transition>
 
 						<!-- removeHandoffRequest -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RemoveHandoffRequest" value="msg"
-								interpretation="enveloped Remove Handoff Request message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="isQueued( transportData ) &amp;&amp; isControlAvailable()"
-								interpretation="Returns True if the source of the request is queued AND Control is avilable." />
-							<simple />
-							<action name="removeHandoffRequest"
-								interpretation="Removes the request for handoff identified by ID to the queue of clients requesting handoff.">
-								<argument value=" 'ID' " />
+							<parameter type="RemoveHandoffRequest" value="msg" interpretation="enveloped Remove Handoff Request message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isQueued( transportData ) &amp;&amp; isControlAvailable()" interpretation="Returns True if the source of the request is queued AND Control is avilable."/>
+							<simple/>
+							<action name="removeHandoffRequest" interpretation="Removes the request for handoff identified by ID to the queue of clients requesting handoff.">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
-							<action name="accessControl.accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to requesting client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'DENIED' " />
-								<argument value="transportData" />
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to requesting client">
+								<argument value=" 'DENIED' "/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
 						<!-- Confirm Release Control (output from HandoffController) -->
 						<transition name="accessControl.events.transport.Receive">
-							<parameter type="ConfirmReleaseControl" value="msg"
-								interpretation="enveloped Confirm Release Control message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard
-								condition="isControllingClient( transportData ) &amp;&amp; isControlAvailable()"
-								interpretation="Returns True if the confirming client is the current controller AND Control is avilable." />
-							<simple />
-							<action name="resetHandoffTimer" interpretation="Resets the handoff timer." />
-							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer." />
-							<action name="processHandoffResponse"
-								interpretation="Iterate through the list of responses to handoff requests, sending denials and dequeuing denied requests, sending waits to those with deferred decisions, and transferring control if any are accepted." />
-						</transition>
-
-						<transition name="accessControl.events.transport.Receive">
-							<parameter type="RequestHandoff" value="msg"
-								interpretation="enveloped Request Handoff message" />
-							<parameter type="Receive.Body.ReceiveRec" value="transportData"
-								interpretation="transportData" />
-							<guard condition="!isControlAvailable()"
-								interpretation="Returns true if control is NOT available." />
-							<simple />
-							<action name="accessControl.event.transport.Send"
-								interpretation="Send a ConfirmHandoffRequest message to querying client">
-								<argument value=" 'ConfirmHandoffRequest' " />
-								<argument value=" 'NOT_AVAILABLE' " />
-								<argument value="transportData" />
+							<parameter type="ConfirmReleaseControl" value="msg" interpretation="enveloped Confirm Release Control message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="isControllingClient( transportData ) &amp;&amp; isControlAvailable()" interpretation="Returns True if the confirming client is the current controller AND Control is avilable."/>
+							<simple/>
+<!-- 							<action name="resetHandoffTimer" interpretation="Resets the handoff timer."/> -->
+<!-- 							<action name="resetEnhancedTimer" interpretation="Resets the enhanced timer."/> -->
+							<action name="processHandoffResponse" interpretation="Iterate through the list of responses to handoff requests,
+								sending denials and dequeuing denied requests, sending waits to those with deferred decisions, and transferring
+								control if any are accepted.">
+								<argument value="msg"/>
+								<argument value="transportData"/>
 							</action>
 						</transition>
 
-						<transition name="EnhancedTimeout">
-							<guard condition="!isControlAvailable()" interpretation="Returns True if Control is NOT avilable." />
-							<simple />
-							<action name="resetHandoffTimer" interpretation="Resets the enhanced timer." />
+						<transition name="accessControl.events.transport.Receive">
+							<parameter type="RequestHandoff" value="msg" interpretation="enveloped Request Handoff message"/>
+							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+							<guard condition="!isControlAvailable()" interpretation="Returns true if control is NOT available."/>
+							<simple/>
+							<action name="sendConfirmHandoffRequest" interpretation="Send a ConfirmHandoffRequest message to querying client">
+								<argument value=" 'NOT_AVAILABLE' "/>
+								<argument value="transportData"/>
+							</action>
 						</transition>
 
-						<transition name="HandoffTimeout">
-							<guard condition="!isControlAvailable()" interpretation="Returns True if Control is NOT avilable." />
-							<simple />
-							<action name="resetHandoffTimer" interpretation="Resets the handoff timer." />
-						</transition>
-
-					</state> <!--Controlled -->
+					</state> <!--Controlled-->
 				</state>
 			</state>
 		</state_machine>
