@@ -47,13 +47,13 @@ For download the ROS/IOP-Bridge sources we use the [wstool](http://wiki.ros.org/
   > If you do not already have an *.rosinstall* go into you ROS workspace and call
 ```
 cd catkin_ws/
-wstool init src
+wstool init src/iop
 ```
 
 Merge the iop.rosinstall file and fetch code.
 ```
-wstool merge -t src https://raw.githubusercontent.com/fkie/iop_core/master/iop.rosinstall
-wstool update -t src
+wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_core/master/iop.rosinstall
+wstool update -t src/iop
 ```
 
 ## Build the sources
