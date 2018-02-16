@@ -317,10 +317,13 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 			case Component::ACCESS_STATE_NOT_AVAILABLE:
 			case Component::ACCESS_STATE_NOT_CONTROLLED:
 			case Component::ACCESS_STATE_CONTROL_RELEASED:
-			case Component::ACCESS_STATE_TIMEOUT:
 				// access released -> stop control
 				// the services are informed before release access was send
 				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+				break;
+			case Component::ACCESS_STATE_TIMEOUT:
+			case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
+				pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 				break;
 			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 				// pass authority to the handler
