@@ -12,6 +12,8 @@ add_message_files(
   Component.msg
   DigitalResourceEndpoint.msg
   DigitalResourceEndpoints.msg
+  HandoffRequest.msg
+  HandoffResponse.msg
   Identification.msg
   JausAddress.msg
   Measurement.msg
