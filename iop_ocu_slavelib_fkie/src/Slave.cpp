@@ -49,6 +49,7 @@ Slave::Slave(JausAddress own_address)
 	p_default_authority = 205;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_own_address = own_address;
+	p_handoff_supported = false;
 	pInitRos();
 }
 
@@ -63,6 +64,7 @@ Slave::Slave(const Slave& other)
 	p_use_queries = false;
 	p_default_authority = 205;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
+	p_handoff_supported = other.p_handoff_supported;
 }
 
 Slave::~Slave(void)
@@ -133,7 +135,6 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 void Slave::pInitRos()
 {
 	iop::Config cfg("~Slave");
-	p_pub_control_feedback = cfg.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
 	std::string control_addr;
 	cfg.param("control_addr", control_addr, control_addr);
 	if (!control_addr.empty()) {
@@ -164,7 +165,10 @@ void Slave::pInitRos()
 	cfg.param("use_queries", p_use_queries, p_use_queries);
 	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
 	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
+	iop::Component &cmp = iop::Component::get_instance();
+	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
+	p_pub_control_feedback = cfg.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
 	p_sub_control = cfg.subscribe<iop_msgs_fkie::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
 }
 
@@ -381,6 +385,7 @@ void Slave::pSendFeedback()
 	msg_feedback.reporter = address_to_msg(p_own_address);
 	msg_feedback.subsystem_restricted = p_subsystem_restricted;
 	msg_feedback.only_monitor = p_only_monitor;
+	msg_feedback.handoff_supported = p_handoff_supported;
 	p_pub_control_feedback.publish(msg_feedback);
 }
 

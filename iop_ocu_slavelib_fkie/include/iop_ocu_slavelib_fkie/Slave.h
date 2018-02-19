@@ -71,6 +71,7 @@ namespace ocu {
 		bool p_only_monitor;
 		bool p_try_get_management;
 		bool p_use_queries;
+		bool p_handoff_supported;
 		JausAddress p_own_address;
 		JausAddress p_default_control_addr;
 		int p_default_authority;

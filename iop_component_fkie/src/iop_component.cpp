@@ -258,6 +258,16 @@ void Component::load_plugins()
 	ROS_INFO("... initialization complete");
 }
 
+bool Component::has_service(std::string service_uri)
+{
+	for (unsigned int i = 0; i < p_plugins.size(); ++i)
+	{
+		if (p_plugins[i]->get_service_uri().compare(service_uri) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
 
 boost::shared_ptr<iop::PluginInterface> Component::p_get_plugin_str(const std::string service_uri, unsigned char major_version, unsigned char min_minor_version)
 {

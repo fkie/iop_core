@@ -57,6 +57,7 @@ namespace iop
 		Component(unsigned int subsystem, unsigned short node, unsigned short component);
 		virtual ~Component();
 
+		bool has_service(std::string service_uri);
 		void start_component();
 		void shutdown_component();
 
