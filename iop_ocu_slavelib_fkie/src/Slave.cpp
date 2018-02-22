@@ -337,9 +337,9 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 				}
 				break;
 			}
-			// send updated info to ROS
-			pSendFeedback();
 		}
+		// send updated info to ROS
+		pSendFeedback();
 	}
 }
 
