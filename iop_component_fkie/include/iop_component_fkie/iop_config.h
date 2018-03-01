@@ -128,6 +128,44 @@ namespace iop
 			return result;
 		}
 
+		std::string tostr(char& param_val, std::string unit, std::map<int, std::string>& type_map)
+		{
+			std::ostringstream result;
+			typename std::map<int, std::string>::const_iterator it = type_map.find((int)param_val);
+			if (it != type_map.end()) {
+				if (!unit.empty()) {
+					result << (int)param_val << " " << unit << " (" << it->second << ") ";
+				} else {
+					result << (int)param_val << " (" << it->second << ") ";
+				}
+			} else {
+				result << (int)param_val;
+				if (!unit.empty()) {
+					result << " " << unit;
+				}
+			}
+			return result.str();
+		}
+
+		std::string tostr(unsigned char& param_val, std::string unit, std::map<int, std::string>& type_map)
+		{
+			std::ostringstream result;
+			typename std::map<int, std::string>::const_iterator it = type_map.find((int)param_val);
+			if (it != type_map.end()) {
+				if (!unit.empty()) {
+					result << (int)param_val << " " << unit << " (" << it->second << ") ";
+				} else {
+					result << (int)param_val << " (" << it->second << ") ";
+				}
+			} else {
+				result << (int)param_val;
+				if (!unit.empty()) {
+					result << " " << unit;
+				}
+			}
+			return result.str();
+		}
+
 		std::string tostr(int& param_val, std::string unit, std::map<int, std::string>& type_map)
 		{
 			std::ostringstream result;
