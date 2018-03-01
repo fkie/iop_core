@@ -30,6 +30,8 @@
         declared_type_ref="core.informClass.ReportServices"/>
       <declared_message_def name="ReportServiceList"
         declared_type_ref="core.informClass.ReportServiceList"/>
+      <declared_message_def name="QueryIdentification"
+        declared_type_ref="core.queryClass.QueryIdentification"/>
     </input_set>
     <output_set>
       <declared_message_def name="QueryIdentification"
@@ -114,6 +116,15 @@
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
                 <action name="handleReportServiceList">
+                    <argument value="msg"/>
+                    <argument value="transportData"/>
+                </action>
+            </transition>
+            <transition name="events.transport.Receive">
+                <parameter type="QueryIdentification" value="msg"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+                <ns2:internal/>
+                <action name="handleQueryIdentification">
                     <argument value="msg"/>
                     <argument value="transportData"/>
                 </action>
