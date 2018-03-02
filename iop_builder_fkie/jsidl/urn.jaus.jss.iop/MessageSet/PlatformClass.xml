@@ -182,4 +182,46 @@
 		<footer name="Footer"/>
 	</message_def>
 
+	<message_def name="SetEmergency" message_id="0006" is_command="true">
+		<description xml:space="preserve"> 
+			This message is a copy from management service and is used to set the components into the emergency state.
+		</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
+			</record>
+		</header>
+		<body name="Body">
+			<record name="SetEmergencyRec" optional="false">
+				<fixed_field name="EmergencyCode" field_type="unsigned short integer" field_units="one" optional="false">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="1" enum_const="STOP"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+
+	<message_def name="ClearEmergency" message_id="0007" is_command="true">
+		<description xml:space="preserve"> 
+			This message is a copy from management service and is used to clear the emergency state.
+		</description>
+		<header name="JTS_DefaultHeader">
+			<record name="DefaultHeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_type="unsigned short integer" field_units="one"/>
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ClearEmergencyRec" optional="false">
+				<fixed_field name="EmergencyCode" field_type="unsigned short integer" field_units="one" optional="false">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="1" enum_const="STOP"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer"/>
+	</message_def>
+
 </declared_type_set>

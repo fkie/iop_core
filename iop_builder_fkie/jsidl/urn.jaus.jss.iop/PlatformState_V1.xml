@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <service_def name="PlatformState" id="urn:jaus:jss:iop:PlatformState" version="1.1"
 	xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:1.1">
-	<description xml:space="preserve">The Platform State Service manages the state of a platform by issuing commands to and monitoring the JSS Core Management service residing on all component on-board the platform.	It is expected that there is no more than one Platform State Service per platform.</description>
+	<description xml:space="preserve">The Platform State Service manages the state of a platform
+	by issuing commands to and monitoring the JSS Core Management service residing on all component
+	on-board the platform. It is expected that there is no more than one Platform State Service per platform.</description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
 	<references>
 		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.1"/>
@@ -19,6 +21,10 @@
 				declared_type_ref="core.platformClass.QueryPlatformState"/>
 		</input_set>
 		<output_set>
+			<declared_message_def name="SetEmergency"
+				declared_type_ref="core.platformClass.SetEmergency"/>
+			<declared_message_def name="ClearEmergency"
+				declared_type_ref="core.platformClass.ClearEmergency"/>
 			<declared_message_def name="ConfirmPlatformStateRequest"
 				declared_type_ref="core.platformClass.ConfirmPlatformStateRequest"/>
 			<declared_message_def name="ReportPlatformState"
@@ -26,53 +32,12 @@
 		</output_set>
 	</message_set>
 	<internal_events_set>
-		<event_def name="Emergency_Event">
-		<description>E-stop (or some other IOP defined emergency) has been signaled.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Initialization_Completes_Event">
-		<description>The system completes its initialization routines successfully.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Internal_Failure_Event">
-		<description>Failure of a critical sub-system leading to an unrecoverable state of the entire robotic system.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Recover_Emergency_Event">
-		<description>E-stop (or some other IOP defined emergency) has been cleared.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Render_Useless_Event">
-		<description>Renders a platform useless to the operator and the enemy.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Reset_Event">
-		<description>The entire system is soft-booted.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
-		<event_def name="Shutdown_Event">
-		<description>Perform a commanded shutdown of the platform.</description>
-		<header name="Header" />
-		<body name="Body" />
-		<footer name="Footer" />
-		</event_def>
+		<!-- REMOVED PlatformStateFSM Events since this is done by ROS topics -->
 	</internal_events_set>
 	
 	<protocol_behavior is_stateless="false">
 		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
-		<start state_machine_name="PlatformStateFSM" state_name="Initialize"/>
+		<!--  ROMOVED since it is done by ROS <start state_machine_name="PlatformStateFSM" state_name="Initialize"/> -->
 		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
 		<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
 		<state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
@@ -85,6 +50,17 @@
 						<simple/>
 						<action name="sendReportPlatformState" interpretation="Sends a ReportPlatformState to the requesting client.">
 							<argument value="transportData"/>
+						</action>
+					</transition>
+					<transition name="accessControl.events.transport.Receive">
+						<parameter type="SetPlatformState" value="msg" interpretation="enveloped Set Platform State message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+						<guard condition="isIDStored( transportData ) &amp;&amp; setToOperational( msg )" interpretation="True if the sender of the message that triggered the transition is in control of this service AND the set message calls for a transition to Operational."/>
+						<simple/>
+						<action name="storeRequester" interpretation="Store the JAUS ID for the client requesting a state transition.">
+							<argument value="transportData"/>
+						</action>
+						<action name="triggerRecoverEmergency" interpretation="Trigger a 'Recover Emergency' Internal Event.">
 						</action>
 					</transition>
 				</default_state>
@@ -164,196 +140,6 @@
 		</state> <!-- Ready -->
 		</state> <!-- Receiving -->
 		</state_machine> <!-- accessControl.events.transport.ReceiveFSM -->
-		
-	<state_machine name="PlatformStateFSM" interpretation="State machine for Platform State.">		
-				<!-- Initialize -->
-			
-				<state name="Initialize" interpretation="Initial state of the platform.">
-					
-				<transition name="Initialization_Completes_Event">
-					<simple>
-					<end_state state="Operational"/>
-					</simple>
-				</transition>
-				<transition name="Internal_Failure_Event">
-					<simple>
-					<end_state state="SystemAbort"/>
-					</simple>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'SystemAbort'"/>
-					</action>
-				</transition>
-				</state>
-				
-				<!-- Operational -->
-				
-				<state name="Operational" interpretation="Platform is in an operational state.">
-				<transition name="Reset_Event">
-					<simple>
-					<end_state state="Initialize"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Initialize'"/>
-					</action>
-				</transition>
-				
-				<transition name="Internal_Failure_Event">
-					<simple>
-					<end_state state="SystemAbort"/>
-					</simple>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'SystemAbort'"/>
-					</action>
-				</transition>
-				
-				<transition name="Emergency_Event">
-					<simple>
-					<end_state state="Emergency"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Emergency'"/>
-					</action>
-				</transition>
-				
-				<transition name="Shutdown_Event">
-					<simple>
-					<end_state state="Shutdown"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Shutdown'"/>
-					</action>
-				</transition>
-				
-				<transition name="Render_Useless_Event">
-					<simple>
-					<end_state state="RenderUseless"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'RenderUseless'"/>
-					</action>
-				</transition>
-			 </state>
-			 
-			 <!-- Emergency -->
-				
-				<state name="Emergency" interpretation="Platform is in an emergency state.">
-				<transition name="Reset_Event">
-					<simple>
-					<end_state state="Initialize"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Initialize'"/>
-					</action>
-				</transition>
-				
-				<transition name="Internal_Failure_Event">
-					<simple>
-					<end_state state="SystemAbort"/>
-					</simple>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'SystemAbort'"/>
-					</action>
-				</transition>
-				
-				<transition name="Recover_Emergency_Event">
-					<simple>
-					<end_state state="Operational"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Operational'"/>
-					</action>
-				</transition>
-				
-				<transition name="Shutdown_Event">
-					<simple>
-					<end_state state="Shutdown"/>
-					</simple>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Transitioning' " />
-					</action>
-					<action name="transitionPlatformState" interpretation="Sends messages to effect the state transition.">
-					<argument value="'Shutdown'"/>
-					</action>
-				</transition>
-			</state>
-			<!-- Shutdown -->
-				
-			<state name="Shutdown" interpretation="Platform is in a shutdown state.">
-			</state>
-			
-			<!-- SystemAbort -->
-				
-			<state name="SystemAbort" interpretation="Platform is in a SystemAbort state.">
-			</state>
-			
-			<state name="RenderUseless" interpretation="State that is entered when render useless event triggered."/>
-			
-			<default_state>
-				<transition name="Reset_Event">
-					<simple/>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Invalid_State' " />
-					</action>
-				</transition>
-				
-				<transition name="Emergency_Event">
-					<simple/>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Invalid_State' " />
-					</action>
-				</transition>
-				
-				<transition name="Recover_Emergency_Event">
-					<simple/>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Invalid_State' " />
-					</action>
-				</transition>
-				
-				<transition name="Shutdown_Event">
-					<simple/>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Invalid_State' " />
-					</action>
-				</transition>
-				
-				<transition name="Render_Useless_Event">
-					<simple/>
-					<action name="events.transport.Send" interpretation="Send a Confirm Platform State Request message">
-					<argument value=" 'ConfirmPlatformStateReqeust' "/>
-					<argument value=" 'Invalid_State' " />
-					</action>
-				</transition>
-			</default_state>
-	</state_machine>
+		<!-- REMOVED PlatformStateFSM since this is done by ROS topics -->
 	</protocol_behavior>
 </service_def>
