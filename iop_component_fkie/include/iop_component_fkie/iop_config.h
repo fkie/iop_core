@@ -246,6 +246,63 @@ namespace iop
 			return result.str();
 		}
 
+		std::string tostr(std::vector<double>& param_val, std::string unit, std::map<int, std::string>& type_map)
+		{
+			std::ostringstream result;
+			result << "[";
+			int i = 0;
+			for (std::vector<double>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
+				if (i > 0) {
+					result << ", ";
+				}
+				i++;
+				result << *it;
+			}
+			result << "]";
+			if (!unit.empty()) {
+				result << " " << unit;
+			}
+			return result.str();
+		}
+
+		std::string tostr(std::vector<float>& param_val, std::string unit, std::map<int, std::string>& type_map)
+		{
+			std::ostringstream result;
+			result << "[";
+			int i = 0;
+			for (std::vector<float>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
+				if (i > 0) {
+					result << ", ";
+				}
+				i++;
+				result << *it;
+			}
+			result << "]";
+			if (!unit.empty()) {
+				result << " " << unit;
+			}
+			return result.str();
+		}
+
+		std::string tostr(std::vector<std::string>& param_val, std::string unit, std::map<int, std::string>& type_map)
+		{
+			std::ostringstream result;
+			result << "[";
+			int i = 0;
+			for (std::vector<std::string>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
+				if (i > 0) {
+					result << ", ";
+				}
+				i++;
+				result << *it;
+			}
+			result << "]";
+			if (!unit.empty()) {
+				result << " " << unit;
+			}
+			return result.str();
+		}
+
 		std::string tostr(XmlRpc::XmlRpcValue& param_val, std::string unit, std::map<int, std::string>& type_map)
 		{
 			std::ostringstream result;
