@@ -49,7 +49,7 @@ SlaveHandlerInterface &ServiceInfo::handler()
 
 bool ServiceInfo::has_component(JausAddress &address)
 {
-	return p_discovered_addresses.find(address.get()) != p_discovered_addresses.end();
+	return std::find(p_discovered_addresses.begin(), p_discovered_addresses.end(), address) != p_discovered_addresses.end();
 }
 
 JausAddress &ServiceInfo::get_own_address()
@@ -72,10 +72,34 @@ std::string ServiceInfo::get_uri()
 	return p_uri;
 }
 
-bool ServiceInfo::add_discovered(JausAddress address)
+bool ServiceInfo::add_discovered(JausAddress address, std::string service_uri, jUnsignedByte major_version, jUnsignedByte minor_version)
 {
-	std::pair<std::set<jUnsignedInteger>::iterator, bool> ret;
-	ret = p_discovered_addresses.insert(address.get());
-	return ret.second;
+	if (!(major_version == p_major_version || major_version == 255 || p_major_version == 255)
+		|| !(minor_version == p_minor_version || minor_version == 255 || p_minor_version == 255)
+		|| p_uri.compare(service_uri) != 0) {
+		return false;
+	}
+	if (!has_component(address)) {
+		p_discovered_addresses.push_back(address);
+		return true;
+	}
+	return false;
+}
+
+JausAddress ServiceInfo::get_dicovered_address(JausAddress filter, int nr)
+{
+	if (nr >= 1) {
+		int idx = 1;
+		std::vector<JausAddress>::iterator it_addr;
+		for (it_addr = p_discovered_addresses.begin(); it_addr != p_discovered_addresses.end(); ++it_addr) {
+			if (match_address(*it_addr, filter)) {
+				if (idx == nr) {
+					return *it_addr;
+				}
+				idx++;
+			}
+		}
+	}
+	return JausAddress(0);
 }
 

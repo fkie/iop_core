@@ -68,6 +68,7 @@ namespace ocu {
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
 		int p_subsystem_restricted;
+		int p_controlled_component_nr;
 		bool p_only_monitor;
 		bool p_try_get_management;
 		bool p_use_queries;
@@ -94,6 +95,7 @@ namespace ocu {
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *pGetManagementClient();
 		void pAddComponent(JausAddress &address);
 		Component* pGetComponent(JausAddress &address);
+		JausAddress pApplyDefaultControlAdd(JausAddress& control_addr);
 		void pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands);
 		void pApplyToService(JausAddress &addr, unsigned char control_state, unsigned char authority=205);
 		void pApplyControl(ServiceInfo &service, JausAddress &control_addr, unsigned char access_control, unsigned char authority);

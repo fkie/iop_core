@@ -47,7 +47,12 @@ namespace ocu
 		void set_address(JausAddress &address);
 		/** Adds the address to the list of discovered services for the given uri.
 		 * Returns true, if it is a new one. */
-		bool add_discovered(JausAddress address);
+		bool add_discovered(JausAddress address, std::string service_uri, jUnsignedByte major_version=255, jUnsignedByte minor_version=255);
+		/** Returns the discovered address of component supports the service.
+		 * :param filter: filter for subsystem, node and component. (65535, 255, 255) or (0, 0, 0) takes all components into account.
+		 * :param int nr: the service in the list, beginning with 1.
+		 * :return: JausAddress(0) if not available or `nr` is less than 1. */
+		JausAddress get_dicovered_address(JausAddress filter=JausAddress(65535, 255, 255), int nr=1);
 
 	protected:
 		SlaveHandlerInterface *p_handler;
@@ -56,7 +61,7 @@ namespace ocu
 		std::string p_uri;
 		jUnsignedByte p_major_version;
 		jUnsignedByte p_minor_version;
-		std::set<jUnsignedInteger> p_discovered_addresses;
+		std::vector<JausAddress> p_discovered_addresses;
 	};
 };
 

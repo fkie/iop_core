@@ -40,6 +40,7 @@ Slave::Slave(JausAddress own_address)
 {
 	global_ptr = this;
 	p_subsystem_restricted = 65535;
+	p_controlled_component_nr = 1;
 	p_only_monitor = false;
 	p_discovery_client = NULL;
 	p_accesscontrol_client = NULL;
@@ -56,6 +57,7 @@ Slave::Slave(JausAddress own_address)
 Slave::Slave(const Slave& other)
 {
 	p_subsystem_restricted = 65535;
+	p_controlled_component_nr = 1;
 	p_only_monitor = false;
 	p_discovery_client = NULL;
 	p_accesscontrol_client = NULL;
@@ -165,6 +167,10 @@ void Slave::pInitRos()
 	cfg.param("use_queries", p_use_queries, p_use_queries);
 	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
 	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
+	cfg.param("controlled_component", p_controlled_component_nr, p_controlled_component_nr);
+	if (p_controlled_component_nr == 0) {
+		p_controlled_component_nr = 1;
+	}
 	iop::Component &cmp = iop::Component::get_instance();
 	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
@@ -180,8 +186,14 @@ void Slave::pRosControl(const iop_msgs_fkie::OcuCmd::ConstPtr& control)
 		iop_msgs_fkie::OcuCmdEntry cmd = control->cmds[i];
 		JausAddress ocu_client_addr = address_from_msg(cmd.ocu_client);
 		JausAddress control_addr = address_from_msg(cmd.address);
-		for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-			bool apply_cmd = match_address(it->get_own_address(), ocu_client_addr);
+		// apply default control address
+		control_addr = pApplyDefaultControlAdd(control_addr);
+		if (control_addr.get() == 0) {
+			continue;
+		}
+		// TODO: read services from discover client service
+		for(std::vector<ServiceInfo>::iterator it_srv = p_services.begin(); it_srv != p_services.end(); ++it_srv) {
+			bool apply_cmd = match_address(it_srv->get_own_address(), ocu_client_addr);
 			if (p_only_monitor && cmd.access_control > Component::ACCESS_CONTROL_MONITOR) {
 				apply_cmd = false;
 			}
@@ -189,16 +201,48 @@ void Slave::pRosControl(const iop_msgs_fkie::OcuCmd::ConstPtr& control)
 				apply_cmd = false;
 			}
 			if (apply_cmd) {
-				for (std::vector<Component>::iterator it = p_components.begin(); it != p_components.end(); ++it) {
-					if (it->match(control_addr)) {
-						commands[it->get_address().get()] = std::make_pair(cmd.access_control, cmd.authority);
-					}
+				JausAddress cmp = it_srv->get_dicovered_address(control_addr, p_controlled_component_nr);
+				if (cmp.get() != 0) {
+					commands[cmp.get()] = std::make_pair(cmd.access_control, cmd.authority);
 				}
 			}
 		}
 	}
 	//apply commands to each component
 	pApplyCommands(commands);
+}
+
+JausAddress Slave::pApplyDefaultControlAdd(JausAddress& control_addr)
+{
+	JausAddress result(control_addr);
+	if (p_default_control_addr.getSubsystemID() != 0 && p_default_control_addr.getSubsystemID() != 65535) {
+		if (control_addr.getSubsystemID() != 0 && control_addr.getSubsystemID() != 65535) {
+			if (p_default_control_addr.getSubsystemID() != control_addr.getSubsystemID()) {
+				result.setSubsystemID(0);
+			}
+		} else {
+			result.setSubsystemID(p_default_control_addr.getSubsystemID());
+		}
+	}
+	if (p_default_control_addr.getNodeID() != 0 && p_default_control_addr.getNodeID() != 255) {
+		if (control_addr.getNodeID() != 0 && control_addr.getNodeID() != 255) {
+			if (p_default_control_addr.getNodeID() != control_addr.getNodeID()) {
+				result.setNodeID(0);
+			}
+		} else {
+			result.setNodeID(p_default_control_addr.getNodeID());
+		}
+	}
+	if (p_default_control_addr.getComponentID() != 0 && p_default_control_addr.getComponentID() != 255) {
+		if (control_addr.getComponentID() != 0 && control_addr.getComponentID() != 255) {
+			if (p_default_control_addr.getComponentID() != control_addr.getComponentID()) {
+				result.setComponentID(0);
+			}
+		} else {
+			result.setComponentID(p_default_control_addr.getComponentID());
+		}
+	}
+	return result;
 }
 
 void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands)
@@ -311,6 +355,7 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 
 void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char code)
 {
+	ROS_DEBUG_NAMED("Slave", "access control status of %s changed to %d", address.str().c_str(), code);
 	iop_msgs_fkie::OcuFeedback msg_feedback;
 	Component* cmp = pGetComponent(address);
 	unsigned char authority = 205;
@@ -391,20 +436,16 @@ void Slave::pSendFeedback()
 
 void Slave::pManagementStatusHandler(JausAddress &address, unsigned char code)
 {
-	ROS_INFO_NAMED("Slave", "management status of %d.%d.%d changed to %d",
-			address.getSubsystemID(), address.getNodeID(), address.getComponentID(), code);
+	ROS_INFO_NAMED("Slave", "management status of %s changed to %d", address.str().c_str(), code);
 }
 
 void Slave::pDiscovered(const std::string &uri, JausAddress &address)
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-		if (uri.compare(it->get_uri()) == 0) {
-			if (it->add_discovered(address)) {
-				ROS_INFO_NAMED("Slave", "Discovered '%s' at address: %d.%d.%d", uri.c_str(),
-						address.getSubsystemID(), address.getNodeID(), address.getComponentID());
-				//test for current control state, do we need to send access control request
-//				pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
-			}
+		if (it->add_discovered(address, uri)) {
+			ROS_INFO_NAMED("Slave", "Discovered '%s' at address: %s", uri.c_str(), address.str().c_str());
+			//test for current control state, do we need to send access control request
+//			pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
 		}
 	}
 	pAddComponent(address);

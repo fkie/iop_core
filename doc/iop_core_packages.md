@@ -38,6 +38,10 @@ _subsystem_restricted (int_, (Default: 65535)
 
 > This client can control only the specified subsystem (robot). Any by default.
 
+_controlled_component (int_, (Default: 1)
+
+> Use this parameter if more than one component with requested service is available on robot. Returns the service in the list, beginning with 1.
+
 
 #### Publisher:
 
