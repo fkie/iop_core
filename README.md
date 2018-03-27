@@ -31,9 +31,9 @@ For easier download of bridge packages install **[wstool](http://wiki.ros.org/ws
 
     sudo apt-get install python-wstool -y
 
-If you want to use a manipulator, you will have to install moveit:
+You need also some other dependencies while you build the complete bridge:
 
-    sudo apt-get install ros-kinetic-moveit
+    sudo apt install python-lxml ros-kinetic-geodesy ros-kinetic-gps-common ros-kinetic-geographic-msgs ros-kinetic-moveit-msgs ros-kinetic-moveit-planners
 
 >For other ROS version replace kinetic by your ROS version
 
