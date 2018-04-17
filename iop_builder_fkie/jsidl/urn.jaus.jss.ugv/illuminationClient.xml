@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?oxygen RNGSchema="../../schema/JSIDL/jsidl.rnc" type="compact"?>
+<service_def name="IlluminationServiceClient"
+    id="urn:jaus:jss:ugv:IlluminationServiceClient" version="1.0"
+    xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0"
+    xmlns:ns3="urn:jaus:jsidl:1.1">
+    <description xml:space="preserve">The Illumination Service client.</description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+    <references>
+        <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient"
+            version="1.1"/>
+    </references>
+    <declared_type_set name="types">
+      <declared_type_set_ref name="illumination" id="urn:jaus:jss:ugv:IlluminationSet" version="1.0" />
+    </declared_type_set>
+    <message_set>
+        <input_set>
+            <declared_message_def name="ReportIlluminationState" declared_type_ref="illumination.ReportIlluminationState" />
+            <declared_message_def name="ReportIlluminationConfiguration" declared_type_ref="illumination.ReportIlluminationConfiguration" />
+        </input_set>
+        <output_set>
+            <declared_message_def name="QueryIlluminationState" declared_type_ref="illumination.QueryIlluminationState" />
+            <declared_message_def name="QueryIlluminationConfiguration" declared_type_ref="illumination.QueryIlluminationConfiguration" />
+            <declared_message_def name="SetIlluminationState" declared_type_ref="illumination.SetIlluminationState" />
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior>
+        <start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready">
+                  <default_state>
+
+                      <transition name="ReportIlluminationState">
+                          <parameter type="ReportIlluminationState" value="msg" interpretation="enveloped Report Illumination State message"/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <simple/>
+                          <action name="handleReportIlluminationState" interpretation="handle a Report Illumination State message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+
+                      <transition name="ReportIlluminationConfiguration">
+                          <parameter type="ReportIlluminationConfiguration" value="msg" interpretation="enveloped Report Illumination Configuration message"/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <simple/>
+                          <action name="handleReportIlluminationConfiguration" interpretation="handle a Report Illumination Configuration message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+
+                  </default_state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>
