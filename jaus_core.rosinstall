@@ -1,0 +1,3 @@
+- git:
+    local-name: iop_jaus_core
+    uri: https://github.com/fkie/iop_jaus_core
