@@ -1,7 +1,7 @@
 
 services:
   - docker
-language: generic
+language: cpp
 env:
   matrix:
     - ROS_DISTRO="indigo" ROS_REPO="ros"
