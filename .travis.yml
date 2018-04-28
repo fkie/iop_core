@@ -4,7 +4,7 @@ services:
 language: cpp
 env:
   global:
-    - CATKIN_CONFIG='--no-install --verbose'
+    - CATKIN_CONFIG='--no-install'
   matrix:
     - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file  $ROSINSTALL_FILENAME=".travis.rosinstall"
     - ROS_DISTRO="jade" ROS_REPO="ros"   UPSTREAM_WORKSPACE=file
