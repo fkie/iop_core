@@ -16,6 +16,8 @@ install:
   - sudo apt-get install scons ant -y
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 after_script:
-  - cat /root/catkin_ws/build/jaustoolset/get_jts_source.stderr
+  - sudo cat /root/catkin_ws/build/jaustoolset/get_jts_source.stderr
+  - sudo cat /root/catkin_ws/build/jaustoolset/get_jts_source.stdout
+  - sudo cat /root/catkin_ws/logs/jaustoolset/build.cmake.000.log
 script:
   - .ci_config/travis.sh
