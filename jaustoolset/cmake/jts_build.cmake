@@ -21,6 +21,8 @@ message(STATUS "JTS: git hash: ${GIT_HASH}")
 
 # set JTS environment variable needed by all depended packages
 set(ENV{JTS_COMMON_PATH} "${JTS_DIR}/GUI/templates/Common")
+# to be able to build in travis - docker
+unset(ENV{JAVA_HOME})
 
 if(NOT EXISTS "${JTS_DIR}")
   file(MAKE_DIRECTORY "${JTS_DIR}")
