@@ -5,7 +5,8 @@ language: cpp
 env:
   global:
     - CATKIN_CONFIG='--no-install'
-    - POST_PROCESS='cat /root/catkin_ws/build/jaustoolset/get_jts_source.stderr && cat /root/catkin_ws/build/jaustoolset/get_jts_source.stdout && cat /root/catkin_ws/logs/jaustoolset/build.cmake.000.log'
+    - VERBOSE_OUTPUT=true
+    - DEBUG_BASH=true
   matrix:
     - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file  $ROSINSTALL_FILENAME=".travis.rosinstall"
     - ROS_DISTRO="jade" ROS_REPO="ros"   UPSTREAM_WORKSPACE=file
@@ -18,4 +19,4 @@ install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
-  - if ! [ -z "$POST_PROCESS" ]; then $POST_PROCESS; fi
+
