@@ -3,6 +3,8 @@ services:
   - docker
 language: cpp
 env:
+  global:
+    - CATKIN_CONFIG='--no-install --verbose'
   matrix:
     - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file  $ROSINSTALL_FILENAME=".travis.rosinstall"
     - ROS_DISTRO="jade" ROS_REPO="ros"   UPSTREAM_WORKSPACE=file
@@ -13,5 +15,7 @@ install:
   - sudo apt-get install default-jdk -y
   - sudo apt-get install scons ant -y
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+after_script:
+  - cat /root/catkin_ws/build/jaustoolset/get_jts_source.stderr
 script:
   - .ci_config/travis.sh
