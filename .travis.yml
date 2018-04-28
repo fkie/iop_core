@@ -17,6 +17,7 @@ install:
   - sudo apt-get install openjdk-7-jdk -y
   - sudo apt-get install scons ant -y
   - update-alternatives --list javac
+  - ls -laR /usr/lib/jvm
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
