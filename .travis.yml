@@ -17,6 +17,8 @@ install:
 #  - sudo apt-get install openjdk-7-jdk -y
   - sudo apt-get install scons ant -y
   - update-alternatives --list javac
+  - sudo update-alternatives --install /usr/bin/java java  /usr/lib/jvm/java-8-openjdk-amd64/bin/java 1100
+  - sudo update-alternatives --install /usr/bin/javac javac  /usr/lib/jvm/java-8-openjdk-amd64/bin/javac 1100
 #  - ls -laR /usr/lib/jvm
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
