@@ -4,7 +4,7 @@ services:
 language: cpp
 env:
   global:
-    - CATKIN_CONFIG='--no-install'
+#    - CATKIN_CONFIG='--no-install'
     - VERBOSE_OUTPUT=true
 #    - DEBUG_BASH=true
   matrix:
