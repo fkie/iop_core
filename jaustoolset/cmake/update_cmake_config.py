@@ -11,7 +11,7 @@ parser.add_argument("output_dir")
 parser.add_argument("install_prefix")
 args = parser.parse_args()
 
-path_jts_gui = args.jts_gui_dir
+path_jts_gui = os.path.abspath(args.jts_gui_dir)
 path_jts_common = os.path.join(args.jts_gui_dir, "templates/Common")
 path_jts_cpp_include = os.path.join(path_jts_common, "include")
 path_jts_cpp_lib = os.path.join(path_jts_common, "lib")
@@ -67,7 +67,7 @@ with open(os.path.join(args.output_dir, "make_install.cmake"), "w") as installer
         h_files = [f for f in files if f.endswith(".h")]
         if h_files:
             installer.write('file(INSTALL ' + ' '.join(['"${_jts_include}/%s"' % os.path.relpath(os.path.join(root, h), path_jts_cpp_include) for h in h_files]) + ' DESTINATION "${CMAKE_INSTALL_PREFIX}/include/jaustoolset/%s")\n' % root[len(path_jts_cpp_include) + 1:])
-    for jar in ["jargs-1.0/jargs.jar", "smc/Smc.jar", "smc/Smc.jar", "smc/statemap.jar", "jaxb-plugins/commons-lang-2.5.jar"]:
+    for jar in ["jargs-1.0/jargs.jar", "smc/Smc.jar", "smc/statemap.jar", "jaxb-plugins/commons-lang-2.5.jar"]:
         installer.write('file(INSTALL ' + '"${_jts_java_lib}/%s"' % jar + ' DESTINATION "${CMAKE_INSTALL_PREFIX}/share/jaustoolset/lib/%s")\n' % os.path.dirname(jar))
     for root, dirs, files in os.walk(path_jts_java_classes):
         h_files = [f for f in files if f.endswith(".class")]

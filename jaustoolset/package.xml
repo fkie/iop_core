@@ -6,6 +6,7 @@
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
   <license>BSD</license>
   <buildtool_depend>cmake</buildtool_depend>
+  <run_depend>java</run_depend>
   <run_depend>ant</run_depend>
   <run_depend>scons</run_depend>
   <export>

@@ -1,23 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>iop_builder_fkie</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>JAUS build helper. It generates CPP sources from JSIDL files.
-  An installed JausToolSet is required. Install instructions:
-  Does not work with java 8!
-  1. Download the sources from http://jaustoolset.org/
-  2. goto jaustoolset/GUI/
-  3. # ant bindmxGraph
-  4. # ant bindJSIDLPlus
-  5. # ant bind
-  6. # ant compile-promela
-  7. # ant compile
-  8. # ant schema-export
-  9. export JTS_COMMON_PATH=/home/XXX/jaustoolset-2.2.1/GUI/templates/Common
-  Ready.
-
-  If you need jaus nodeManager, goto nodeManger, then run 'scons'. If
-  some error occurs regarding missing "pthread" and "timer" the libpthread and
+  An installed JausToolSet is required. This is done by scripts in jaustoolset.
+  If some error occurs regarding missing "pthread" and "timer" the libpthread and
   librt have to be included.
 
   This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in
@@ -29,5 +16,6 @@
   <license>GPLv2</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>jaustoolset</depend>
+  <depend>python-lxml</depend>
 </package>
 

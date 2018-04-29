@@ -8,70 +8,117 @@ endif()
 message(STATUS "JTS: Current dir ${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "JTS: Scripts dir ${JTS_CMAKE_SCRIPT_DIR}")
 set(JTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/../../jaustoolset/")
+get_filename_component(JTS_DIR ${JTS_DIR} ABSOLUTE)
 message(STATUS "JTS: path ${JTS_DIR}")
 set(JTS_GUI_DIR "${JTS_DIR}/GUI")
-
+# set JTS environment variable needed by all depended packages
+set(ENV{JTS_COMMON_PATH} "${JTS_DIR}/GUI/templates/Common")
+message(STATUS "JTS: export JTS_COMMON_PATH=$ENV{JTS_COMMON_PATH}")
+# should we update jaustoolset?
 set(RUN_UPDATES "enabled")
 if ($ENV{RUN_UPDATES})
   set(RUN_UPDATES $ENV{RUN_UPDATES})
 endif()
 message(STATUS "JTS: RUN_UPDATES=${RUN_UPDATES}")
+# read current commit hash
 file (STRINGS "${JTS_CMAKE_SCRIPT_DIR}/jts_commit" GIT_HASH)
 message(STATUS "JTS: git hash: ${GIT_HASH}")
 
-# set JTS environment variable needed by all depended packages
-set(ENV{JTS_COMMON_PATH} "${JTS_DIR}/GUI/templates/Common")
-# to be able to build in travis - docker
-message(STATUS "ENV: ${ENV}")
-message(STATUS "JAVA_HOME: $ENV{JAVA_HOME}")
-#unset(ENV{JAVA_HOME})
-message(STATUS "JAVA_HOME: $ENV{JAVA_HOME}")
+# print macro
+macro(print msg result output)
+  if (${result} GREATER "0")
+    message(WARNING "JTS: Error on ${msg}: ${result}: ${output}")
+  else()
+    message(STATUS "JTS: ${msg}: ${output}")
+  endif()
+endmacro()
+
+
+macro(prepare_jts_build)
+    execute_process(
+      COMMAND ant bindmxGraph -v
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/GUI"
+    )
+    print("ant bindmxGraph" ${result} ${output})
+    execute_process(
+      COMMAND ant bindJSIDLPlus -v
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/GUI"
+    )
+    print("ant bindJSIDLPlus" ${result} ${output})
+    execute_process(
+      COMMAND ant bind -v
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/GUI"
+    )
+    print("ant bind" ${result} ${output})
+    execute_process(
+      COMMAND ant compile-promela -v
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/GUI"
+    )
+    print("ant compile-promela" ${result} ${output})
+endmacro()
+
+
+macro(build_jts)
+    message(STATUS "JTS: build")
+    execute_process(
+      COMMAND ant compile -v
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/GUI"
+    )
+    print("ant compile" ${result} ${output})
+    message(STATUS "JTS: build nodeManager")
+    execute_process(
+      COMMAND scons
+      OUTPUT_VARIABLE output
+      OUTPUT_VARIABLE output
+      ERROR_VARIABLE output
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY "${JTS_DIR}/nodeManager"
+    )
+    print("nodeManager scons" ${result} ${output})
+endmacro()
+
 
 if(NOT EXISTS "${JTS_DIR}")
-  file(MAKE_DIRECTORY "${JTS_DIR}")
-  message(STATUS "*********************************************************")
-  message(STATUS "*                     Jaustoolset                       *")
-  message(STATUS "*                                                       *")
-  message(STATUS "*  On the first run, a lot of stuff will be downloaded  *")
-  message(STATUS "*  This may take a while...                             *")
-  message(STATUS "*                                                       *")
-  message(STATUS "*********************************************************")
-
-  message(STATUS "JTS: Clone https://github.com/fkie-forks/jaustoolset.git into ${JTS_DIR}")
+  message(STATUS "***************************************************************")
+  message(STATUS "*                     Jaustoolset                             *")
+  message(STATUS "*                                                             *")
+  message(STATUS "*  On the first run, a lot of stuff will be downloaded from:  *")
+  message(STATUS "*  https://github.com/fkie-forks/jaustoolset.git              *")
+  message(STATUS "*  into ${JTS_DIR}")
+  message(STATUS "*  This may take a while...                                   *")
+  message(STATUS "*                                                             *")
+  message(STATUS "***************************************************************")
   execute_process(
     COMMAND git clone https://github.com/fkie-forks/jaustoolset.git "${JTS_DIR}"
     OUTPUT_VARIABLE output
     ERROR_VARIABLE output
     RESULT_VARIABLE result
-#    ERROR_QUIET
   )
-  if (${result} GREATER "0")
-    message(WARNING "JTS: Clone result: ${result}: ${output}")
-  endif()
+  print("Clone result" ${result} ${output})
   message(STATUS "JTS: change commit to hash: ${GIT_HASH}")
   execute_process(
     COMMAND set -e && git -C "${JTS_DIR}" checkout $GIT_HASH
     OUTPUT_VARIABLE output
-  )
-  message(STATUS "JTS: build")
-  execute_process(
-    COMMAND ant bindmxGraph
-    COMMAND ant bindJSIDLPlus
-    COMMAND ant bind
-    COMMAND ant compile-promela
-    COMMAND ant compile
-    OUTPUT_VARIABLE output
     ERROR_VARIABLE output
     RESULT_VARIABLE result
-    WORKING_DIRECTORY "${JTS_DIR}/GUI"
   )
-  message(WARNING "JTS: build result: ${result}: ${output}")
-  message(STATUS "JTS: build nodeManager")
-  execute_process(
-    COMMAND scons
-    OUTPUT_VARIABLE output
-    WORKING_DIRECTORY "${JTS_DIR}/nodeManager"
-  )
+  prepare_jts_build()
+  build_jts()
 elseif (${RUN_UPDATES} STREQUAL "enabled")
   # jaustoolset sourcecode is downloaded, test for changes
   set(DO_BUILD "nobuild")
@@ -108,35 +155,12 @@ elseif (${RUN_UPDATES} STREQUAL "enabled")
   if(NOT EXISTS "${JTS_DIR}/nodeManager/bin/libCommon.so")
     message(STATUS "JTS: no libCommon library -> build")
     set(DO_BUILD "build")
-    execute_process(
-      COMMAND ant --noconfig bindmxGraph
-      COMMAND ant --noconfig bindJSIDLPlus
-      COMMAND ant --noconfig bind
-      COMMAND ant --noconfig compile-promela
-      OUTPUT_VARIABLE output
-      ERROR_VARIABLE output
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY "${JTS_DIR}/GUI"
-    )
+    prepare_jts_build()
   endif()
   # build on local or remote changes
   if (${DO_BUILD} STREQUAL "build")
-    message(STATUS "JTS: build")
-    execute_process(
-      COMMAND ant compile
-      OUTPUT_VARIABLE output
-      ERROR_VARIABLE output
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY "${JTS_DIR}/GUI"
-    )
-    message(WARNING "JTS: build result: ${result}: ${output}")
-    message(STATUS "JTS: build nodeManager")
-    execute_process(
-      COMMAND scons
-      OUTPUT_VARIABLE output
-      WORKING_DIRECTORY "${JTS_DIR}/nodeManager"
-    )
+    build_jts()
   endif()
-  
+
 endif()
 
