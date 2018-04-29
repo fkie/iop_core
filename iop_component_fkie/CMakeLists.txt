@@ -48,6 +48,10 @@ install(
   PATTERN "*.gen" EXCLUDE
 )
 
+install(
+  FILES include/JConstants.h DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+)
+
 # Mark executables and/or libraries for installation
 install(TARGETS iop_component
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
