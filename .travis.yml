@@ -32,7 +32,11 @@ install:
 #  - java -version
   - ls -laR /usr/lib/jvm
   - ant -diagnostics
+  - sudo ant -diagnostics
+  - sudo export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
   - env
+  - sudo env
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
