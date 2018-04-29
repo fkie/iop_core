@@ -33,14 +33,27 @@ for hfile in argv[3:]:
     print "JAUS: Merge %s" % hfile
     srcfile = os.path.join(srcdir, hfile)
     dstfile = os.path.join(destdir, hfile)
-    copy2 (dstfile, "%s.gen"%srcfile)
+    try:
+        copy2 (dstfile, "%s.gen"%srcfile)
+    except Exception as e:
+        print "JAUS: can't copy generated %s to %s because of error: %s" % (hfile, dstfile, e)
+        copy2 (dstfile, "%s.gen"%dstfile)
+        print "JAUS:   you find this file in: %s.gen"%dstfile
     if os.path.isfile(dstfile):
       if dstfile.endswith('.h') and not os.path.isfile("%s.old"%dstfile) and not os.path.dirname(dstfile).endswith('include'):
         raise Exception("%s was not updated by code generator. Is the path correct?"%dstfile)
       a = file("%s.gen"%srcfile, 'rt').readlines()
       b = file("%s"%srcfile, 'rt').readlines()
       differ = difflib.Differ()
-      file("%s.diff"%srcfile, 'w').writelines(difflib.unified_diff(a, b, fromfile="%s.gen"%srcfile, tofile="%s.diff"%srcfile))
+      try:
+        fdiff = file("%s.diff"%srcfile, 'w')
+      except Exception as e:
+        print "JAUS: can't create diff %s.diff because of error: %s" % (srcfile, e)
+        fdiff = file("%s.diff"%dstfile, 'w')
+        print "JAUS:   you find this file in: %s.diff"%dstfile
+      if fdiff is not None:
+        fdiff.writelines(difflib.unified_diff(a, b, fromfile="%s.gen"%srcfile, tofile="%s.diff"%srcfile))
+        fdiff.close()
 
 #       diff = differ.compare(a, b)
 #       result = []
@@ -83,7 +96,12 @@ for hfile in argv[3:]:
 #         else:
 #           print error_msg
       if dstfile.endswith('.h'):
-        copy2 (srcfile, dstfile)
+          try:
+              copy2 (srcfile, dstfile)
+          except Exception as e:
+              print "JAUS: can't copy %s to %s because of error: %s" % (srcfile, dstfile, e)
+#              copy2 (dstfile, "%s.gen"%dstfile)
+#              print "JAUS:   you find this file in: %s.gen"%dstfile
 #        file(dstfile, 'w').writelines(result)
 if error_msgs:
   raise Exception("%s"%'\n'.join(error_msgs))

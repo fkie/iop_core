@@ -10,7 +10,7 @@ First of all we need an JSIDL which describes the service with all input/output 
     </action>
 ```
 
-Now we create a new ROS package (in our case *iop_visual_sensor_fkie*) which depends on `roscpp`, `iop_component_fkie` and `iop_accesscontrol_fkie`. Each plugin should depend on `iop_component_fkie` to get the funtionatlities of [Bridge-Plugins](component_package.md) and [Builder-package](builder_package.md). The `iop_accesscontrol_fkie` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
+Now we create a new ROS package (in our case *iop_visual_sensor_fkie*) which depends on `roscpp`, `iop_component_fkie` and `iop_accesscontrol_fkie`. Each plugin should depend on `iop_component_fkie` to get the funtionatlities of [Bridge-Plugins](../iop_component_fkie/README.md) and [Builder-package](../iop_builder_fkie/README.md). The `iop_accesscontrol_fkie` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
 ```
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>roscpp</build_depend>
@@ -161,7 +161,7 @@ Now we specify the IOP plugin description, so it can be found if we include it i
       </class>
     </library>
 ```
-The values for *iop_service* tag are taken from JSIDL definition. The *class* tag describes our plugin and the class we created. For more details see [Bridge-Plugins](component_package.md).
+The values for *iop_service* tag are taken from JSIDL definition. The *class* tag describes our plugin and the class we created. For more details see [Bridge-Plugins](../iop_component_fkie/README.md).
 
 Then we include our plugin definition to the `package.xml`:
 ```

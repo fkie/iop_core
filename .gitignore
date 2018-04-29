@@ -1,5 +1,5 @@
 *.diff
-*.gen 
+*.gen
 .project
 .cproject
 .pydevproject

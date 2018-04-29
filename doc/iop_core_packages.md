@@ -1,56 +1,23 @@
-## iop_builder_fkie
-It contains the basic functionality and must be included in each component of the IOP/ROS bridge. The detailed overview of this package you find [here](builder_package.md).
+### iop_builder_fkie
+It contains the basic functionality and must be included in each component of the IOP/ROS bridge. The detailed overview of this package you find [here](../iop_builder_fkie/README.md).
 
-## iop_msgs_fkie
-Defines some ROS messages needed to represent the IOP structure, e.g. to visualize the current available IOP components.
->Please use for new components _standard_ ROS messages for translation of IOP messages if possible.
+### iop_component_fkie
+Contains the plugin interface for all IOP services. The services which implement this interface can be included into the component on start. The **iop_component** binary represents an IOP component. The services of this component can be configured dynamically. For further details see [how it works](../doc/how_it_works.md) or [simulation example](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/README.md)
 
-## iop_component_fkie
-Contains the plugin interface for all IOP services. The services which implement this interface can be included into the component on start. The **iop_component** binary represents an IOP component. The services of this component can be configured dynamically. For further details see [how it works](how_it_works.md) or [simulation example](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/README.md)
+### iop_ocu_slavelib_fkie
+A helper library for ROS/IOP-Bridge OCU nodes. The detailed overview of this package you find [here](../iop_ocu_slavelib_fkie/README.md).
 
-## iop_ocu_slavelib_fkie
-A helper library for ROS/IOP-Bridge OCU nodes. This library combines the IOP client services (AccessControlClient, DiscoveryClient and ManagementClient) and listen to the command of the master (ocu_rqt_access_control_fkie) to synchronize the access of multiple OCU client to robot services.
-Each OCU client needs to implement `SlaveHandlerInterface` interface class. All client plugins use the functionality of the same Slave instance.
+## JAUS Core Services
 
-#### Parameter:
-
-_control_addr (str_, (Default: "")
-
-> The JAUS address if only a specific component, node or system are controlled by the client. Supported formats: XX, XX.XX or XX.XX.XX
-
-_authority (int_, (Default: 205)
-
-> The authority for access control.
-
-_access_control (int_, (Default: 10)
-
-> Access state after start the component. States: 10:ACCESS_CONTROL_RELEASE, 11:ACCESS_CONTROL_MONITOR, 12:ACCESS_CONTROL_REQUEST
-
-_use_queries (bool_, (Default: false)
-
-> Use queries on __true__ instead of events to get reports from robot services.
-
-_only_monitor (bool_, (Default: false)
-
-> Uses client only for monitoring if __true__ and does not allow access control.
-
-_subsystem_restricted (int_, (Default: 65535)
-
-> This client can control only the specified subsystem (robot). Any by default.
-
-_controlled_component (int_, (Default: 1)
-
-> Use this parameter if more than one component with requested service is available on robot. Returns the service in the list, beginning with 1.
-
-
-#### Publisher:
-
-_/ocu_feedback (iop_msgs_fkie::OcuFeedback)_
-
-> Publishes the current control state and occurred errors.
-
-#### Subscriber:
-
-_/ocu_cmd (iop_msgs_fkie::OcuCmd)_
-
-> Receives the commands from iop_rqt_access_control GUI.
+[iop_accesscontrol_fkie: AccessControl](../iop_accesscontrol_fkie/README.md)  
+[iop_accesscontrol_fkie: AccessControlClient](../iop_accesscontrol_fkie/README.md#iop_accesscontrol_fkie-accesscontrolclient)  
+[iop_discovery_fkie: Discovery](../iop_discovery_fkie/README.md)  
+[iop_discovery_fkie: DiscoveryClient](../iop_discovery_fkie/README.md#iop_discovery_fkie-discoveryclient)  
+[iop_events_fkie: Events](../iop_events_fkie/README.md)  
+[iop_events_fkie: EventsClient](../iop_events_fkie/README.md#iop_events_fkie-eventsclient)  
+[iop_list_manager_fkie: ListManager](../iop_list_manager_fkie/README.md)  
+[iop_list_manager_fkie: ListManagerClient](../iop_list_manager_fkie/README.md#iop_list_manager_fkie-listmanagerclient)  
+[iop_liveness_fkie: Liveness](../iop_liveness_fkie/README.md)  
+[iop_management_fkie: Management](../iop_management_fkie/README.md)  
+[iop_management_fkie: ManagementClient](../iop_management_fkie/README.md#iop_management_fkie-managementclient)  
+[iop_transport_fkie: Transport](../iop_transport_fkie/README.md)  

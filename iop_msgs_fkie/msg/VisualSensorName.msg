@@ -1,2 +1,0 @@
-string name
-uint16 resource_id

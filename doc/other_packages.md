@@ -1,12 +1,12 @@
 ## Main Repository of ROS/IOP Bridge
 Core pakages of the ROS/IOP-Bridge needed to build the bridge. For interface description of core packages see [here](iop_core_packages.md). The interface description of other services is located in corresponding repository.
 
+_git clone https://github.com/fkie/iop_msgs_
 _git clone https://github.com/fkie/iop_core_
 
 ## Repositories with packages implementing the SEA JAUS Services
 
 - **core**: _urn.jaus.jss.core_ - services
-    - _git clone https://github.com/fkie/iop_jaus_core_
     - iop_accesscontrol_fkie
     - iop_discovery_fkie
     - iop_events_fkie

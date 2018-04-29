@@ -1,3 +1,0 @@
-uint16 subsystem_id
-uint8 node_id
-uint8 component_id

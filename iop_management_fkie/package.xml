@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>iop_management_fkie</name>
+  <version>1.1.0</version>
+  <description>The full functional implementation of JAUS Management service.
+    This service can be included into other components.</description>
+
+  <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
+  <license>GPLv2</license>
+  <url type="website">https://github.com/fkie/iop_jaus_core.git</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>iop_accesscontrol_fkie</build_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>iop_accesscontrol_fkie</run_depend>
+  <run_depend>iop_component_fkie</run_depend>
+  <run_depend>roscpp</run_depend>
+
+  <export>
+    <iop_component_fkie plugin="${prefix}/plugin_iop.xml" />
+  </export>
+</package>

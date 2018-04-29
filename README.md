@@ -65,7 +65,7 @@ Go to the root folder of your ROS workspace and type:
 >In case of "permission denied" errors you have to mark the \*.py files in *jaus\_builder\_fkie/cmake/* as runnable
 >You can also use `catkin build` instead of `catkin_make`, if you have [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) installed
 
->If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/build/jaustoolset/GUI/templates/Common/SConstruct*
+>If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/GUI/templates/Common/SConstruct*
 
 ## Additional Information
 
@@ -95,6 +95,6 @@ You can find the description to this example [here](https://github.com/fkie/iop_
 ## [How it works - an overview](doc/how_it_works.md)
 ## [IOP packages - an overview](doc/other_packages.md)
 ## [IOP core packages](doc/iop_core_packages.md)
-## [Builder-package](doc/builder_package.md)
+## [Builder-package](iop_builder_fkie/README.md)
 ## [How to start with own configuration](doc/howto_minimal_config.md)
 ## [How to create own plugin](doc/howto_create_plugin.md)

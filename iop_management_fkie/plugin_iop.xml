@@ -1,0 +1,18 @@
+<library path="libiop_management_fkie">
+  <class name="Management" type="iop::ManagementPlugin" base_class_type="iop::PluginInterface">
+    <description>
+      Management Service Plugin
+    </description>
+    <iop_service name="Management" id="urn:jaus:jss:core:Management" version="1.1">
+      <inherits_from id="urn:jaus:jss:core:AccessControl" min_version="1.0"/>
+    </iop_service>
+  </class>
+  <class name="ManagementClient" type="iop::ManagementClientPlugin" base_class_type="iop::PluginInterface">
+    <description>
+      Management client Service Plugin, used e.g. by OCU
+    </description>
+    <iop_service name="ManagementClient" id="urn:jaus:jss:core:ManagementClient" version="1.1">
+      <inherits_from id="urn:jaus:jss:core:AccessControlClient" min_version="1.0"/>
+    </iop_service>
+  </class>
+</library>
