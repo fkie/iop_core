@@ -14,25 +14,24 @@ env:
     - ROS_DISTRO="kinetic" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
     - ROS_DISTRO="lunar" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
 install:
-#  - sudo apt-get install openjdk-8-jdk -y
   - sudo apt-get purge oracle-java8-installer oracle-java9-installer -y
+  - sudo apt-get purge ant -y
+  - unset JAVA_HOME
+  - sudo apt-get install openjdk-8-jdk -y
+  - sudo apt-get install scons ant -y
   - update-alternatives --get-selections | grep ^java
   - update-alternatives --list java
   - update-alternatives --list javac
   - java -version
-  - sudo update-alternatives --install /usr/bin/java java  /usr/lib/jvm/java-8-openjdk-amd64/bin/java 1100
-  - sudo update-alternatives --install /usr/bin/javac javac  /usr/lib/jvm/java-8-openjdk-amd64/bin/javac 1100
-  - java -version
-  - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
-  - sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
-  - java -version
-  - unset JAVA_HOME
-  - sudo apt-get purge ant -y
-  - sudo apt-get install scons ant -y
+#  - sudo update-alternatives --install /usr/bin/java java  /usr/lib/jvm/java-8-openjdk-amd64/bin/java 1100
+#  - sudo update-alternatives --install /usr/bin/javac javac  /usr/lib/jvm/java-8-openjdk-amd64/bin/javac 1100
+#  - java -version
+#  - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+#  - sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
+#  - java -version
   - ls -laR /usr/lib/jvm
   - ant -diagnostics
   - env
-  - env | grep JAVA
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
