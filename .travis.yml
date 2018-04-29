@@ -16,6 +16,8 @@ env:
 install:
 #  - sudo apt-get install openjdk-8-jdk -y
   - sudo apt-get purge oracle-java8-installer oracle-java9-installer -y
+  - update-alternatives --get-selections | grep ^java
+  - update-alternatives --list java
   - update-alternatives --list javac
   - java -version
   - sudo update-alternatives --install /usr/bin/java java  /usr/lib/jvm/java-8-openjdk-amd64/bin/java 1100
@@ -30,6 +32,7 @@ install:
   - ls -laR /usr/lib/jvm
   - ant -diagnostics
   - env
+  - env | grep JAVA
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
