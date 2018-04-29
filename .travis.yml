@@ -24,10 +24,11 @@ install:
   - sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
   - sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
   - java -version
-  - sudo apt-get remove ant -y
+  - sudo apt-get purge ant -y
   - sudo apt-get install scons ant -y
 #  - ls -laR /usr/lib/jvm
-  - ant -diagnostics
+  - unset JAVA_HOME
+#  - ant -diagnostics
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh
