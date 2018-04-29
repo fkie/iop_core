@@ -17,6 +17,7 @@ install:
   - sudo apt-get purge oracle-java8-installer oracle-java9-installer -y
   - sudo apt-get purge ant -y
   - unset JAVA_HOME
+  - sudo apt-get purge openjdk-6-* openjdk-7-*
   - sudo apt-get install openjdk-8-jdk -y
   - sudo apt-get install scons ant -y
   - update-alternatives --get-selections | grep ^java
