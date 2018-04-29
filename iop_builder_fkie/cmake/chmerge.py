@@ -33,26 +33,30 @@ for hfile in argv[3:]:
     print "JAUS: Merge %s" % hfile
     srcfile = os.path.join(srcdir, hfile)
     dstfile = os.path.join(destdir, hfile)
+    genfile = "%s.gen"%srcfile
     try:
-        copy2 (dstfile, "%s.gen"%srcfile)
+        copy2 (dstfile, genfile)
     except Exception as e:
         print "JAUS: can't copy generated %s to %s because of error: %s" % (hfile, dstfile, e)
-        copy2 (dstfile, "%s.gen"%dstfile)
+        genfile = "%s.gen"%dstfile
+        copy2 (dstfile, genfile)
         print "JAUS:   you find this file in: %s.gen"%dstfile
     if os.path.isfile(dstfile):
       if dstfile.endswith('.h') and not os.path.isfile("%s.old"%dstfile) and not os.path.dirname(dstfile).endswith('include'):
         raise Exception("%s was not updated by code generator. Is the path correct?"%dstfile)
-      a = file("%s.gen"%srcfile, 'rt').readlines()
+      a = file(genfile, 'rt').readlines()
       b = file("%s"%srcfile, 'rt').readlines()
       differ = difflib.Differ()
+      diffsrcfile = "%s.diff"%srcfile
       try:
-        fdiff = file("%s.diff"%srcfile, 'w')
+        fdiff = file(diffsrcfile, 'w')
       except Exception as e:
-        print "JAUS: can't create diff %s.diff because of error: %s" % (srcfile, e)
-        fdiff = file("%s.diff"%dstfile, 'w')
-        print "JAUS:   you find this file in: %s.diff"%dstfile
+        print "JAUS: can't create diff %s because of error: %s" % (diffsrcfile, e)
+        diffsrcfile = "%s.diff"%dstfile
+        fdiff = file(diffsrcfile, 'w')
+        print "JAUS:   you find this file in: %s"%diffsrcfile
       if fdiff is not None:
-        fdiff.writelines(difflib.unified_diff(a, b, fromfile="%s.gen"%srcfile, tofile="%s.diff"%srcfile))
+        fdiff.writelines(difflib.unified_diff(a, b, fromfile=genfile, tofile=diffsrcfile))
         fdiff.close()
 
 #       diff = differ.compare(a, b)
