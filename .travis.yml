@@ -3,9 +3,9 @@ services:
   - docker
 language: cpp
 env:
-  global:
+#  global:
 #    - CATKIN_CONFIG='--no-install'
-    - VERBOSE_OUTPUT=true
+#    - VERBOSE_OUTPUT=true
 #    - DEBUG_BASH=true
   matrix:
     - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file  $ROSINSTALL_FILENAME=".travis.rosinstall"
