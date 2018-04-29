@@ -6,7 +6,7 @@
 #include "Service.h"
 #include "InternalEvents/InternalEventHandler.h"
 #include "Transport/JausTransport.h"
-#include "JConstants.h"
+//#include "JConstants.h"
 #include "urn_jaus_jss_core_Transport/Messages/MessageSet.h"
 #include "urn_jaus_jss_core_Transport/InternalEvents/InternalEventsSet.h"
 #include "Transport/OS.h"
