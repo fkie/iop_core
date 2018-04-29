@@ -26,6 +26,7 @@ install:
   - sudo apt-get remove ant -y
   - sudo apt-get install scons ant -y
 #  - ls -laR /usr/lib/jvm
+  - ant -diagnostics
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
   - .ci_config/travis.sh

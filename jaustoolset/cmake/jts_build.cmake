@@ -22,7 +22,10 @@ message(STATUS "JTS: git hash: ${GIT_HASH}")
 # set JTS environment variable needed by all depended packages
 set(ENV{JTS_COMMON_PATH} "${JTS_DIR}/GUI/templates/Common")
 # to be able to build in travis - docker
-unset(ENV{JAVA_HOME})
+message(STATUS "ENV: ${ENV}")
+message(STATUS "JAVA_HOME: $ENV{JAVA_HOME}")
+#unset(ENV{JAVA_HOME})
+message(STATUS "JAVA_HOME: $ENV{JAVA_HOME}")
 
 if(NOT EXISTS "${JTS_DIR}")
   file(MAKE_DIRECTORY "${JTS_DIR}")
@@ -34,7 +37,7 @@ if(NOT EXISTS "${JTS_DIR}")
   message(STATUS "*                                                       *")
   message(STATUS "*********************************************************")
 
-  message(STATUS "JTS: Clone https://github.com/fkie-forks/jaustoolset.git into ../../jaustoolset")
+  message(STATUS "JTS: Clone https://github.com/fkie-forks/jaustoolset.git into ${JTS_DIR}")
   execute_process(
     COMMAND git clone https://github.com/fkie-forks/jaustoolset.git "${JTS_DIR}"
     OUTPUT_VARIABLE output
@@ -106,10 +109,10 @@ elseif (${RUN_UPDATES} STREQUAL "enabled")
     message(STATUS "JTS: no libCommon library -> build")
     set(DO_BUILD "build")
     execute_process(
-      COMMAND ant bindmxGraph
-      COMMAND ant bindJSIDLPlus
-      COMMAND ant bind
-      COMMAND ant compile-promela
+      COMMAND ant --noconfig bindmxGraph
+      COMMAND ant --noconfig bindJSIDLPlus
+      COMMAND ant --noconfig bind
+      COMMAND ant --noconfig compile-promela
       OUTPUT_VARIABLE output
       ERROR_VARIABLE output
       RESULT_VARIABLE result
@@ -126,7 +129,7 @@ elseif (${RUN_UPDATES} STREQUAL "enabled")
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    message(WARNING "JTS: buil result: ${result}: ${output}")
+    message(WARNING "JTS: build result: ${result}: ${output}")
     message(STATUS "JTS: build nodeManager")
     execute_process(
       COMMAND scons
