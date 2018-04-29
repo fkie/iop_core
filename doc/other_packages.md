@@ -1,7 +1,6 @@
 ## Main Repository of ROS/IOP Bridge
 Core pakages of the ROS/IOP-Bridge needed to build the bridge. For interface description of core packages see [here](iop_core_packages.md). The interface description of other services is located in corresponding repository.
 
-_git clone https://github.com/fkie/iop_msgs_
 _git clone https://github.com/fkie/iop_core_
 
 ## Repositories with packages implementing the SEA JAUS Services
@@ -16,7 +15,7 @@ _git clone https://github.com/fkie/iop_core_
     - iop_transport_fkie
 
 - **manipulator**: _urn.jaus.jss.manipulator-v2.0_ - services
-    - _git clone https://github.com/fkie/iop_jaus_manipulator
+    - _git clone [https://github.com/fkie/iop_jaus_manipulator](https://github.com/fkie/iop_jaus_manipulator)_
     - iop_manipulator_joint_position_sensor_fkie
     - iop_manipulator_specification_service_fkie
     - iop_pantilt_joint_position_driver_fkie
@@ -26,7 +25,7 @@ _git clone https://github.com/fkie/iop_core_
     - iop_primitive_pantilt_fkie
 
 - **mobility**: _urn.jaus.jss.mobility_ - services
-    - _git clone https://github.com/fkie/iop_jaus_mobility_
+    - _git clone [https://github.com/fkie/iop_jaus_mobility](https://github.com/fkie/iop_jaus_mobility)_
     - iop_global_pose_sensor_fkie
     - iop_global_waypoint_driver_fkie
     - iop_global_waypoint_list_driver_fkie
@@ -34,14 +33,15 @@ _git clone https://github.com/fkie/iop_core_
     - iop_primitive_driver_fkie
 
 - **sensing**: _urn.jaus.jss.environmentSensing_ - services
-    - _git clone https://github.com/fkie/iop_jaus_sensing_
+    - _git clone [https://github.com/fkie/iop_jaus_sensing](https://github.com/fkie/iop_jaus_sensing)_
     - iop_digital_video_fkie
     - iop_range_sensor_fkie
     - iop_still_image_fkie
     - iop_visual_sensor_fkie
 
 - **ugv**: _urn.jaus.jss.ugv_ - services
-    - _git clone https://github.com/fkie/iop_jaus_ugv_
+    - _git clone [https://github.com/fkie/iop_jaus_ugv](https://github.com/fkie/iop_jaus_ugv)_
+    - iop_illumination_fkie
     - iop_stabilizer_driver_fkie
 
 
@@ -50,7 +50,7 @@ _git clone https://github.com/fkie/iop_core_
 The clients are used on the OCU side to control an IOP compliant robot.
 
 - **manipulator_clients**: clients for _urn.jaus.jss.manipulator-v2.0_ - services
-    - _git clone https://github.com/fkie/iop_jaus_manipulator_clients_
+    - _git clone [https://github.com/fkie/iop_jaus_manipulator_clients](https://github.com/fkie/iop_jaus_manipulator_clients)_
     - iop_client_manipulator_joint_position_sensor_fkie
     - iop_client_manipulator_specification_fkie
     - iop_client_pantilt_joint_position_driver_fkie
@@ -60,7 +60,7 @@ The clients are used on the OCU side to control an IOP compliant robot.
     - iop_client_primitive_pantilt_fkie
 
 - **mobility_clients**: clients for _urn.jaus.jss.mobility_ - services
-    - _git clone https://github.com/fkie/iop_jaus_mobility_clients_
+    - _git clone [https://github.com/fkie/iop_jaus_mobility_clients](https://github.com/fkie/iop_jaus_mobility_clients)_
     - iop_client_global_pose_sensor_fkie
     - iop_client_global_waypoint_driver_fkie
     - iop_client_global_waypoint_list_driver_fkie
@@ -68,44 +68,55 @@ The clients are used on the OCU side to control an IOP compliant robot.
     - iop_client_primitive_driver_fkie
 
 - **sensing_clients**: clients for _urn.jaus.jss.environmentSensing_ - services
-    - _git clone https://github.com/fkie/iop_jaus_sensing_clients_
+    - _git clone [https://github.com/fkie/iop_jaus_sensing_clients](https://github.com/fkie/iop_jaus_sensing_clients)_
     - iop_client_digital_video_fkie
     - iop_client_range_sensor_fkie
     - iop_client_still_image_fkie
     - iop_client_visual_sensor_fkie
 
 - **ugv**: clients for _urn.jaus.jss.ugv_ - services
-    - _git clone https://github.com/fkie/iop_jaus_ugv_clients_
+    - _git clone [https://github.com/fkie/iop_jaus_ugv_clients](https://github.com/fkie/iop_jaus_ugv_clients)_
+    - iop_client_illumination_fkie
     - iop_client_stabilizer_driver_fkie
 
 ## IOP services
 - **iop_platform**: the platform services including all services to create a platform
-    - _git clone https://github.com/fkie/iop_platform_
+    - _git clone [https://github.com/fkie/iop_platform](https://github.com/fkie/iop_platform)_
     - iop_client_digital_resource_fkie
     - iop_digital_resource_discovery_fkie
+    - iop_handoff_fkie
     - iop_health_monitor_fkie
     - iop_platform_manager_fkie
     - iop_platform_mode_fkie
     - iop_platform_state_fkie
+    - iop_unsolicited_heartbeat_fkie
 
 - **iop_sensing**: sensor services
-    - _git clone https://github.com/fkie/iop_sensing_
+    - _git clone [https://github.com/fkie/iop_sensing](https://github.com/fkie/iop_sensing)_
     - iop_costmap2d_fkie
     - iop_measurement_sensor_fkie
     - iop_path_reporter_fkie
 
 - **iop_sensing_clients**: clients for sensor services
-    - _git clone https://github.com/fkie/iop_sensing_clients_
+    - _git clone [https://github.com/fkie/iop_sensing_clients](https://github.com/fkie/iop_sensing_clients)_
     - iop_client_costmap2d_fkie
     - iop_client_measurement_sensor_fkie
     - iop_client_path_reporter_fkie
 
+
+## ROS Messages
+For some functionallity we defined ROS messages.
+
+_git clone [https://github.com/fkie/iop_msgs](https://github.com/fkie/iop_msgs)_
+
+
 ## ROS GUI for IOP services
 Basically we can use the available ROS GUIs. But some GUI components are very special, e.g. visualisation of the IOP components. In `gui` location are some GUI components using ROS *rqt*.
-- _git clone https://github.com/fkie/iop_gui_
+
+- _git clone [https://github.com/fkie/iop_gui](https://github.com/fkie/iop_gui)_
 - iop_rqt_access_control_fkie
 - iop_rqt_digital_resource_viewer_fkie
 
 ## Configuration Examples
 - **iop_cfg_sim_stage_fkie**: Example with state simulator
-	- _git clone https://github.com/fkie/iop_cfg_sim_stage_fkie_
+	- _git clone [https://github.com/fkie/iop_cfg_sim_stage_fkie](https://github.com/fkie/iop_cfg_sim_stage_fkie)_

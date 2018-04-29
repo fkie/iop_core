@@ -1,7 +1,8 @@
+This repository lets your ROS software communicate with IOP services. You can find an overview of all supported services at [doc/other_packages.md](doc/other_packages.md).
 
-This repository lets your ROS software communicate with IOP services.
+Build status of latest version:
 
->currently only the core services and a set of selected components for driving is implemented. Pacakges for manipulating are currently depricated and are under construction.
+[![Build Status](https://travis-ci.org/fkie/iop_core.svg?branch=master)](https://travis-ci.org/fkie/iop_core)
 
 
 # Installation of the ROS/IOP Bridge
