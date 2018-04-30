@@ -143,11 +143,11 @@ elseif (${RUN_UPDATES} STREQUAL "enabled")
   endif()
   # test for local changes in jaustoolset
   execute_process(
-    COMMAND git -C ${JTS_DIR} diff ${GIT_HASH}
-    OUTPUT_VARIABLE DIFF_RESULT
-    WORKING_DIRECTORY "${JTS_DIR}"
+      COMMAND git -C ${JTS_DIR} diff-index ${GIT_HASH} --
+      OUTPUT_VARIABLE DIFF_RESULT
+      WORKING_DIRECTORY "${JTS_DIR}"
   )
-  if (${DIFF_RESULT})
+  if (NOT ${DIFF_RESULT} STREQUAL "")
     message(STATUS "JTS: Update JTS to commit: : ${GIT_HASH}")
     set(DO_BUILD "build")
   endif()
