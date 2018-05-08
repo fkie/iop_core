@@ -55,7 +55,7 @@ ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(urn_jaus_jss_core_Trans
 	this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
 	this->pAccessControlClient_ReceiveFSM = pAccessControlClient_ReceiveFSM;
 	p_status = 255;
-	p_hz = 1.0;
+	p_hz = 0.0;
 	by_query = false;
 }
 
@@ -77,6 +77,7 @@ void ManagementClient_ReceiveFSM::setupNotifications()
 	cfg.param("hz", p_hz, p_hz, false, false);
 	cfg.param("by_query", by_query, by_query, true, true);
 	p_pub_status = cfg.advertise<std_msgs::String>("mgmt_status", 5, true);
+	p_pub_status_emergency = cfg.advertise<std_msgs::Bool>("mgmt_emergency", 5, true);
 	p_sub_cmd_emergency = cfg.subscribe<std_msgs::Bool>("cmd_mgmt_emergency", 5, &ManagementClient_ReceiveFSM::pRosEmergency, this);
 	p_sub_cmd_ready = cfg.subscribe<std_msgs::Bool>("cmd_mgmt_reset", 5, &ManagementClient_ReceiveFSM::pRosReady, this);
 }
@@ -91,6 +92,9 @@ void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::
 		std_msgs::String ros_msg;
 		ros_msg.data = p_status_to_str(p_status);
 		p_pub_status.publish(ros_msg);
+		std_msgs::Bool ros_msg_emergency;
+		ros_msg_emergency.data = p_status == 5;  // emergency state
+		p_pub_status_emergency.publish(ros_msg_emergency);
 		//    p_on_status_query = false;
 		//    if (p_do_resume and p_status != 3) {
 		//      ROS_DEBUG_NAMED("ManagementClient", "  Resume!\n");
@@ -149,7 +153,7 @@ void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 				}
 			} else {
 				ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
-				pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, 0);
+				pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
 			}
 		}
 	}

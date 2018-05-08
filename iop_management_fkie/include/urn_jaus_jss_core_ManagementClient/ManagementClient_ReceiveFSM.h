@@ -106,6 +106,7 @@ protected:
 	ros::Subscriber p_sub_cmd_emergency;
 	ros::Subscriber p_sub_cmd_ready;
 	ros::Publisher p_pub_status;
+	ros::Publisher p_pub_status_emergency;
 	std::string p_status_to_str(unsigned char status);
 	void pRosEmergency(const std_msgs::Bool::ConstPtr& state);
 	void pRosReady(const std_msgs::Bool::ConstPtr& state);
