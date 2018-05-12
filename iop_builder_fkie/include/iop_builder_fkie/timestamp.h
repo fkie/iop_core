@@ -25,10 +25,14 @@ along with this program; or you can read the full license at
 #define TIMESTAMP_H
 
 #include <stdio.h>
+#include <ros/ros.h>
 #include <ros/time.h>
 
 
 namespace iop {
+
+static bool use_remote_time = false;
+static bool parameter_initialized = false;
 
 class Timestamp {
 
@@ -43,6 +47,16 @@ public:
 		unsigned int days_mod = now_sec - now_sec % 86400;
 		ros_time.sec =  days_mod + seconds + minutes * 60 + hours * 3600 + days * 86400;
 		ros_time.nsec = milliseconds * 1000000;
+		// THIS IS A HACK: avoid problems with not synchronized hosts
+		if (! parameter_initialized) {
+			ros::NodeHandle nh;
+			nh.param("iop_use_remote_time", use_remote_time, use_remote_time);
+			ROS_INFO_STREAM("ROS param: " << "iop_use_remote_time" << " = " << use_remote_time);
+			parameter_initialized = true;
+		}
+		if (! use_remote_time) {
+			ros_time = ros::Time::now();
+		}
 	}
 
 	Timestamp(ros::Time ros_time) {
@@ -67,6 +81,7 @@ public:
 	unsigned int minutes;
 	unsigned int seconds;
 	unsigned int milliseconds;
+
 };
 
 };
