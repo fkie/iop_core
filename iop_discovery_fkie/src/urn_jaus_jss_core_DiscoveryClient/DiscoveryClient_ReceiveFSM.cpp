@@ -97,7 +97,7 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 				ROS_WARN("invalid address format in unicast_subsystems: %s, should be subsystem.node.component", jaus_addr_str.c_str());
 			}
 		}
-	} else {
+	} else if (v.valid()) {
 		ROS_WARN("wrong ~unicast_subsystems parameter type! It should be an array with format [123.45.67, ...]");
 	}
 	ros::NodeHandle nh;
