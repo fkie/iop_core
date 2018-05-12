@@ -136,6 +136,7 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 
 void Slave::pInitRos()
 {
+	ROS_INFO_ONCE_NAMED("Slave", "=== Initialize OCU Slave ===");
 	iop::Config cfg("~Slave");
 	std::string control_addr;
 	cfg.param("control_addr", control_addr, control_addr);
