@@ -24,6 +24,7 @@ along with this program; or you can read the full license at
 #ifndef IOP_CONFIG_H
 #define IOP_CONFIG_H
 
+#include <algorithm>
 #include <map>
 #include <ros/ros.h>
 
@@ -66,7 +67,8 @@ namespace iop
 		template <class M>
 		ros::Publisher advertise(const std::string& topic, uint32_t queue_size, bool latch = false)
 		{
-			ros::Publisher result = p_nh.advertise<M>(topic, queue_size, latch);
+			std::string name = get_topic_name(topic, "topic_pub_");
+			ros::Publisher result = p_nh.advertise<M>(name, queue_size, latch);
 			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name()  << " ");
 			return result;
 		}
@@ -78,7 +80,8 @@ namespace iop
 			const ros::VoidConstPtr& tracked_object = ros::VoidConstPtr(),
 			bool latch = false)
 		{
-			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, connect_cb, disconnect_cb, tracked_object, latch);
+			std::string name = get_topic_name(topic, "topic_pub_");
+			ros::Publisher result = p_pnh.advertise<M>(name, queue_size, connect_cb, disconnect_cb, tracked_object, latch);
 			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
@@ -86,7 +89,8 @@ namespace iop
 		template <class M>
 		ros::Publisher advertise_p(const std::string& topic, uint32_t queue_size, bool latch = false)
 		{
-			ros::Publisher result = p_pnh.advertise<M>(topic, queue_size, latch);
+			std::string name = get_topic_name(topic, "topic_pub_");
+			ros::Publisher result = p_pnh.advertise<M>(name, queue_size, latch);
 			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
@@ -94,7 +98,8 @@ namespace iop
 		template<class T, class MReq, class MRes>
 		ros::ServiceServer advertiseService(const std::string& service, bool(T::*srv_func)(MReq &, MRes &), T *obj)
 		{
-			ros::ServiceServer result = p_pnh.advertiseService(service, srv_func, obj);
+			std::string name = get_topic_name(service, "topic_svr_");
+			ros::ServiceServer result = p_pnh.advertiseService(name, srv_func, obj);
 			ROS_INFO_STREAM("ROS service[" << p_ns << "]: " << service << " <" << typeid(MReq).name() << "> - <" << typeid(MRes).name() << "");
 			return result;
 		}
@@ -104,7 +109,8 @@ namespace iop
 				void(T::*fp)(const boost::shared_ptr<M const>&), T* obj,
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
-			ros::Subscriber result = p_nh.subscribe(topic, queue_size, fp, obj, transport_hints);
+			std::string name = get_topic_name(topic, "topic_sub_");
+			ros::Subscriber result = p_nh.subscribe(name, queue_size, fp, obj, transport_hints);
 			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
@@ -113,7 +119,8 @@ namespace iop
 		ros::Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M), T* obj,
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
-			ros::Subscriber result = p_nh.subscribe(topic, queue_size, fp, obj, transport_hints);
+			std::string name = get_topic_name(topic, "topic_sub_");
+			ros::Subscriber result = p_nh.subscribe(name, queue_size, fp, obj, transport_hints);
 			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
@@ -123,7 +130,8 @@ namespace iop
 				void(T::*fp)(const boost::shared_ptr<M const>&), T* obj,
 				const ros::TransportHints& transport_hints = ros::TransportHints())
 		{
-			ros::Subscriber result = p_pnh.subscribe(topic, queue_size, fp, obj, transport_hints);
+			std::string name = get_topic_name(topic, "topic_sub_");
+			ros::Subscriber result = p_pnh.subscribe(name, queue_size, fp, obj, transport_hints);
 			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
 			return result;
 		}
@@ -319,6 +327,20 @@ namespace iop
 		ros::NodeHandle p_pnh;
 		ros::NodeHandle p_snh;
 
+		std::string get_topic_name(std::string name, std::string prefix)
+		{
+			std::string result;
+			std::string param_name = prefix;
+                        if (name[0] == '/') {
+				param_name += name.substr(1);
+			} else {
+				param_name += name;
+                        }
+			std::replace(param_name.begin(), param_name.end(), '/', '_');
+			// only from private namespace
+			param(param_name, result, name, true, false);
+			return result;
+		}
 	};
 };
 
