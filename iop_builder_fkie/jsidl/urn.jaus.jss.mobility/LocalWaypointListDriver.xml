@@ -30,6 +30,9 @@
         declared_type_ref="mobility.queryClass.QueryLocalWaypoint"/>
       <declared_message_def name="QueryActiveElement"
         declared_type_ref="mobility.queryClass.QueryActiveElement"/>
+      <!-- Add message type, this will not be handled in protocol -->
+      <declared_message_def name="SetLocalWaypoint"
+        declared_type_ref="mobility.commandClass.SetLocalWaypoint"/>
     </input_set>
     <output_set>
       <declared_message_def name="ReportTravelSpeed"
