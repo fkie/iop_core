@@ -23,7 +23,6 @@ along with this program; or you can read the full license at
 
 #include "urn_jaus_jss_core_AccessControl/AccessControl_ReceiveFSM.h"
 #include <ros/console.h>
-#include <std_msgs/Bool.h>
 #include <iop_component_fkie/iop_config.h>
 
 
@@ -51,6 +50,7 @@ AccessControl_ReceiveFSM::AccessControl_ReceiveFSM(urn_jaus_jss_core_Transport::
 	p_current_authority = 0;
 	p_default_authority = 1;
 	p_default_timeout = 10;
+	p_ros_available = true;
 	p_timeout_event = new InternalEvent("Timedout", "ControlTimeout");
 	context = new AccessControl_ReceiveFSMContext(*this);
 	p_timer = new DeVivo::Junior::JrTimer(Timeout, this, p_default_timeout*1000);
@@ -89,7 +89,12 @@ void AccessControl_ReceiveFSM::setupNotifications()
 		p_timer = new DeVivo::Junior::JrTimer(Timeout, this, p_default_timeout*1000);
 	}
 	p_is_controlled_publisher = cfg.advertise<std_msgs::Bool>("is_controlled", 5, true);
+	p_is_control_available = cfg.advertise<std_msgs::Bool>("is_control_available", 5, true);
+	p_sub_control_available = cfg.subscribe<std_msgs::Bool>("set_control_available", 5, &AccessControl_ReceiveFSM::p_set_control_available, this);
 	pPublishControlState(false);
+	std_msgs::Bool msg;
+	msg.data = p_ros_available;
+	p_is_control_available.publish(msg);
 }
 
 void AccessControl_ReceiveFSM::timeout(void* arg)
@@ -270,7 +275,7 @@ bool AccessControl_ReceiveFSM::isAuthorityValid(SetAuthority msg)
 }
 bool AccessControl_ReceiveFSM::isControlAvailable()
 {
-	return (p_emergency_address.size() == 0);
+	return (p_emergency_address.size() == 0 && p_ros_available);
 }
 bool AccessControl_ReceiveFSM::isControllingClient(Receive::Body::ReceiveRec transportData)
 {
@@ -323,4 +328,11 @@ void AccessControl_ReceiveFSM::pPublishControlState(bool state)
 	p_is_controlled_publisher.publish(ros_msg);
 }
 
+void AccessControl_ReceiveFSM::p_set_control_available(const std_msgs::Bool::ConstPtr& state)
+{
+	p_ros_available = state->data;
+	std_msgs::Bool msg;
+	msg.data = p_ros_available;
+	p_is_control_available.publish(msg);
+}
 };

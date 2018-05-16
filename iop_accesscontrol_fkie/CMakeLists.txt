@@ -6,7 +6,8 @@ project(iop_accesscontrol_fkie)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
                     iop_events_fkie
-                    roscpp)
+                    roscpp
+                    std_msgs)
 
 iop_init(COMPONENT_ID 0)
 iop_export_service(urn_jaus_jss_core_AccessControl
@@ -20,6 +21,7 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
         iop_events_fkie
+        std_msgs
 )
 
 ###########

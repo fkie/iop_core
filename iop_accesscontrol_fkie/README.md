@@ -21,9 +21,15 @@ _is_controlled (std_msgs::Bool)_, latched
 
 > Publishes True or False if the service is controlled by someone or not
 
+_is_control_available (std_msgs::Bool)_, latched
+
+> Publishes the state of control allowed from ROS side.
+
 #### Subscriber:
 
-> None
+_set_control_available (std_msgs::Bool)_
+
+> If you set to False, all access control requests will be rejected.
 
 ## _iop_accesscontrol_fkie:_ AccessControlClient
 
