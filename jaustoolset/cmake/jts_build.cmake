@@ -25,9 +25,15 @@ file (STRINGS "${JTS_CMAKE_SCRIPT_DIR}/jts_commit" GIT_HASH)
 message(STATUS "JTS: git hash: ${GIT_HASH}")
 
 # print macro
-macro(print msg result output)
-  if (${result} GREATER "0")
-    message(WARNING "JTS: Error on ${msg}: ${result}: ${output}")
+macro(print msg result output res_val)
+  if (${res_val} STREQUAL "text" AND NOT ${result} STREQUAL "")
+    if (${result} EQUAL "0")
+      message(STATUS "JTS: ${msg}: ${output}")
+    else()
+      message(FATAL_ERROR "JTS: Error while '${msg}': ${result}: ${output}")
+    endif()
+  elseif (${res_val} STREQUAL "value" AND ${result} GREATER "0")
+    message(FATAL_ERROR "JTS: Error while '${msg}': ${result}: ${output}")
   else()
     message(STATUS "JTS: ${msg}: ${output}")
   endif()
@@ -42,7 +48,7 @@ macro(prepare_jts_build)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    print("ant bindmxGraph" ${result} ${output})
+    print("ant bindmxGraph" ${result} "${output}" "text")
     execute_process(
       COMMAND ant bindJSIDLPlus -v
       OUTPUT_VARIABLE output
@@ -50,7 +56,7 @@ macro(prepare_jts_build)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    print("ant bindJSIDLPlus" ${result} ${output})
+    print("ant bindJSIDLPlus" ${result} "${output}" "text")
     execute_process(
       COMMAND ant bind -v
       OUTPUT_VARIABLE output
@@ -58,7 +64,7 @@ macro(prepare_jts_build)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    print("ant bind" ${result} ${output})
+    print("ant bind" ${result} "${output}" "text")
     execute_process(
       COMMAND ant compile-promela -v
       OUTPUT_VARIABLE output
@@ -66,7 +72,7 @@ macro(prepare_jts_build)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    print("ant compile-promela" ${result} ${output})
+    print("ant compile-promela" ${result} "${output}" "text")
 endmacro()
 
 
@@ -79,7 +85,7 @@ macro(build_jts)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/GUI"
     )
-    print("ant compile" ${result} ${output})
+    print("ant compile" ${result} "${output}" "text")
     message(STATUS "JTS: build nodeManager")
     execute_process(
       COMMAND scons
@@ -89,7 +95,7 @@ macro(build_jts)
       RESULT_VARIABLE result
       WORKING_DIRECTORY "${JTS_DIR}/nodeManager"
     )
-    print("nodeManager scons" ${result} ${output})
+    print("nodeManager scons" ${result} "${output}" "text")
 endmacro()
 
 
@@ -109,7 +115,7 @@ if(NOT EXISTS "${JTS_DIR}")
     ERROR_VARIABLE output
     RESULT_VARIABLE result
   )
-  print("Clone result" ${result} ${output})
+  print("Clone result" ${result} "${output}" "value")
   message(STATUS "JTS: change commit to hash: ${GIT_HASH}")
   execute_process(
     COMMAND set -e && git -C "${JTS_DIR}" checkout $GIT_HASH
