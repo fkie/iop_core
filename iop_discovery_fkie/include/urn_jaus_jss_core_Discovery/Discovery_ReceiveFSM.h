@@ -100,6 +100,8 @@ protected:
 	std::string name_subsystem;
 	std::string name_node;
 	int p_timeout_lost;
+	// In case the component with discvery service was restarted we have to ensure other components reregsiter their services
+	std::map<JausAddress, unsigned long> p_respond_ident;
 
 	bool isComponentRequested(QueryServices &msg, unsigned int nodeid, unsigned int compid);
 	bool isComponentRequested(QueryServiceList &msg, unsigned int subsystemid, unsigned int nodeid, unsigned int compid);
@@ -108,6 +110,8 @@ protected:
 	RS_CList::ComponentSeq *p_add_component(RS_CList *list, unsigned int id);
 	std::map<int, std::string> system_id_map();
 	std::map<int, std::string> system_type_map();
+	// this method is to inform other components about restart of this component by send service list on second query identification without request services
+	bool p_should_send_services(JausAddress address);
 };
 
 };

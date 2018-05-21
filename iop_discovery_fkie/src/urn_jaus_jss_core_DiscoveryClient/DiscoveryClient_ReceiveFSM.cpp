@@ -344,7 +344,7 @@ void DiscoveryClient_ReceiveFSM::handleReportIdentificationAction(ReportIdentifi
 			QueryConfiguration req_cfg_msg;
 			req_cfg_msg.getBody()->getQueryConfigurationRec()->setQueryType(request_type);
 			this->sendJausMessage(req_cfg_msg, sender);
-			if (!srv_req.received_list and srv_req.count > 2) {
+			if (!srv_req.received_list and srv_req.count > 3) {
 				ROS_DEBUG_NAMED("DiscoveryClient", "send request for QueryServices for compatibility to v1.0  to %d.%d.%d", sender.getSubsystemID(), sender.getNodeID(), sender.getComponentID());
 				QueryServices req_srv_msg;
 				this->sendJausMessage(req_srv_msg, sender);
@@ -383,7 +383,7 @@ void DiscoveryClient_ReceiveFSM::handleReportServiceListAction(ReportServiceList
 	p_discovery_srvs_stamps[sender.getSubsystemID()] = ros::WallTime::now().sec;
 	// This message is received after own services are registered -> test is service registered?
 	// or after QueryServices was send
-	if (p_on_registration) {
+	if (p_on_registration || true) {  // test always, 
 		// -> test is service registered?
 		std::set<std::string> services_registered;
 		// create a list with all service URI's associated with own JAUS address
@@ -413,7 +413,6 @@ void DiscoveryClient_ReceiveFSM::handleReportServiceListAction(ReportServiceList
 				}
 			}
 		}
-		p_on_registration = false;
 		p_is_registered = true;
 		if (register_own_services) {
 			// test all own URI's are in the registered list
@@ -422,14 +421,15 @@ void DiscoveryClient_ReceiveFSM::handleReportServiceListAction(ReportServiceList
 					ROS_WARN_NAMED("DiscoveryClient", "own service '%s' not found in reported services! retry registration...",
 							p_own_uri_services[i].service_uri.c_str());
 					p_is_registered = false;
-					p_on_registration = true;
+					p_on_registration = false;
 				}
 			}
-			if (p_is_registered) {
+			if (p_is_registered && p_on_registration) {
 				ROS_INFO_NAMED("DiscoveryClient", "all services are registered!");
 			}
 		}
-		if (p_is_registered) {
+		if (p_is_registered && p_on_registration) {
+			p_on_registration = false;
 			pRegistrationFinished();
 		}
 	}
@@ -476,7 +476,7 @@ void DiscoveryClient_ReceiveFSM::handleReportServicesAction(ReportServices msg, 
 	/// Insert User Code HERE
 	// This message is received after own services are registered -> test is service registered?
 	// or after QueryServices was send
-	if (p_on_registration) {
+	if (p_on_registration || true) {
 		// -> test is service registered?
 		std::set<std::string> services_registered;
 		// create a list with all service URI's associated with own JAUS address
@@ -499,7 +499,6 @@ void DiscoveryClient_ReceiveFSM::handleReportServicesAction(ReportServices msg, 
 				}
 			}
 		}
-		p_on_registration = false;
 		p_is_registered = true;
 		if (register_own_services) {
 			// test all own URI's are in the registered list
@@ -508,14 +507,15 @@ void DiscoveryClient_ReceiveFSM::handleReportServicesAction(ReportServices msg, 
 					ROS_WARN_NAMED("DiscoveryClient", "own service '%s' not found in reported services! retry registration...",
 							p_own_uri_services[i].service_uri.c_str());
 					p_is_registered = false;
-					p_on_registration = true;
+					p_on_registration = false;
 				}
 			}
-			if (p_is_registered) {
-				ROS_INFO_NAMED("DiscoveryClient", "all services are registered!");
+			if (p_is_registered && p_on_registration) {
+				ROS_INFO_NAMED("DiscoveryClient", "all services are registered! (ReportServices checked)");
 			}
 		}
-		if (p_is_registered) {
+		if (p_is_registered && p_on_registration) {
+			p_on_registration = false;
 			pRegistrationFinished();
 		}
 	}
@@ -668,21 +668,37 @@ void DiscoveryClient_ReceiveFSM::sendRegisterServicesAction(ReportIdentification
 				sendJausMessage(msg_reg_services, p_addr_discovery_service);
 
 				ROS_DEBUG_NAMED("DiscoveryClient", "send QueryServices to validate the registration");
-				QueryServices msg;
-				QueryServices::Body::NodeList nlist;
-				QueryServices::Body::NodeList::NodeSeq nseq;
-				QueryServices::Body::NodeList::NodeSeq::NodeRec nreq;
-				QueryServices::Body::NodeList::NodeSeq::ComponentList clist;
-				QueryServices::Body::NodeList::NodeSeq::ComponentList::ComponentRec creq;
-
-				nreq.setNodeID(jausRouter->getJausAddress()->getNodeID());
-				creq.setComponentID(jausRouter->getJausAddress()->getComponentID());
-				clist.addElement(creq);
-				nseq.setComponentList(clist);
-				nseq.setNodeRec(nreq);
-				nlist.addElement(nseq);
-				msg.getBody()->setNodeList(nlist);
-				sendJausMessage(msg, p_addr_discovery_service);
+				JausAddress ownaddr = *this->jausRouter->getJausAddress();
+				QueryServiceList req_srvl_msg;
+				QueryServiceList::Body::SubsystemList *sslist = req_srvl_msg.getBody()->getSubsystemList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq ssr;
+				ssr.getSubsystemRec()->setSubsystemID(ownaddr.getSubsystemID());
+				sslist->addElement(ssr);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq *ssrec = sslist->getElement(sslist->getNumberOfElements()-1);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList *nlist = ssrec->getNodeList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq nr;
+				nr.getNodeRec()->setNodeID(ownaddr.getNodeID());
+				nlist->addElement(nr);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq *nrseq = nlist->getElement(nlist->getNumberOfElements()-1);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList *clist = nrseq->getComponentList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentRec cr;
+				cr.setComponentID(ownaddr.getComponentID());
+				clist->addElement(cr);
+//				QueryServices msg;
+//				QueryServices::Body::NodeList nlist;
+//				QueryServices::Body::NodeList::NodeSeq nseq;
+//				QueryServices::Body::NodeList::NodeSeq::NodeRec nreq;
+//				QueryServices::Body::NodeList::NodeSeq::ComponentList clist;
+//				QueryServices::Body::NodeList::NodeSeq::ComponentList::ComponentRec creq;
+//
+//				nreq.setNodeID(jausRouter->getJausAddress()->getNodeID());
+//				creq.setComponentID(jausRouter->getJausAddress()->getComponentID());
+//				clist.addElement(creq);
+//				nseq.setComponentList(clist);
+//				nseq.setNodeRec(nreq);
+//				nlist.addElement(nseq);
+//				msg.getBody()->setNodeList(nlist);
+				sendJausMessage(req_srvl_msg, p_addr_discovery_service);
 			}
 		} else {
 			ROS_DEBUG_NAMED("DiscoveryClient", "  skip registration on this discovery service because of different subsystem!");

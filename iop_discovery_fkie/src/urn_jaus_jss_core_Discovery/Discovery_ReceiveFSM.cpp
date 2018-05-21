@@ -134,6 +134,8 @@ void Discovery_ReceiveFSM::publishServicesAction(RegisterServices msg, Receive::
 		}
 	}
 	p_component_list.update_ts(p_own_address, sender);
+	p_respond_ident.clear();
+	p_respond_ident[sender] = 0;
 }
 
 void Discovery_ReceiveFSM::sendReportConfigurationAction(QueryConfiguration msg, Receive::Body::ReceiveRec transportData)
@@ -211,6 +213,26 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 			}
 		} else if (query_type == TYPE_SUBSYSTEM) {
 			name = name_subsystem;
+			// HACK to avoid long wait times after restart only the component with discovery service
+			if (system_id == TYPE_SUBSYSTEM && p_should_send_services(sender)) {
+				ROS_WARN_NAMED("Discovery", "component restart was detected, send service list to %s on query_type: %d", sender.str().c_str(), query_type);
+				QueryServiceList req_srvl_msg;
+				QueryServiceList::Body::SubsystemList *sslist = req_srvl_msg.getBody()->getSubsystemList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq ssr;
+				ssr.getSubsystemRec()->setSubsystemID(65535);
+				sslist->addElement(ssr);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq *ssrec = sslist->getElement(sslist->getNumberOfElements()-1);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList *nlist = ssrec->getNodeList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq nr;
+				nr.getNodeRec()->setNodeID(255);
+				nlist->addElement(nr);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq *nrseq = nlist->getElement(nlist->getNumberOfElements()-1);
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList *clist = nrseq->getComponentList();
+				QueryServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentRec cr;
+				cr.setComponentID(255);
+				clist->addElement(cr);
+				sendReportServiceListAction(req_srvl_msg, transportData);
+			}
 		} else if (query_type == TYPE_SYSTEM) {
 			name = "System";
 		}
@@ -229,6 +251,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 void Discovery_ReceiveFSM::sendReportServiceListAction(QueryServiceList msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress sender = transportData.getAddress();
+	p_respond_ident[sender] = 0;
 	if (system_id == TYPE_SUBSYSTEM) {
 		ROS_DEBUG_NAMED("Discovery", "sendReportServiceList to %s", sender.str().c_str());
 		ReportServiceList report_msg;
@@ -351,6 +374,7 @@ RS_CList::ComponentSeq *Discovery_ReceiveFSM::p_add_component(RS_CList *list, un
 void Discovery_ReceiveFSM::sendReportServicesAction(QueryServices msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress sender = transportData.getAddress();
+	p_respond_ident[sender] = 0;
 	if (system_id == TYPE_SUBSYSTEM) {
 		ROS_DEBUG_NAMED("Discovery", "sendReportServices to %s", sender.str().c_str());
 		ReportServices report_msg;
@@ -468,5 +492,21 @@ std::vector<iop::DiscoveryComponent> Discovery_ReceiveFSM::getComponents(std::st
 {
 	return p_component_list.get_components(p_own_address, uri);
 }
+
+bool Discovery_ReceiveFSM::p_should_send_services(JausAddress address)
+{
+	bool result = false;
+	std::map<JausAddress, unsigned long>::iterator it = p_respond_ident.find(address);
+	if (it == p_respond_ident.end()) {
+		// new requester
+		p_respond_ident[address] = 1;
+	} else if (it->second == 1) {
+		// services was not requested -> send on second 
+		result = true;
+		p_respond_ident[address] = 0;
+	}
+	return result;
+}
+
 
 };
