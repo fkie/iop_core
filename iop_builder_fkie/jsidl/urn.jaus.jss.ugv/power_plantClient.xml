@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?oxygen RNGSchema="../../schema/JSIDL/jsidl.rnc" type="compact"?>
+<service_def name="PowerPlantManagerClient" id="urn:jaus:jss:ugv:PowerPlantManagerClient"
+    version="1.0" xmlns:ns2="urn:jaus:jsidl:plus" xmlns="urn:jaus:jsidl:1.0"
+    xmlns:ns3="urn:jaus:jsidl:1.1">
+    <description xml:space="preserve">The powerplant driver provides the means to control vehicle power plants</description>
+    <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
+    <references>
+        <inherits_from name="accessControl" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+    </references>
+    <declared_type_set name="types">
+        <declared_type_set_ref name="power_plant" id="urn:jaus:jss:ugv:PowerPlantSet" version="1.1" />
+    </declared_type_set>
+    <message_set>
+        <input_set>
+          <declared_message_def name="ReportPowerPlantConfiguration" declared_type_ref="power_plant.ReportPowerPlantConfiguration" />
+          <declared_message_def name="ReportPowerPlantCapabilities" declared_type_ref="power_plant.ReportPowerPlantCapabilities" />
+          <declared_message_def name="ReportPowerPlantStatus" declared_type_ref="power_plant.ReportPowerPlantStatus" />
+        </input_set>
+        <output_set>
+          <declared_message_def name="SetPowerPlantConfiguration" declared_type_ref="power_plant.SetPowerPlantConfiguration" />
+          <declared_message_def name="QueryPowerPlantConfiguration" declared_type_ref="power_plant.QueryPowerPlantConfiguration" />
+          <declared_message_def name="QueryPowerPlantCapabilities" declared_type_ref="power_plant.QueryPowerPlantCapabilities" />
+          <declared_message_def name="QueryPowerPlantStatus" declared_type_ref="power_plant.QueryPowerPlantStatus" />
+        </output_set>
+    </message_set>
+    <internal_events_set/>
+    <protocol_behavior>
+        <start state_machine_name="accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <state_machine name="accessControlClient.eventsClient.transport.ReceiveFSM">
+            <state name="Receiving" initial_state="Ready">
+                <state name="Ready">
+                  <default_state>
+
+                      <transition name="ReportPowerPlantConfiguration">
+                          <parameter type="ReportPowerPlantConfiguration" value="msg" interpretation=""/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <simple/>
+                          <action name="handleReportPowerPlantConfiguration" interpretation="handle a ReportPowerPlantConfiguration message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+
+                      <transition name="ReportPowerPlantCapabilities">
+                          <parameter type="ReportPowerPlantCapabilities" value="msg" interpretation=""/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <simple/>
+                          <action name="handleReportPowerPlantCapabilities" interpretation="handle a ReportPowerPlantCapabilities message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+
+                      <transition name="ReportPowerPlantStatus">
+                          <parameter type="ReportPowerPlantStatus" value="msg" interpretation=""/>
+                          <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                          <simple/>
+                          <action name="handleReportPowerPlantStatus" interpretation="handle a ReportPowerPlantStatus message">
+                              <argument value="msg"/>
+                              <argument value="transportData"/>
+                          </action>
+                      </transition>
+
+                  </default_state>
+                </state>
+            </state>
+        </state_machine>
+    </protocol_behavior>
+</service_def>
