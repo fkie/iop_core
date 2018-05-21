@@ -383,7 +383,7 @@ void DiscoveryClient_ReceiveFSM::handleReportServiceListAction(ReportServiceList
 	p_discovery_srvs_stamps[sender.getSubsystemID()] = ros::WallTime::now().sec;
 	// This message is received after own services are registered -> test is service registered?
 	// or after QueryServices was send
-	if (p_on_registration || true) {  // test always, 
+	if (jausRouter->getJausAddress()->getSubsystemID() == sender.getSubsystemID()) {
 		// -> test is service registered?
 		std::set<std::string> services_registered;
 		// create a list with all service URI's associated with own JAUS address
@@ -476,7 +476,7 @@ void DiscoveryClient_ReceiveFSM::handleReportServicesAction(ReportServices msg, 
 	/// Insert User Code HERE
 	// This message is received after own services are registered -> test is service registered?
 	// or after QueryServices was send
-	if (p_on_registration || true) {
+	if (jausRouter->getJausAddress()->getSubsystemID() == sender.getSubsystemID()) {
 		// -> test is service registered?
 		std::set<std::string> services_registered;
 		// create a list with all service URI's associated with own JAUS address

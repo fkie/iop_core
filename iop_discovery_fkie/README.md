@@ -23,6 +23,13 @@ _name_node (str_, (Default: Componentname)
 
 > The name of the component which includes this service.
 
+_query_timeout_discover (int_, (Default: 5)
+
+> Timeout to send a new query identification message to discover service. After _query_timeout_standby/query_timeout_discover_ count of queries the timeout is increased to query_timeout_standby.
+
+_query_timeout_standby (int_, (Default: 15)
+
+> Timeout to send a new query identification message to update already discovered service/components.
 
 #### Publisher:
 
