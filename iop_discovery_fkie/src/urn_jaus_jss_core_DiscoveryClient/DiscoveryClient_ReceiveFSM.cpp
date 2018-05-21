@@ -48,7 +48,7 @@ DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transpo
 	system_id = 4;
 	register_own_services = true;
 	TIMEOUT_DISCOVER = 5;
-	TIMEOUT_STANDBY = 10;
+	TIMEOUT_STANDBY = 15;
 	p_current_timeout = TIMEOUT_STANDBY;
 	p_discovery_fsm = NULL;
 	p_first_ready = true;
@@ -79,6 +79,16 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 	cfg.param("system_id", system_id, system_id, true, true, "", p_system_id_map());
 	cfg.param("register_own_services", register_own_services, register_own_services, true, false);
 	cfg.param("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service);
+	cfg.param("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER);
+	if (TIMEOUT_DISCOVER == 0) {
+		ROS_WARN("query_timeout_discover is configured to zero, increase to 5");
+		TIMEOUT_DISCOVER = 5;
+	}
+	cfg.param("query_timeout_standby", TIMEOUT_STANDBY, TIMEOUT_STANDBY);
+	if (TIMEOUT_STANDBY == 0) {
+		ROS_WARN("query_timeout_standby is configured to zero, increase to 15");
+		TIMEOUT_STANDBY = 15;
+	}
 	p_ros_interface.setup(*this);
 	p_ros_interface.set_discovery_timeout(p_timeout_discover_service);
 	XmlRpc::XmlRpcValue v;
