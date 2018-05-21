@@ -73,8 +73,8 @@ void AccessControlClient_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving_Ready", "AccessControlClient_ReceiveFSM");
 	registerNotification("Receiving", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving", "AccessControlClient_ReceiveFSM");
 	iop::Config cfg("~AccessControlClient");
-	p_pub_current_controller = cfg.advertise<iop_msgs_fkie::JausAddress>("current_controller", 5, true);
-	p_pub_current_authority = cfg.advertise<std_msgs::UInt8>("current_authority", 5, true);
+	p_pub_current_controller = cfg.advertise_p<iop_msgs_fkie::JausAddress>("current_controller", 5, true);
+	p_pub_current_authority = cfg.advertise_p<std_msgs::UInt8>("current_authority", 5, true);
 	p_timer.start();
 }
 
