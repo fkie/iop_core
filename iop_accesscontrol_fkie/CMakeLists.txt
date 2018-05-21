@@ -6,6 +6,7 @@ project(iop_accesscontrol_fkie)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
                     iop_events_fkie
+                    iop_msgs_fkie
                     roscpp
                     std_msgs)
 
@@ -21,6 +22,7 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
         iop_events_fkie
+        iop_msgs_fkie
         std_msgs
 )
 

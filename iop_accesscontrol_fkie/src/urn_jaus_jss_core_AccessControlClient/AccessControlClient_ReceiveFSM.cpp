@@ -22,7 +22,7 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_AccessControlClient/AccessControlClient_ReceiveFSM.h"
-
+#include <iop_component_fkie/iop_config.h>
 
 #include <ros/console.h>
 
@@ -72,6 +72,9 @@ void AccessControlClient_ReceiveFSM::setupNotifications()
 	pEventsClient_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving_Ready", "EventsClient_ReceiveFSM");
 	registerNotification("Receiving_Ready", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving_Ready", "AccessControlClient_ReceiveFSM");
 	registerNotification("Receiving", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving", "AccessControlClient_ReceiveFSM");
+	iop::Config cfg("~AccessControlClient");
+	p_pub_current_controller = cfg.advertise<iop_msgs_fkie::JausAddress>("current_controller", 5, true);
+	p_pub_current_authority = cfg.advertise<std_msgs::UInt8>("current_authority", 5, true);
 	p_timer.start();
 }
 
@@ -94,10 +97,9 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 		ROS_WARN_NAMED("AccessControlClient", "INSUFFICIENT_AUTHORITY: %s", sender.str().c_str());
 		QueryAuthority qa_msg;
 		this->sendJausMessage(qa_msg, sender);
-		QueryControl qc_msg;
-		this->sendJausMessage(qc_msg, sender);
 		pInformReplyCallbacks(sender, ACCESS_STATE_INSUFFICIENT_AUTHORITY);
 	}
+	this->sendJausMessage(p_query_control, sender);
 }
 
 void AccessControlClient_ReceiveFSM::handleRejectControlAction(RejectControl msg, Receive::Body::ReceiveRec transportData)
@@ -128,6 +130,14 @@ void AccessControlClient_ReceiveFSM::handleReportControlAction(ReportControl msg
 	uint8_t cauth = msg.getBody()->getReportControlRec()->getAuthorityCode();
 	ROS_DEBUG_NAMED("AccessControlClient", "Current controller  %d.%d.%d(%d) of %s",
 			csubsystem_id, cnode_id, ccomponent_id, cauth, sender.str().c_str());
+	iop_msgs_fkie::JausAddress ros_msg;
+	ros_msg.subsystem_id = csubsystem_id;
+	ros_msg.node_id = cnode_id;
+	ros_msg.component_id = ccomponent_id;
+	std_msgs::UInt8 ros_msg_auth;
+	ros_msg_auth.data = cauth;
+	p_pub_current_controller.publish(ros_msg);
+	p_pub_current_authority.publish(ros_msg_auth);
 }
 
 void AccessControlClient_ReceiveFSM::handleReportTimeoutAction(ReportTimeout msg, Receive::Body::ReceiveRec transportData)
@@ -172,6 +182,7 @@ void AccessControlClient_ReceiveFSM::pRequestAccess(JausAddress address, jUnsign
 	ROS_DEBUG_NAMED("AccessControlClient", "Send request access to %s, authority: %d", address.str().c_str(), authority);
 	RequestControl msg;
 	msg.getBody()->getRequestControlRec()->setAuthorityCode(authority);
+	this->sendJausMessage(p_query_control, address);
 	this->sendJausMessage(msg, address);
 }
 

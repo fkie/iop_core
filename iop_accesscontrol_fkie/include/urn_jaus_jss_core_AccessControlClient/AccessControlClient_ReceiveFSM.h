@@ -41,6 +41,8 @@ along with this program; or you can read the full license at
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <ros/ros.h>
+#include <iop_msgs_fkie/JausAddress.h>
+#include <std_msgs/UInt8.h>
 #include <iop_accesscontrol_fkie/RemoteComponent.h>
 #include <iop_accesscontrol_fkie/RemoteComponentList.h>
 #include "AccessControlClient_ReceiveFSM_sm.h"
@@ -117,6 +119,9 @@ protected:
 	iop::RemoteComponentList p_remote_components;
 	ros::WallTimer p_timer;
 	JTS::InternalEvent *p_timeout_event;
+	QueryControl p_query_control;
+	ros::Publisher p_pub_current_controller;
+	ros::Publisher p_pub_current_authority;
 	void pTimeoutCallback(const ros::WallTimerEvent& event);
 	void pInformReplyCallbacks(JausAddress &address, unsigned char code);
 	void pRequestAccess(JausAddress address, jUnsignedByte authority=255);
