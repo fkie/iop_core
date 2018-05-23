@@ -46,6 +46,14 @@ void DiscoveryPlugin::create_service(JTS::JausRouter* jaus_router)
 	p_base_service = static_cast<EventsService *>(get_base_service());
 	p_transport_service = static_cast<TransportService *>(get_base_service(2));
 	p_my_service = new DiscoveryService(jaus_router, p_transport_service, p_base_service);
+	p_address = *jaus_router->getJausAddress();
+}
+
+void DiscoveryPlugin::register_service(PluginInterface *plugin)
+{
+	if (plugin != NULL) {
+		p_my_service->pDiscovery_ReceiveFSM->registerService(plugin->get_version_number_minor(), plugin->get_version_number_major(), plugin->get_service_uri(), p_address);
+	}
 }
 
 PLUGINLIB_EXPORT_CLASS(iop::DiscoveryPlugin, iop::PluginInterface)

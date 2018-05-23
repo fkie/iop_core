@@ -41,10 +41,14 @@ public:
 	JTS::Service* get_service();
 	void create_service(JTS::JausRouter* jaus_router);
 
+	bool is_discovery_client() { return true; }
+	void register_service(PluginInterface *plugin);
+
 protected:
 	urn_jaus_jss_core_Discovery::DiscoveryService *p_my_service;
 	urn_jaus_jss_core_Transport::TransportService *p_transport_service;
 	urn_jaus_jss_core_Events::EventsService *p_base_service;
+	JausAddress p_address;
 
 };
 
