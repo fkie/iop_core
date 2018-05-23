@@ -80,6 +80,7 @@ protected:
 	unsigned char p_request_id;
 	unsigned char p_request_id_in_process;
 	unsigned short p_current_uid;
+	unsigned char p_current_access_code;
 
 	bool pSendCurrentList2Remote();
 	void pInformStateCallbacks(bool success, unsigned int count);

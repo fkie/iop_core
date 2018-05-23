@@ -31,6 +31,7 @@ ListManagerClient_ReceiveFSM::ListManagerClient_ReceiveFSM(urn_jaus_jss_core_Tra
 	p_request_id = 0;
 	p_current_uid = 0;
 	p_request_id_in_process = 0;
+	p_current_access_code = 255;
 }
 
 
@@ -52,19 +53,22 @@ void ListManagerClient_ReceiveFSM::setupNotifications()
 void ListManagerClient_ReceiveFSM::access_state(JausAddress &address, unsigned char code)
 {
 	lock_type lock(p_mutex);
-	if (code == urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM::ACCESS_STATE_CONTROL_ACCEPTED) {
-		if (p_remote != address) {
-			p_remote = address;
-			QueryElementCount query;
-			sendJausMessage(query, p_remote);
+	if (p_current_access_code != code) {
+		p_current_access_code = code;
+		if (code == urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM::ACCESS_STATE_CONTROL_ACCEPTED) {
+			if (p_remote != address) {
+				p_remote = address;
+				QueryElementCount query;
+				sendJausMessage(query, p_remote);
+			}
+		} else {
+			p_remote = JausAddress(0);
+			// reset states
+			p_request_id_in_process = 0;
+			p_current_uid = 0;
+			p_request_id = 0;
+			p_msgs_2_add.clear();
 		}
-	} else {
-		p_remote = JausAddress(0);
-		// reset states
-		p_request_id_in_process = 0;
-		p_current_uid = 0;
-		p_request_id = 0;
-		p_msgs_2_add.clear();
 	}
 }
 
@@ -122,7 +126,7 @@ void ListManagerClient_ReceiveFSM::handleReportElementListAction(ReportElementLi
 		for (unsigned int i = 0; i < list->getNumberOfElements(); i++) {
 			unsigned short uid = list->getElement(i)->getElementUID();
 			p_remote_uds.push_back(uid);
-			if (uid > p_current_uid) {
+			if (uid > p_current_uid && i == 0) {
 				p_current_uid = uid;
 			}
 		}
