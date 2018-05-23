@@ -47,7 +47,7 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 			nh.getParam("jaus_config", config);
 		} else {
 			// try to detect from jaustoolset package
-			// TODO: try to detect configuration path from jaustoolset package
+			config = ros::package::getPath("jaustoolset") + "/cfg/nm.cfg";
 		}
 	}
 	if (config.compare("nm.cfg") == 0) {
