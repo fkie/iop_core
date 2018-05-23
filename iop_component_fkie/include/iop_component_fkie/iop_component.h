@@ -83,17 +83,24 @@ namespace iop
 		static Component* global_ptr;
 		virtual void processInternalEvent(JTS::InternalEvent* ie);
 
+		bool p_has_1_1_transport;
+		boost::shared_ptr<iop::PluginInterface> p_discovery_client;
+		std::map<std::string, std::string > p_service_package_list;
 		pluginlib::ClassLoader<iop::PluginInterface>* p_class_loader;
-		std::vector<boost::shared_ptr<iop::PluginInterface> > p_plugins;
+		std::map<std::string, boost::shared_ptr<iop::PluginInterface> > p_plugins_map;
+		std::map<std::string, boost::shared_ptr<iop::PluginInterface> > p_plugins_empty;
 		std::map<std::string, iop::PluginInterface::ServiceInfo> p_cache_service_info;
 		std::vector<ServiceInfo> service_list;
 		IopJausRouter* jausRouter;
 		ros::NodeHandle p_pnh;
 
 		void load_plugins();
+		boost::shared_ptr<iop::PluginInterface> p_init_plugin(std::string name, pluginlib::ClassLoader<iop::PluginInterface>& class_loader);
 		iop::PluginInterface::ServiceInfo p_read_service_info(std::string serviceid, std::string manifest);
-		boost::shared_ptr<iop::PluginInterface> p_get_plugin_str(const std::string service_uri, unsigned char major_version=1, unsigned char min_minor_version=0);
-		void p_check_depends(const std::vector<std::string> depends);
+
+		std::string p_get_plugin_manifest(std::string plugin_name);
+		void p_read_manifests(pluginlib::ClassLoader<iop::PluginInterface>& class_loader);
+		std::string p_uri_to_name(std::string service_uri);
 
 	};
 };

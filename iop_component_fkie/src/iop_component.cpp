@@ -76,12 +76,12 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 
 Component::~Component()
 {
-	std::vector<boost::shared_ptr<iop::PluginInterface> >::iterator it;
-	for (it = p_plugins.begin(); it != p_plugins.end(); ++it) {
-		std::cout << "  delete service:" << it->get()->get_service_uri() << std::endl;
-		delete it->get()->get_service();
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		std::cout << "  delete service:" << it->second.get()->get_service_uri() << std::endl;
+		delete it->second.get()->get_service();
 	}
-	p_plugins.clear();
+	p_plugins_map.clear();
 	service_list.clear();
 	delete p_class_loader;
 	delete jausRouter;
@@ -90,9 +90,8 @@ Component::~Component()
 
 void Component::load_plugins()
 {
-	bool has_1_1_transport = false;
-	boost::shared_ptr<iop::PluginInterface> discovery_client;
-	std::map<std::string, std::string > service_package_list;
+	p_has_1_1_transport = false;
+	p_discovery_client = boost::shared_ptr<iop::PluginInterface>();
 	std::vector<std::string> plugin_names;
 	XmlRpc::XmlRpcValue v;
 	p_pnh.getParam("services", v);
@@ -104,6 +103,8 @@ void Component::load_plugins()
 	}
 	bool has_range_sensor_service = false;
 	bool has_visual_sensor_service = false;
+	bool has_discovery_service = false;
+	bool has_discovery_client_service = false;
 	ROS_INFO("Load IOP plugin services specified by ~services parameter:");
 	for(int i = 0; i < v.size(); i++) {
 		if (v[i].getType() == XmlRpc::XmlRpcValue::TypeStruct) {
@@ -116,140 +117,57 @@ void Component::load_plugins()
 				if (service.compare("VisualSensor") == 0 or service.compare("VisualSensorClient") == 0) {
 					has_visual_sensor_service = true;
 				}
-				service_package_list[service] = package;
+				if (service.compare("Discovery") == 0) {
+					has_discovery_service = true;
+				}
+				if (service.compare("DiscoveryClient") == 0) {
+					has_discovery_client_service = true;
+				}
+				p_service_package_list[service] = package;
 				plugin_names.push_back(service);
 			}
 		}
 	}
-	if (has_range_sensor_service & has_visual_sensor_service) {
+	if (has_range_sensor_service & has_discovery_client_service) {
+		ROS_WARN("In this version you do not need to include Discovery and DiscoverClient in the same component!");
+	}
+	if (has_discovery_service & has_visual_sensor_service) {
 		throw std::logic_error("You can not use RangeSensor{Client} and VisualSensor{Client} in the same component, since they use the same GeometricProperties message type!");
 	}
 	// determine paths for xml files with plugin description
 	std::vector<std::string> p_xml_paths;
 	p_class_loader = new pluginlib::ClassLoader<iop::PluginInterface>("iop_component_fkie", "iop::PluginInterface", std::string("plugin"), p_xml_paths);
-	std::vector<std::string> classes = p_class_loader->getDeclaredClasses();
-	std::map< std::pair<std::string, std::string>, std::string> mpaths;  // <pair<service, package>, path_to_xml>
-	for (unsigned int i = 0; i < plugin_names.size(); ++i)
-	{
-		bool found_xml = false;
-		for(unsigned int c = 0; c < classes.size(); ++c)
-		{
-			if (classes[c].compare(plugin_names[i]) == 0)
-			{
-				std::string package = service_package_list[classes[c]];
-				std::string xml_path = p_class_loader->getPluginManifestPath(classes[c].c_str());
-				std::size_t found = xml_path.find(package);
-				if (found != std::string::npos)
-				{
-					found_xml = true;
-					mpaths[std::make_pair(classes[c], package)] = xml_path;
-					ROS_DEBUG("  Assigned: [%s, %s], path to manifest: %s", classes[c].c_str(), package.c_str(), xml_path.c_str());
-				}
-			}
+	p_read_manifests(*p_class_loader);
+	try {
+		for (unsigned int i = 0; i < plugin_names.size(); ++i) {
+			p_init_plugin(plugin_names[i], *p_class_loader);
 		}
-		if (!found_xml)
-		{
-			ROS_ERROR("No xml with service definition for '%s' in package '%s' found!", plugin_names[i].c_str(), service_package_list[plugin_names[i]].c_str());
-			throw std::logic_error("No xml with service definition for '" + plugin_names[i] + "' in package '" + service_package_list[plugin_names[i]] + "' found!");
-		}
-	}
-	try
-	{
-		for (unsigned int i = 0; i < plugin_names.size(); ++i)
-		{
-			// initialize all services without defined base services
-			std::pair<std::string, std::string> svr_pkg_pair = std::make_pair(plugin_names[i], service_package_list[plugin_names[i]]);
-			boost::shared_ptr<iop::PluginInterface> plugin = p_class_loader->createInstance(plugin_names[i]);
-			plugin->set_service_info(this->p_read_service_info(plugin_names[i], mpaths[svr_pkg_pair]));
-			if (plugin->get_base_service_uri().empty()) {
-				ROS_INFO("=== Initialize IOP-plugin for === %s ===", plugin->get_service_uri().c_str());
-				plugin->create_service(this->jausRouter);
-				JTS::Service* iop_service = plugin->get_service();
-				ROS_DEBUG("Initialized IOP-plugin for %s v%d.%d", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
-				bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
-				has_1_1_transport = has_1_1_transport | is_transport_1_1;
-				ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
-				service_list.push_back(si);
-				if (plugin->is_discovery_client()) {
-					discovery_client = plugin;
-				}
-			}
-			p_plugins.push_back(plugin);
-		}
-		bool one_initialized;
-		do
-		{
-			// initialize all plugins with defined base services
-			one_initialized = false;
-			for (unsigned int i = 0; i < p_plugins.size(); ++i)
-			{
-				if (p_plugins[i]->get_service() == NULL) {
-					try
-					{
-						boost::shared_ptr<iop::PluginInterface> base_plugin = p_get_plugin_str(p_plugins[i]->get_base_service_uri(), p_plugins[i]->get_base_version_manjor(), p_plugins[i]->get_base_min_version_minor());
-						if (base_plugin != NULL) {
-							ROS_INFO("=== Initialize IOP-plugin for === %s === <base service: %s>", p_plugins[i]->get_service_uri().c_str(), base_plugin->get_service_uri().c_str());
-							p_check_depends(p_plugins[i]->get_depends());
-							p_plugins[i]->set_base_plugin(base_plugin.get());
-							p_plugins[i]->create_service(this->jausRouter);
-							JTS::Service* iop_service = p_plugins[i]->get_service();
-							ROS_DEBUG("Initialization for %s v%d.%d done.", p_plugins[i]->get_service_uri().c_str(), p_plugins[i]->get_version_number_major(), p_plugins[i]->get_version_number_minor());
-							bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
-							has_1_1_transport = has_1_1_transport | is_transport_1_1;
-							ServiceInfo si(iop_service, p_plugins[i]->get_service_uri(), is_transport_1_1);
-							service_list.push_back(si);
-							one_initialized = true;
-							if (p_plugins[i]->is_discovery_client()) {
-								discovery_client = p_plugins[i];
-							}
-							p_plugins[i]->error_message = "";
-						} else {
-							p_plugins[i]->error_message = "Can not initialize plugin for " +
-									std::string(p_plugins[i]->get_service_name().c_str()) +
-									". Plugin for base service " +
-									std::string(p_plugins[i]->get_base_service_uri().c_str()) + " not found!";
-						}
-					} catch (std::runtime_error &rex){
-						throw rex;
-					} catch (std::logic_error &no_plugin){
-						// The needed plugin is still not available, perhaps in the next iteration.
-						// The component stops if one_initialized was not set to true.
-						p_plugins[i]->error_message = "Can not initialize plugin for " +
-								std::string(p_plugins[i]->get_service_name().c_str()) + ": " + no_plugin.what();
-					}
-				}
-			}
-		} while (one_initialized);
-	}
-	catch(pluginlib::PluginlibException& ex)
-	{
+	} catch(pluginlib::PluginlibException& ex) {
 		throw std::runtime_error("The plugin failed to load for some reason. Error: " + std::string(ex.what()));
 	}
 	// test for uninitialized pugins
-	for (unsigned int i = 0; i < p_plugins.size(); ++i)
-	{
-		if (p_plugins[i]->get_service() == NULL) {
-			throw std::runtime_error(p_plugins[i]->error_message);
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		if (it->second.get()->get_service() == NULL) {
+			throw std::runtime_error(it->second.get()->error_message);
 		}
 	}
 	ROS_INFO("... plugin loading complete!");
 	// register the services
-	if (discovery_client != NULL) {
+	if (p_discovery_client != NULL) {
 		ROS_INFO("Register services by discovery service...");
-		for (unsigned int i = 0; i < p_plugins.size(); ++i)
-		{
-			discovery_client->register_service(p_plugins[i].get());
+		for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+			p_discovery_client->register_service(it->second.get());
 		}
 		ROS_INFO("... register complete");
 	} else {
 		ROS_INFO("Discovery client not found, the services will not be registered!");
 	}
 	ROS_INFO("Initialize plugins ...");
-	for (unsigned int i = 0; i < p_plugins.size(); ++i)
-	{
-		p_plugins[i]->init_service();
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		it->second.get()->init_service();
 	}
-	if (has_1_1_transport) {
+	if (p_has_1_1_transport) {
 		ROS_INFO("Use transport version 1.1");
 		jausRouter->setTransportType(JausRouter::Version_1_1);
 	} else {
@@ -258,54 +176,155 @@ void Component::load_plugins()
 	ROS_INFO("... initialization complete");
 }
 
+boost::shared_ptr<iop::PluginInterface> Component::p_init_plugin(std::string name, pluginlib::ClassLoader<iop::PluginInterface>& class_loader)
+{
+	if (name.empty()) {
+		return boost::shared_ptr<iop::PluginInterface>();
+	}
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it = p_plugins_map.find(name);
+	if (it != p_plugins_map.end()) {
+		return it->second;
+	} else {
+		boost::shared_ptr<iop::PluginInterface> plugin = class_loader.createInstance(name);
+		plugin->set_service_info(this->p_read_service_info(name, p_get_plugin_manifest(name)));
+		ROS_DEBUG_NAMED("PluginLoader", "Create plugin: %s, base plugin: %s", name.c_str(), plugin->get_base_service_uri().c_str());
+		boost::shared_ptr<iop::PluginInterface> base_plugin = p_init_plugin(p_uri_to_name(plugin->get_base_service_uri()), class_loader);
+		if (! base_plugin) {
+			ROS_INFO_NAMED("PluginLoader", "=== Initialize IOP-plugin for === %s ===", plugin->get_service_uri().c_str());
+			plugin->create_service(this->jausRouter);
+			JTS::Service* iop_service = plugin->get_service();
+			ROS_DEBUG_NAMED("PluginLoader", "Initialized IOP-plugin for %s v%d.%d", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
+			bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
+			p_has_1_1_transport = p_has_1_1_transport | is_transport_1_1;
+			ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
+			p_plugins_map[name] = plugin;
+			service_list.push_back(si);
+			if (plugin->is_discovery_client()) {
+				p_discovery_client = plugin;
+			}
+		} else {
+			std::vector<std::string> depends = plugin->get_depends();
+			if (depends.size() > 0) {
+				ROS_INFO_NAMED("PluginLoader", "=== %s: base plugin '%s' found, check depend plugins...", name.c_str(), plugin->get_base_service_uri().c_str());
+				for (unsigned int i = 0; i < depends.size(); i++) {
+					boost::shared_ptr<iop::PluginInterface> depplug = p_init_plugin(p_uri_to_name(depends[i]), class_loader);
+					if (! depplug) {
+						throw std::logic_error("required plugin " + depends[i] + " for service '" + name + "' not found");
+					}
+				}
+			}
+			ROS_INFO_NAMED("PluginLoader", "=== Initialize IOP-plugin for === %s === <base service: %s>", plugin->get_service_uri().c_str(), base_plugin->get_service_uri().c_str());
+			std::string suri = std::string(plugin->get_base_service_uri());
+			if (suri.compare(base_plugin->get_service_uri()) == 0) {
+				if (base_plugin->get_version_number_major() == plugin->get_base_version_manjor()
+						&& plugin->get_base_min_version_minor() <= base_plugin->get_version_number_minor()) {
+				} else {
+					ROS_WARN("%s has insufficient version %d.%d, required %d.%d", suri.c_str(),
+							base_plugin->get_version_number_major(), base_plugin->get_version_number_minor(),
+							plugin->get_version_number_major(), plugin->get_version_number_minor());
+					throw std::logic_error("base service " + base_plugin->get_service_uri() + " for " + suri + " has insufficient version");
+				}
+			} else {
+				throw std::logic_error("base plugin for service '" + plugin->get_service_uri() + "' not found");
+			}
+			plugin->set_base_plugin(base_plugin.get());
+			plugin->create_service(this->jausRouter);
+			JTS::Service* iop_service = plugin->get_service();
+			ROS_DEBUG_NAMED("PluginLoader", "Initialization for %s v%d.%d done.", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
+			bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
+			p_has_1_1_transport = p_has_1_1_transport | is_transport_1_1;
+			ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
+			p_plugins_map[name] = plugin;
+			service_list.push_back(si);
+			if (plugin->is_discovery_client()) {
+				p_discovery_client = plugin;
+			}
+			plugin->error_message = "";
+		}
+		return plugin;
+	}
+	return boost::shared_ptr<iop::PluginInterface>();
+}
+
+void Component::p_read_manifests(pluginlib::ClassLoader<iop::PluginInterface>& class_loader)
+{
+
+	ROS_DEBUG_NAMED("PluginLoader", "read manifests...");
+	std::vector<std::string> classes = class_loader.getDeclaredClasses();
+	for(unsigned int c = 0; c < classes.size(); ++c)
+	{
+		ROS_DEBUG_NAMED("PluginLoader", "  read manifest for %s", classes[c].c_str());
+		try {
+			boost::shared_ptr<iop::PluginInterface> plugin = class_loader.createInstance(classes[c]);
+			plugin->set_service_info(this->p_read_service_info(classes[c], p_get_plugin_manifest(classes[c])));
+			p_plugins_empty[classes[c]] = plugin;
+		} catch (std::exception &e) {
+			ROS_DEBUG_NAMED("PluginLoader", "%s", e.what());
+		}
+	}
+	ROS_DEBUG_NAMED("PluginLoader", "read manifests done");
+}
+
+std::string Component::p_get_plugin_manifest(std::string plugin_name)
+{
+	std::string xml_path = "";
+	std::map<std::string, std::string >::iterator it = p_service_package_list.find(plugin_name);
+	if (it != p_service_package_list.end()) {
+		std::string package = it->second;
+		xml_path = p_class_loader->getPluginManifestPath(plugin_name);
+		std::size_t found = xml_path.find(package);
+		if (found != std::string::npos) {
+			ROS_DEBUG_NAMED("PluginLoader", "  Assigned: [%s, %s] %s", plugin_name.c_str(), package.c_str(), xml_path.c_str());
+		} else {
+			ROS_ERROR("No xml with service definition for '%s' in package '%s' found!", plugin_name.c_str(), p_service_package_list[plugin_name].c_str());
+			throw std::logic_error("No xml with service definition for '" + plugin_name + "' in package '" + p_service_package_list[plugin_name] + "' found!");
+		}
+	} else {
+		// plugin was not defined in our list, serch for a default one
+		ROS_DEBUG_NAMED("PluginLoader", "service '%s' not found in parameter list, try to load from ROS package path...", plugin_name.c_str());
+		xml_path = p_class_loader->getPluginManifestPath(plugin_name);
+		ROS_DEBUG_NAMED("PluginLoader", "  Assigned: [%s] %s", plugin_name.c_str(), xml_path.c_str());
+		if (xml_path.empty()) {
+			ROS_ERROR("No xml with service definition for '%s' found!", plugin_name.c_str());
+			throw std::logic_error("No xml with service definition for '" + plugin_name + "' found!");
+		}
+	}
+	return xml_path;
+}
+
+std::string Component::p_uri_to_name(std::string service_uri)
+{
+	std::string result;
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	// search in already created plugins
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		if (it->second) {
+			if (service_uri.compare(it->second->get_service_uri()) == 0) {
+				return it->first;
+			}
+		}
+	}
+	// search in readed manifests
+	for (it = p_plugins_empty.begin(); it != p_plugins_empty.end(); ++it) {
+		if (it->second) {
+			if (service_uri.compare(it->second->get_service_uri()) == 0) {
+				return it->first;
+			}
+		}
+	}
+	return result;
+}
+
 bool Component::has_service(std::string service_uri)
 {
-	for (unsigned int i = 0; i < p_plugins.size(); ++i)
-	{
-		if (p_plugins[i]->get_service_uri().compare(service_uri) == 0) {
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		if (it->second.get()->get_service_uri().compare(service_uri) == 0) {
 			return true;
 		}
 	}
 	return false;
 }
-
-boost::shared_ptr<iop::PluginInterface> Component::p_get_plugin_str(const std::string service_uri, unsigned char major_version, unsigned char min_minor_version)
-{
-	for (unsigned int i = 0; i < p_plugins.size(); ++i)
-	{
-		std::string suri = std::string(p_plugins[i]->get_service_uri());
-		if (suri.compare(service_uri) == 0
-				&& p_plugins[i]->get_service() != NULL) {
-			if (major_version == p_plugins[i]->get_version_number_major()
-					&& min_minor_version <= p_plugins[i]->get_version_number_minor()){
-				return p_plugins[i];
-			} else {
-				ROS_WARN("%s has insufficient version %d.%d, required %d.%d", suri.c_str(), p_plugins[i]->get_version_number_major(), p_plugins[i]->get_version_number_minor(), major_version, min_minor_version);
-			}
-		}
-	}
-	throw std::logic_error("base plugin for service '" + service_uri + "' not found");
-}
-
-void Component::p_check_depends(const std::vector<std::string> depends)
-{
-	for (unsigned int d = 0; d < depends.size(); ++d) {
-		std::string service_uri = depends[d];
-		bool found = false;
-		for (unsigned int i = 0; i < p_plugins.size(); ++i)
-		{
-			std::string suri = std::string(p_plugins[i]->get_service_uri());
-			if (suri.compare(service_uri) == 0
-					&& p_plugins[i]->get_service() != NULL) {
-				found = true;
-			}
-		}
-		if (!found) {
-			throw std::logic_error("required plugin for service '" + service_uri + "' not found");
-		}
-	}
-}
-
 
 void Component::start_component()
 {
@@ -345,12 +364,11 @@ void Component::shutdown_component()
 
 JTS::Service* Component::get_service(std::string service_name)
 {
-	for (unsigned int i = 0; i < p_plugins.size(); ++i)
-	{
-		if (p_plugins[i]->get_service_name().compare(service_name) == 0
-				&& p_plugins[i]->get_service() != NULL) {
-//			std::cout << "get service '" << service_name << "', uri: " << p_plugins[i]->get_service_uri()  << ", type: " << typeid(p_plugins[i]->get_service()).name() << std::endl;
-			return p_plugins[i]->get_service();
+	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
+	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
+		if (it->second.get()->get_service_name().compare(service_name) == 0
+				&& it->second.get()->get_service() != NULL) {
+			return it->second.get()->get_service();
 		}
 	}
 	return NULL;
