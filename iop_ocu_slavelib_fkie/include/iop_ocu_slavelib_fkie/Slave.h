@@ -57,6 +57,7 @@ namespace ocu {
 		~Slave(void);
 
 		void add_supported_service(SlaveHandlerInterface &handler, std::string service_uri, jUnsignedByte major_version=1, jUnsignedByte minor_version=0);
+		void set_supported_handoff(bool supported);
 
 		bool has_access(JausAddress &address);
 		void request_access(JausAddress &address, unsigned char authority);

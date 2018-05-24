@@ -134,6 +134,11 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 	pSendFeedback();
 }
 
+void Slave::set_supported_handoff(bool supported)
+{
+	p_handoff_supported = supported;
+}
+
 void Slave::pInitRos()
 {
 	ROS_INFO_ONCE_NAMED("Slave", "=== Initialize OCU Slave ===");
@@ -172,8 +177,8 @@ void Slave::pInitRos()
 	if (p_controlled_component_nr == 0) {
 		p_controlled_component_nr = 1;
 	}
-	iop::Component &cmp = iop::Component::get_instance();
-	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
+//	iop::Component &cmp = iop::Component::get_instance();
+//	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
 	p_pub_control_feedback = cfg.advertise<iop_msgs_fkie::OcuFeedback>("/ocu_feedback", 1, true);
 	p_sub_control = cfg.subscribe<iop_msgs_fkie::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
