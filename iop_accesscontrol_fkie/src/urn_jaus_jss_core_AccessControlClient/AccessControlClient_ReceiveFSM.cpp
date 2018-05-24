@@ -92,6 +92,7 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_ACCEPTED);
 	} else if (rcode == 1) {
 		ROS_WARN_NAMED("AccessControlClient", "NOT_AVAILABLE: %s", sender.str().c_str());
+		p_remote_components.set_ack(sender, ros::WallTime::now().toSec());
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
 	} else if (rcode == 2) {
 		ROS_WARN_NAMED("AccessControlClient", "INSUFFICIENT_AUTHORITY: %s", sender.str().c_str());
@@ -105,11 +106,15 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 void AccessControlClient_ReceiveFSM::handleRejectControlAction(RejectControl msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress sender = transportData.getAddress();
+	p_remote_components.set_ack(sender, ros::WallTime::now().toSec());
 	ROS_DEBUG_NAMED("AccessControlClient", "Control Rejected %s, code: %d", sender.str().c_str(), (int)msg.getBody()->getRejectControlRec()->getResponseCode());
-	p_remote_components.remove(sender);
 	if (msg.getBody()->getRejectControlRec()->getResponseCode() == 0) {
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_RELEASED);
+		p_remote_components.remove(sender);
 	} else if (msg.getBody()->getRejectControlRec()->getResponseCode() == 1) {
+		if (p_emergency_address != sender) {
+			p_remote_components.remove(sender);
+		}
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
 	}
 }

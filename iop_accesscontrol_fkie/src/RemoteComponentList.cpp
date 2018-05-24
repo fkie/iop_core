@@ -73,6 +73,8 @@ void RemoteComponentList::set_ack(JausAddress address, unsigned long secs)
 	std::map<JausAddress, boost::shared_ptr<iop::RemoteComponent> >::iterator itcmp = p_components.find(address);
 	if (itcmp != p_components.end()) {
 		itcmp->second->set_ack(secs);
+	} else {
+		ROS_DEBUG_NAMED("AccessControlClient", "can not set ack for %s, not found", address.str().c_str());
 	}
 }
 

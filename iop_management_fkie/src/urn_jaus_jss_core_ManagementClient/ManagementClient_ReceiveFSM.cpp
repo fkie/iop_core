@@ -110,6 +110,11 @@ void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::
 				resume(p_current_client);
 			}
 		}
+		if (p_status != MANAGEMENT_STATE_EMERGENCY) {
+			p_current_emergency_address = JausAddress();
+			pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_emergency_address);
+
+		}
 	}
 }
 
@@ -159,6 +164,15 @@ void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 	}
 }
 
+void ManagementClient_ReceiveFSM::delete_emergency_client()
+{
+	if (p_current_emergency_address.get() != 0) {
+		ROS_DEBUG_NAMED("ManagementClient", "delete emergency client %s", p_current_client.str().c_str());
+		p_current_emergency_address = JausAddress();
+		pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_emergency_address);
+	}
+}
+
 void ManagementClient_ReceiveFSM::pQueryCallback(const ros::TimerEvent& event)
 {
 	if (p_current_client.get() != 0) {
@@ -191,15 +205,28 @@ std::string ManagementClient_ReceiveFSM::p_status_to_str(unsigned char status) {
 
 void ManagementClient_ReceiveFSM::pRosEmergency(const std_msgs::Bool::ConstPtr& state)
 {
-	if (p_current_client.get() != 0) {
-		if (state->data && p_status != MANAGEMENT_STATE_EMERGENCY) {
-			SetEmergency request;
-			request.getBody()->getSetEmergencyRec()->setEmergencyCode(1);
+	if (state->data) {
+		if (p_current_client.get() != 0) {
+			if (p_current_emergency_address.get() != 0 && p_current_emergency_address != p_current_client) {
+				ROS_WARN_NAMED("ManagementClient", "Something goes wrong: this client is in emergency state for %s, but controls now %s. Please release control first, clear emergency and then take control other %s to clear emergency state.",
+						p_current_emergency_address.str().c_str(), p_current_client.str().c_str(), p_current_emergency_address.str().c_str());
+			} else {
+				p_current_emergency_address = p_current_client;
+				pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_client);
+				SetEmergency request;
+				request.getBody()->getSetEmergencyRec()->setEmergencyCode(1);
+				sendJausMessage(request, p_current_client);
+			}
+		}
+	} else if (!state->data) {
+		ClearEmergency request;
+		request.getBody()->getClearEmergencyRec()->setEmergencyCode(1);
+		if (p_current_client.get() != 0) {
+			ROS_INFO_NAMED("ManagementClient", "send clear emergency to current client %s", p_current_client.str().c_str());
 			sendJausMessage(request, p_current_client);
-		} else if (!state->data && p_status == MANAGEMENT_STATE_EMERGENCY) {
-			ClearEmergency request;
-			request.getBody()->getClearEmergencyRec()->setEmergencyCode(1);
-			sendJausMessage(request, p_current_client);
+		} else if (p_current_emergency_address.get() != 0) {
+			ROS_INFO_NAMED("ManagementClient", "send clear emergency to stored address %s", p_current_emergency_address.str().c_str());
+			sendJausMessage(request, p_current_emergency_address);
 		}
 	}
 }

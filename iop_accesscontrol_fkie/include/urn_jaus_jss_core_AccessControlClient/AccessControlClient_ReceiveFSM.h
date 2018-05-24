@@ -104,6 +104,7 @@ public:
 	void add_reply_handler(void(T::*handler)(JausAddress &, unsigned char code), T*obj) {
 		p_reply_handler.push_back(boost::bind(handler, obj, _1, _2));
 	}
+	void set_emergency_client(JausAddress address) { p_emergency_address = address; }
 
 	AccessControlClient_ReceiveFSMContext *context;
 
@@ -115,6 +116,7 @@ protected:
 	std::vector<boost::function<void (JausAddress &, unsigned char code)> > p_reply_handler;
 	std::map <unsigned int, std::vector<boost::function<void (JausAddress &, unsigned char code)> > > p_reply_callbacks;  // unsigned int -> JausAddress::get(), list with callbacks to this address
 	boost::function<void (JausAddress &, unsigned char code)> p_class_access_reply_callback;
+	JausAddress p_emergency_address;
 	jUnsignedByte p_default_timeout;
 	iop::RemoteComponentList p_remote_components;
 	ros::WallTimer p_timer;

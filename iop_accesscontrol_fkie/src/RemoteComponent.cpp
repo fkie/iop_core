@@ -68,7 +68,8 @@ void RemoteComponent::set_ack(unsigned long secs)
 
 bool RemoteComponent::timeouted()
 {
-	if (p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
+	if (p_last_ack < p_last_request && p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
+		ROS_DEBUG_NAMED("AccessControlClient", "timeouted, last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
 		return true;
 	}
 	return false;

@@ -84,6 +84,8 @@ public:
 	void queryStatus(JausAddress address);
 	void resume(JausAddress address);
 	void set_current_client(JausAddress client);
+	JausAddress get_emergency_client() { return p_current_emergency_address; }
+	void delete_emergency_client();
 
 	ManagementClient_ReceiveFSMContext *context;
 
@@ -98,6 +100,7 @@ protected:
 
 	QueryStatus p_query_status;
 	JausAddress p_current_client;
+	JausAddress p_current_emergency_address;
 	unsigned char p_status;
 	ros::NodeHandle p_nh;
 	ros::Timer p_query_timer;

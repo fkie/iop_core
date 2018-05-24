@@ -201,6 +201,12 @@ void Slave::pRosControl(const iop_msgs_fkie::OcuCmd::ConstPtr& control)
 			if (p_subsystem_restricted != 65535 && control_addr.getSubsystemID() != p_subsystem_restricted) {
 				apply_cmd = false;
 			}
+			if (pGetManagementClient() != 0) {
+				JausAddress emergency_addr = pGetManagementClient()->get_emergency_client();
+				if (emergency_addr.get() != 0 && control_addr.get() != 0 && emergency_addr.getSubsystemID() != control_addr.getSubsystemID()) {
+					apply_cmd = false;
+				}
+			}
 			if (apply_cmd) {
 				JausAddress cmp = it_srv->get_dicovered_address(control_addr, p_controlled_component_nr);
 				if (cmp.get() != 0) {
@@ -351,6 +357,8 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 		} else {
 			pGetAccesscontrolClient()->releaseAccess(address);
 		}
+	} else {
+		pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 	}
 }
 
@@ -372,6 +380,9 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 				break;
 			case Component::ACCESS_STATE_TIMEOUT:
+				if (pGetManagementClient() != 0) {
+					pGetManagementClient()->delete_emergency_client();
+				}
 			case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
 				pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 				break;
