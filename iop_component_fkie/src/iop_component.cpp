@@ -465,7 +465,7 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 				if (class_element->Attribute("name") != NULL)
 				{
 					classid = class_element->Attribute("name");
-					ROS_DEBUG("XML file specifies class name = %s", classid.c_str());
+					ROS_DEBUG_NAMED("PluginLoader", "XML file specifies class name = %s", classid.c_str());
 					if (classid.compare(serviceid) != 0) {
 						ROS_DEBUG("  %s is not searching service, skip", classid.c_str());
 						//step to next class_element
@@ -475,7 +475,7 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 				} else if (class_element->Attribute("type") != NULL)
 				{
 					classid = class_element->Attribute("type");
-					ROS_DEBUG("XML file specifies class type = %s", classid.c_str());
+					ROS_DEBUG_NAMED("PluginLoader", "XML file specifies class type = %s", classid.c_str());
 					if (classid.compare(serviceid) != 0) {
 						ROS_DEBUG("  %s is not searching service, skip", classid.c_str());
 						//step to next class_element
@@ -491,9 +491,9 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 					if (service_element->Attribute("name") != NULL)
 					{
 						result.name = service_element->Attribute("name");
-						ROS_DEBUG("XML file specifies type = %s", result.name.c_str());
+						ROS_DEBUG_NAMED("PluginLoader", "XML file specifies type = %s", result.name.c_str());
 					} else {
-						ROS_DEBUG("XML file has no type for service id %s, let it empty.", result.id.c_str());
+						ROS_DEBUG_NAMED("PluginLoader", "XML file has no type for service id %s, let it empty.", result.id.c_str());
 					}
 					// get version
 					result.version_manjor = 1;
@@ -505,15 +505,15 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 						if (scan_result == 2) {
 							result.version_manjor = p1;
 							result.version_minor = p2;
-							ROS_DEBUG("XML file specifies version = %d.%d", p1, p2);
+							ROS_DEBUG_NAMED("PluginLoader", "XML file specifies version = %d.%d", p1, p2);
 						} else if (scan_result == 1) {
 							result.version_manjor = p1;
-							ROS_DEBUG("XML file specifies only major version = %d", p1);
+							ROS_DEBUG_NAMED("PluginLoader", "XML file specifies only major version = %d", p1);
 						} else {
-							ROS_DEBUG("XML file has wrong version attribute value = %s", version.c_str());
+							ROS_DEBUG_NAMED("PluginLoader", "XML file has wrong version attribute value = %s", version.c_str());
 						}
 					} else {
-						ROS_DEBUG("XML file has no version for service id %s, assume 1.0", result.id.c_str());
+						ROS_DEBUG_NAMED("PluginLoader", "XML file has no version for service id %s, assume 1.0", result.id.c_str());
 					}
 					// get required_service spec, format: <inherits_from id="urn:jaus:jss:core:Transport" min_version="1.0"/>
 					result.inherits_from = "";
@@ -522,9 +522,9 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 						if (inherits_from->Attribute("id") != NULL)
 						{
 							result.inherits_from = inherits_from->Attribute("id");
-							ROS_DEBUG("XML file specifies inherits_from type = %s", result.inherits_from.c_str());
+							ROS_DEBUG_NAMED("PluginLoader", "XML file specifies inherits_from type = %s", result.inherits_from.c_str());
 						} else {
-							ROS_DEBUG("XML file has no id in inherits_from tag.");
+							ROS_DEBUG_NAMED("PluginLoader", "XML file has no id in inherits_from tag.");
 						}
 						// get version
 						result.inherits_from_version_manjor = 1;
@@ -536,15 +536,15 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 							if (scan_result == 2) {
 								result.inherits_from_version_manjor = p1;
 								result.inherits_from_min_version_minor = p2;
-								ROS_DEBUG("XML file specifies version = %d.%d", p1, p2);
+								ROS_DEBUG_NAMED("PluginLoader", "XML file specifies version = %d.%d", p1, p2);
 							} else if (scan_result == 1) {
 								result.inherits_from_version_manjor = p1;
-								ROS_DEBUG("XML file specifies only major min version = %d", p1);
+								ROS_DEBUG_NAMED("PluginLoader", "XML file specifies only major min version = %d", p1);
 							} else {
-								ROS_DEBUG("XML file has for inherits_from wrong version attribute value = %s", version.c_str());
+								ROS_DEBUG_NAMED("PluginLoader", "XML file has for inherits_from wrong version attribute value = %s", version.c_str());
 							}
 						} else {
-							ROS_DEBUG("XML file has no min version for inherits_from id %s, assume 1.0", result.inherits_from.c_str());
+							ROS_DEBUG_NAMED("PluginLoader", "XML file has no min version for inherits_from id %s, assume 1.0", result.inherits_from.c_str());
 						}
 					}
 					// get plugins depend on, format: <depend id="urn:jaus:jss:core:Transport"/>
@@ -554,9 +554,9 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 						{
 							std::string depend_id = depend_on->Attribute("id");
 							result.depend.push_back(depend_id);
-							ROS_DEBUG("XML file specifies depend service type = %s", depend_id.c_str());
+							ROS_DEBUG_NAMED("PluginLoader", "XML file specifies depend service type = %s", depend_id.c_str());
 						} else {
-							ROS_DEBUG("XML file has no id in depend tag.");
+							ROS_WARN("XML file has no id in depend tag: %s", manifest.c_str());
 						}
 						depend_on = depend_on->NextSiblingElement("depend");
 					}
