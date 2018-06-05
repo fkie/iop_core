@@ -44,6 +44,7 @@ public:
 	bool remove(JausAddress address);
 	bool isin(JausAddress address);
 	void set_ack(JausAddress address, unsigned long secs);
+	void set_insufficient_authority(JausAddress address);
 	void set_timeout(JausAddress address, int timeout);
 	bool has_access(JausAddress address);
 	std::vector<boost::shared_ptr<iop::RemoteComponent> > time_to_send_request(unsigned long deadtime=2);

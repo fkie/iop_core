@@ -37,6 +37,7 @@ RemoteComponent::RemoteComponent(JausAddress address, jUnsignedByte authority, i
 	p_last_request = 0;
 	p_last_ack = 0;
 	p_has_access = false;
+	p_insauth = false;
 }
 
 RemoteComponent::~RemoteComponent()
@@ -64,11 +65,18 @@ void RemoteComponent::set_ack(unsigned long secs)
 	ROS_DEBUG_NAMED("AccessControlClient", "set new ack %lu for %s", secs, p_address.str().c_str());
 	p_last_ack = secs;
 	p_has_access = true;
+	p_insauth = false;
+}
+
+void RemoteComponent::set_insufficient_authority()
+{
+	ROS_DEBUG_NAMED("AccessControlClient", "set insufficient authority to true for %s", p_address.str().c_str());
+	p_insauth = true;
 }
 
 bool RemoteComponent::timeouted()
 {
-	if (p_last_ack < p_last_request && p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
+	if (!p_insauth && p_last_ack < p_last_request && p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
 		ROS_DEBUG_NAMED("AccessControlClient", "timeouted, last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
 		return true;
 	}
@@ -91,6 +99,11 @@ bool RemoteComponent::time_to_send_request(unsigned long deadtime)
 bool RemoteComponent::has_access()
 {
 	return p_has_access;
+}
+
+bool RemoteComponent::is_insufficient_authority()
+{
+	return p_insauth;
 }
 
 JausAddress RemoteComponent::address()

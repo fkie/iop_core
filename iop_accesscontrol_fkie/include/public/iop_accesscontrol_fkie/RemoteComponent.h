@@ -45,9 +45,11 @@ public:
 
 	void set_timeout(int timeout);
 	void set_ack(unsigned long secs);
+	void set_insufficient_authority();
 	bool timeouted();
 	bool time_to_send_request(unsigned long deadtime=2);
 	bool has_access();
+	bool is_insufficient_authority();
 	JausAddress address();
 	jUnsignedByte authority();
 
@@ -58,6 +60,7 @@ protected:
 	unsigned long p_last_ack;
 	jUnsignedByte p_authority;
 	bool p_has_access;
+	bool p_insauth;
 
 private:
 	RemoteComponent(const RemoteComponent& that);

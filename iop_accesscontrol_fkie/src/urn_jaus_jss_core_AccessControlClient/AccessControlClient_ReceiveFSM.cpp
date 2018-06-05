@@ -96,6 +96,7 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
 	} else if (rcode == 2) {
 		ROS_WARN_NAMED("AccessControlClient", "INSUFFICIENT_AUTHORITY: %s", sender.str().c_str());
+		p_remote_components.set_insufficient_authority(sender);
 		QueryAuthority qa_msg;
 		this->sendJausMessage(qa_msg, sender);
 		pInformReplyCallbacks(sender, ACCESS_STATE_INSUFFICIENT_AUTHORITY);

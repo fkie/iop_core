@@ -78,6 +78,17 @@ void RemoteComponentList::set_ack(JausAddress address, unsigned long secs)
 	}
 }
 
+void RemoteComponentList::set_insufficient_authority(JausAddress address)
+{
+	lock_type lock(p_mutex);
+	std::map<JausAddress, boost::shared_ptr<iop::RemoteComponent> >::iterator itcmp = p_components.find(address);
+	if (itcmp != p_components.end()) {
+		itcmp->second->set_insufficient_authority();
+	} else {
+		ROS_DEBUG_NAMED("AccessControlClient", "can not set insufficient_authority for %s, not found", address.str().c_str());
+	}
+}
+
 void RemoteComponentList::set_timeout(JausAddress address, int timeout)
 {
 	lock_type lock(p_mutex);
