@@ -49,7 +49,8 @@ public:
 
 	/// Guard Methods
 
-	void access_state(JausAddress &address, unsigned char code);
+	void set_remote(JausAddress &address);
+	void release_remote();
 
 	void push_back(Element &msg);
 	void clear();
