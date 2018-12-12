@@ -86,6 +86,8 @@ On each host you run IOP components you need to start the JTS-`nodeManager`:
 
 ## Example
 
+For a simple example with turtlesim see [iop_cfg_sim_turtle_fkie](https://github.com/fkie/iop_cfg_sim_turtle_fkie/blob/master/README.md) package.
+
 The **iop_cfg_sim_stage_fkie** package contains working configuration files specified to run with a stage simulator.
 
 You can find the description to this example [here](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/README.md)
