@@ -81,6 +81,8 @@ Component::~Component()
 		std::cout << "  delete service:" << it->second.get()->get_service_uri() << std::endl;
 		delete it->second.get()->get_service();
 	}
+	p_discovery_client = boost::shared_ptr<iop::PluginInterface>();
+	p_plugins_empty.clear();
 	p_plugins_map.clear();
 	service_list.clear();
 	delete p_class_loader;
