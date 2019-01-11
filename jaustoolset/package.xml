@@ -1,15 +1,11 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>jaustoolset</name>
   <version>2.3.0</version>
-  <description>JausToolSet</description>
+  <description>Reduced version of JausToolSet (http://jaustoolset.org/)</description>
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
   <license>BSD</license>
-  <buildtool_depend>cmake</buildtool_depend>
-  <run_depend>java</run_depend>
-  <run_depend>ant</run_depend>
-  <run_depend>scons</run_depend>
-  <export>
-    <build_type>cmake</build_type>
-  </export>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>java</depend>
 </package>

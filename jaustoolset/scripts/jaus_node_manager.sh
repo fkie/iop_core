@@ -6,12 +6,11 @@ if [ "$1" == "start" ]; then
 		echo "already running, exit!"
 		exit
 	fi
-	JTS_BIN_PATH="$( which JTSNodeManager )"
-	echo "$JTS_BIN_PATH"
-	# go back to install root
-	export JTS_BIN_PATH="$( dirname "$JTS_BIN_PATH" )"
-	export JTS_BIN_PATH="$( dirname "$JTS_BIN_PATH" )"
-	cd $JTS_BIN_PATH && JTSNodeManager $JTS_BIN_PATH/share/jaustoolset/nm.cfg
+	# go back to root of jaustoolset
+	JTS_BIN_PATH="$( dirname "$0" )"
+	JTS_BIN_PATH="$( dirname "$JTS_BIN_PATH" )"
+	echo "rosrun jaustoolset JTSNodeManager $JTS_BIN_PATH/cfg/nm.cfg"
+	cd $JTS_BIN_PATH && rosrun jaustoolset JTSNodeManager $JTS_BIN_PATH/cfg/nm.cfg
 	exit
 fi
 

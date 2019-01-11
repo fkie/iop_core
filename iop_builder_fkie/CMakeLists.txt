@@ -7,7 +7,7 @@ find_package(jaustoolset REQUIRED)
 catkin_package(
     INCLUDE_DIRS include
     CFG_EXTRAS iop_build_macros.cmake
-    DEPENDS jaustoolset
+    CATKIN_DEPENDS jaustoolset
 )
 
 install(

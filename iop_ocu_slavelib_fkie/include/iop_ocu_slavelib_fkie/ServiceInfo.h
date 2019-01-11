@@ -23,7 +23,7 @@ along with this program; or you can read the full license at
 #ifndef OCU_CONTROL_SERVICE_INFO_H_
 #define OCU_CONTROL_SERVICE_INFO_H_
 
-#include <jaustoolset/Transport/JausAddress.h>
+#include <Transport/JausAddress.h>
 #include <iop_msgs_fkie/JausAddress.h>
 #include <iop_msgs_fkie/OcuServiceInfo.h>
 #include <iop_ocu_slavelib_fkie/SlaveHandlerInterface.h>

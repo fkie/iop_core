@@ -23,7 +23,7 @@ along with this program; or you can read the full license at
 #ifndef OCU_COMPONENT_H_
 #define OCU_COMPONENT_H_
 
-#include <jaustoolset/Transport/JausAddress.h>
+#include <Transport/JausAddress.h>
 #include <iop_msgs_fkie/JausAddress.h>
 
 namespace iop
