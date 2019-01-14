@@ -10,11 +10,10 @@ env:
 #    - VERBOSE_OUTPUT=true
 #    - DEBUG_BASH=true
   matrix:
-    - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file  $ROSINSTALL_FILENAME=".travis.rosinstall"
-    - ROS_DISTRO="jade" ROS_REPO="ros"   UPSTREAM_WORKSPACE=file
-    - ROS_DISTRO="kinetic" ROS_REPO="ros-shadow-fixed"  UPSTREAM_WORKSPACE=file
+    - ROS_DISTRO="indigo" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
     - ROS_DISTRO="kinetic" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
-    - ROS_DISTRO="lunar" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
+    - ROS_DISTRO="melodic" ROS_REPO="ros-shadow-fixed"  UPSTREAM_WORKSPACE=file
+    - ROS_DISTRO="melodic" ROS_REPO="ros"  UPSTREAM_WORKSPACE=file
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
