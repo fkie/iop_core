@@ -134,7 +134,7 @@ jUnsignedByte Send::Body::SendRec::getReliableDelivery()
 
 int Send::Body::SendRec::setReliableDelivery(jUnsignedByte value)
 {
-	if (((value >= 0) && (value <= 1)) || (value == 0) || (value == 1))
+	if ((value <= 1) || (value == 0) || (value == 1))
 	{
 		m_ReliableDelivery = value;
 		return 0;
@@ -556,7 +556,7 @@ jUnsignedByte Send::Body::SendRec::getPriority()
 
 int Send::Body::SendRec::setPriority(jUnsignedByte value)
 {
-	if (((value >= 0) && (value <= 3)) || (value == 0) || (value == 1) || (value == 2) || (value == 3))
+	if ((value <= 3) || (value == 0) || (value == 1) || (value == 2) || (value == 3))
 	{
 		m_Priority = value;
 		setPresenceVector(1);
@@ -1155,7 +1155,7 @@ Send::Send()
 	m_Name = "Send";
 }
 
-Send::Send(const Send &value)
+Send::Send(const Send &value) : JTS::InternalEvent()
 {
 	/// Initiliaze the protected variables
 	/// No Initialization of m_Body necessary.

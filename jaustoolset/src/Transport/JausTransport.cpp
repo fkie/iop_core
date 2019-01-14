@@ -67,9 +67,8 @@ void JausRouter::setTransportType( TransportType type)
 
 void JausRouter::routeMessage(JausAddress sender, unsigned int bufsize, const unsigned char* buffer)
 {
-	unsigned short msg_id = *((unsigned short*) buffer);
-
 #ifdef DEBUG
+	unsigned short msg_id = *((unsigned short*) buffer);
 	std::cout << "[JausRouter::routeMessage] Local Component : 0x" << std::hex << msg_id << std::dec << std::endl;
 #endif
 
@@ -122,9 +121,10 @@ void JausRouter::sendMessage(Send* msg)
         }
         // Otherwise, forward Message to NodeManager.
         else
-                JrErrorCode ret = JrSend(jrHandle, destination.get(),
-                                                         msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-                                                         (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
+          //JrErrorCode ret =
+          JrSend(jrHandle, destination.get(),
+                 msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
+                 (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
 }
 
 void JausRouter::sendMessage(Send_1_0* msg)
@@ -148,9 +148,10 @@ void JausRouter::sendMessage(Send_1_0* msg)
 	}
 	// Otherwise, forward Message to NodeManager.
 	else
-		JrErrorCode ret = JrSend(jrHandle, destination.get(),
-							 msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-							 (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
+		// JrErrorCode ret =
+		JrSend(jrHandle, destination.get(),
+				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
+				(const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
 }
 
 void JausRouter::sendMessage(Send_1_1* msg)
@@ -174,9 +175,10 @@ void JausRouter::sendMessage(Send_1_1* msg)
 	}
 	// Otherwise, forward Message to NodeManager.
 	else
-		JrErrorCode ret = JrSend(jrHandle, destination.get(),
-							 msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-							 (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
+		// JrErrorCode ret =
+		JrSend(jrHandle, destination.get(),
+				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
+				(const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
 }
 
 

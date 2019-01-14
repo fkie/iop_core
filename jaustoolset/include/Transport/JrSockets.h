@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JrSockets.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -46,7 +46,7 @@ class JrSocket : public Transport
 {
 public:
     JrSocket(std::string name);
-   ~JrSocket();
+    virtual ~JrSocket();
 
     // All functions are abstract
     TransportError sendMsg(Message& msg);
@@ -62,7 +62,7 @@ public:
     TransportError setDestination(std::string destination);
     TransportError removeDestination(JAUS_ID id);
     unsigned char  messagesInQueue();
-   
+
 protected:
 
     // Helper function to get around duplicating code in
@@ -78,7 +78,7 @@ protected:
     ConnectionList<SocketId> _map;
     std::string              _socket_name;
 	enum SocketWaitType      _type;
-    
+
     // Unfortunately, implementations are different between UNIX
     // and Windows, since Windows does not support named sockets.
     // Instead we use Mailslots, managed by handles.

@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      ConnectionMgr.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -37,7 +37,7 @@ namespace Junior {
 
 
 template<class AddressType>
-class Connection 
+class Connection
 {
 public:
     Connection(){_version = UnknownVersion;};
@@ -79,19 +79,19 @@ public:
 	bool getMsgVersion( JAUS_ID id, MsgVersion& version );
 	bool updateConnection( JAUS_ID id, AddressType& add, MsgVersion& version );
     ConnectionListType& getList(){return _list;};
-   
+
 protected:
 
 	// This should really be a list, but iterators don't seem to like
-	// lists of templated class pointers.  We use a vector as a 
+	// lists of templated class pointers.  We use a vector as a
 	// work around.
 	ConnectionListType _list;
 };
 
 // define inlines
 template<class AddressType>
-inline bool ConnectionList<AddressType>::addElement(JAUS_ID id, 
-										  AddressType addr, 
+inline bool ConnectionList<AddressType>::addElement(JAUS_ID id,
+										  AddressType addr,
 										  MsgVersion version)
 {
     // Not permitted for zero id's
@@ -126,7 +126,7 @@ template<class S>
 inline bool ConnectionList<S>::removeElement(JAUS_ID id)
 {
     // Wipe all entries with matching ids
-    for (int i=0; i < _list.size(); i++)
+    for (unsigned int i=0; i < _list.size(); i++)
         if (_list[i]->getId() == id) _list[i]->setId(0);
     return true;
 }
@@ -137,7 +137,7 @@ inline bool ConnectionList<AddressType>::getAddrFromId( JAUS_ID id, AddressType&
     if (id == 0) return false;
 
     // Check for a match based on the JAUS_ID
-    for (int i=0; i < _list.size(); i++)
+    for (unsigned int i=0; i < _list.size(); i++)
     {
         if (_list[i]->getId() == id)
         {
@@ -154,7 +154,7 @@ inline bool ConnectionList<AddressType>::getMsgVersion( JAUS_ID id, MsgVersion& 
     if (id == 0) return false;
 
     // Check for a match based on the JAUS_ID
-    for (int i=0; i < _list.size(); i++)
+    for (unsigned int i=0; i < _list.size(); i++)
     {
         if (_list[i]->getId() == id)
         {
@@ -171,7 +171,7 @@ inline bool ConnectionList<AddressType>::updateConnection( JAUS_ID id, AddressTy
     if (id == 0) return false;
 
     // Check for a match based on the JAUS_ID
-    for (int i=0; i < _list.size(); i++)
+    for (unsigned int i=0; i < _list.size(); i++)
     {
         if (_list[i]->getId() == id)
         {
@@ -193,14 +193,14 @@ public:
    ~IpAddressBook(){};
 
    // Function to populate an address book from a file
-   bool Load(ConfigData& addresses); 
+   bool Load(ConfigData& addresses);
 };
 
 //
 // Load the address book from a given configuration file.
 // All entries must be of the form:
 //   L<id> = <ip_address_in_dot_notation>:<port>
-// 
+//
 inline bool IpAddressBook::Load(ConfigData& addresses)
 {
     // Each key in the address book should be a JAUS ID
@@ -224,7 +224,7 @@ inline bool IpAddressBook::Load(ConfigData& addresses)
         // Add to the map
         addElement(JAUS_ID((unsigned int)strtod(ID.c_str(), NULL)), ip_struct, UnknownVersion);
 
-        JrFull << "Adding entry to address map: " << ID << " -> " << 
+        JrFull << "Adding entry to address map: " << ID << " -> " <<
             ip_struct.toString() << std::endl;
     }
 

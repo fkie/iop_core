@@ -65,7 +65,7 @@ JausAddress::JausAddress(jUnsignedInteger value)
 	*((jUnsignedInteger*)address) = tempValue;
 }
 
-JausAddress::JausAddress(JausAddress const& from)
+JausAddress::JausAddress(JausAddress const& from) : Address()
 {
 	address = malloc(sizeof(jUnsignedInteger));
 	if (address == NULL) return;

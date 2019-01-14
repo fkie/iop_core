@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      Transport.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -38,14 +38,14 @@ class Transport
 {
 public:
     Transport(){};
-   ~Transport(){};
+    virtual ~Transport(){};
 
     //
     // Define the error codes
     //
-    enum TransportError 
+    enum TransportError
     {
-        Ok, NoMessages, InvalidConfigFile, InitFailed, AddrUnknown, Failed, ConnectionClosed 
+        Ok, NoMessages, InvalidConfigFile, InitFailed, AddrUnknown, Failed, ConnectionClosed
     };
 
     // All functions are abstract
@@ -56,12 +56,12 @@ public:
 
     // Debugging
     std::string enumToString( TransportError code );
-    
+
     std::string getName(){ return my_name;}
-    
+
 protected:
     std::string     my_name;
-    
+
 };
 
 inline std::string Transport::enumToString( TransportError code )
@@ -84,7 +84,7 @@ inline std::string Transport::enumToString( TransportError code )
             return std::string("Unkown error code");
     }
 }
-}} // namespace DeVivo::Junior    
+}} // namespace DeVivo::Junior
 
 #endif
 

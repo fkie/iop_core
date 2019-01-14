@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JSerial.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -66,7 +66,7 @@ int baud2Enum(int baud)
         case   2400: return B2400;
         case   1200: return B1200;
         case      0: return B19200;
-        default: 
+        default:
             JrWarn << "Unsupported baud rate.  Defaulting to 19200\n";
             return B19200;
     }
@@ -102,7 +102,7 @@ Transport::TransportError JSerial::configureLink(ConfigData& config, int index)
 
 
     // Check for valid parameters
-    if ( !JrStrCaseCompare(parity, "odd") && 
+    if ( !JrStrCaseCompare(parity, "odd") &&
          !JrStrCaseCompare(parity, "even") &&
          !JrStrCaseCompare(parity, "none") )
     {
@@ -122,7 +122,7 @@ Transport::TransportError JSerial::configureLink(ConfigData& config, int index)
 
 
 #ifdef WINDOWS
-    
+
     // Get the Data Control Block
     DCB dcb = {0};
     if (!GetCommState(hComm, &dcb)) return InitFailed;
@@ -154,7 +154,7 @@ Transport::TransportError JSerial::configureLink(ConfigData& config, int index)
         dcb.fOutxCtsFlow = 1;
     }
     SetCommState(hComm, &dcb);
-    
+
     // Get comm timeouts
     COMMTIMEOUTS cto;
     if (GetCommTimeouts(hComm, &cto) == 0)
@@ -223,7 +223,7 @@ Transport::TransportError JSerial::configureLink(ConfigData& config, int index)
     // enable raw mode (this prevent interpretation of
     // the data stream for things line CR-LR
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG | IEXTEN);
-    options.c_oflag &= ~(OPOST | ONLCR); 
+    options.c_oflag &= ~(OPOST | ONLCR);
     options.c_iflag &= ~(IGNBRK | IGNCR | INLCR | BRKINT | ICRNL);
 
     // set the timing (no wait)
@@ -271,10 +271,10 @@ Transport::TransportError JSerial::initialize( ConfigData& config, int index )
 
 Transport::TransportError JSerial::sendMsg(Message& msg)
 {
-    TransportError ret = AddrUnknown; 
+    TransportError ret = AddrUnknown;
 
     // Only send messages if the destination is known to us
-    for (int i = 0; i < _map.getList().size(); i++)
+    for (unsigned int i = 0; i < _map.getList().size(); i++)
     {
         if ((_map.getList()[i]->getId() == msg.getDestinationId()) &&
             (_map.getList()[i]->getId() != msg.getSourceId()))
@@ -287,14 +287,14 @@ Transport::TransportError JSerial::sendMsg(Message& msg)
     return ret;
 }
 
-Transport::TransportError JSerial::sendMsg(Message& msg, 
+Transport::TransportError JSerial::sendMsg(Message& msg,
 										   HANDLE handle)
 {
     // Assume the best...
     Transport::TransportError result = Ok;
 
     //
-    // Now pack the message for network transport 
+    // Now pack the message for network transport
     //
     JSerialArchive archive;
 	archive.pack(msg, msg.getMessageCode() == 0 ? AS5669A : AS5669);
@@ -303,10 +303,10 @@ Transport::TransportError JSerial::sendMsg(Message& msg,
 
     // Write to the open port
     DWORD bytesWritten;
-    bool ret = WriteFile(handle, archive.getArchive(), 
+    bool ret = WriteFile(handle, archive.getArchive(),
                       archive.getArchiveLength(),
                       &bytesWritten, NULL);
-    if (ret == 0) 
+    if (ret == 0)
     {
         JrError << "Failed to write to serial port.  Error: " << getlasterror << std::endl;
         result = Failed;
@@ -320,9 +320,9 @@ Transport::TransportError JSerial::sendMsg(Message& msg,
 #endif
 
     // make sure we wrote the whole packet
-    if (bytesWritten != archive.getArchiveLength())
+    if ((unsigned int)bytesWritten != archive.getArchiveLength())
     {
-        JrError << "Failed to write full packet on serial port. Wrote " << 
+        JrError << "Failed to write full packet on serial port. Wrote " <<
             bytesWritten << " of " << archive.getArchiveLength() << std::endl;
         result = Failed;
     }
@@ -336,9 +336,9 @@ Transport::TransportError JSerial::sendMsg(Message& msg,
 Transport::TransportError JSerial::recvMsg(MessageList& msglist)
 {
     char buffer[5000];
-    
+
     TransportError ret = NoMessages;
- 
+
 #ifdef WINDOWS
     // Read from the serial port
     DWORD bytesRead;
@@ -355,7 +355,7 @@ Transport::TransportError JSerial::recvMsg(MessageList& msglist)
     if (bytesRead <= 0) return NoMessages;
     JrDebug << "Read " << bytesRead << " bytes from serial port.\n";
 
-    // We need to process the incoming stream byte-wise, since the 
+    // We need to process the incoming stream byte-wise, since the
     // stream may contain DLE-marked instructions.
     for (int i=0; i<bytesRead; i++)
     {
@@ -375,11 +375,11 @@ Transport::TransportError JSerial::recvMsg(MessageList& msglist)
             {
                 if (buffer[i] == JSERIAL_SOH)
                 {
-                    // DLE marks a packet start.  See if the 
+                    // DLE marks a packet start.  See if the
                     // unused bytes contain a valid packet
                     ret = extractMsgsFromPacket(msglist);
 
-                    // Update the log if we're discarding 
+                    // Update the log if we're discarding
                     // a non-empty packet
                     if (unusedBytes.getArchiveLength() > 0)
                         JrWarn << "Received new serial packet delineator.  Discarding "
@@ -391,7 +391,7 @@ Transport::TransportError JSerial::recvMsg(MessageList& msglist)
                 }
 
                 // Add the DLE marker (from the previous byte)
-                // as well as the current byte to the 
+                // as well as the current byte to the
                 // unusedBytes buffer.
                 unusedBytes << JSERIAL_DLE;
                 unusedBytes << buffer[i];
@@ -414,7 +414,7 @@ Transport::TransportError JSerial::recvMsg(MessageList& msglist)
 
     // Check packet for completeness.  If so, parse message(s).
     ret = extractMsgsFromPacket(msglist);
-    
+
     // done processing this read.  return.
     return ret;
 }
@@ -429,8 +429,6 @@ Transport::TransportError JSerial::broadcastMsg(Message& msg)
 
 Transport::TransportError JSerial::extractMsgsFromPacket(MessageList& msglist)
 {
-    unsigned short jausMsgLength;
-
     // Check for trivial case
     if (!unusedBytes.isArchiveValid()) return NoMessages;
 

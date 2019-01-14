@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JuniorMgr.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -46,7 +46,7 @@ JuniorMgr::JuniorMgr():
     _message_counter = 1;
     _maxMsgHistory = 100;   // as a message count
     _oldMsgTimeout = 10;    // in seconds
-    _detectDuplicates =1; 
+    _detectDuplicates =1;
     _max_retries = 3;
     _ack_timeout = 100; // in milliseconds
     _msg_count = 0;
@@ -76,7 +76,7 @@ unsigned int JuniorMgr::umin(unsigned int x, unsigned int y)
     return (( x < y) ? x : y);
 }
 
-void JuniorMgr::sendAckMsg( Message* incoming ) 
+void JuniorMgr::sendAckMsg( Message* incoming )
 {
     Message response;
     response.setMessageCode(incoming->getMessageCode());
@@ -101,7 +101,7 @@ void JuniorMgr::sendOrBroadcast(Message& msg)
     if (!msg.getDestinationId().containsWildcards())
     {
         // Regular send
-        if (_transport->sendMsg(msg)!= Transport::AddrUnknown) 
+        if (_transport->sendMsg(msg)!= Transport::AddrUnknown)
 			matchFound = true;
 		else
         {
@@ -210,7 +210,7 @@ void JuniorMgr::checkLargeMsgBuffer()
                 msgcount++;
 
                 // If we didn't find the next message in the sequence,
-                // break from this interior "while" loop, returning to 
+                // break from this interior "while" loop, returning to
                 // the "for" loop.
                 if (nextMsg == _largeMsgBuffer.end())
                 {
@@ -221,7 +221,7 @@ void JuniorMgr::checkLargeMsgBuffer()
                 // If this message is not the last message in the sequence,
                 // continue the interior "while" loop until we find a missing
                 // message or the true end.
-                if (nextMsg->second->getDataControlFlag() != Message::LastMsg) 
+                if (nextMsg->second->getDataControlFlag() != Message::LastMsg)
 					continue;
 
                 // Getting to this point means we know that all the messages
@@ -229,7 +229,7 @@ void JuniorMgr::checkLargeMsgBuffer()
                 for (int i=1; i < msgcount; i++)
                 {
                     nextMsg = searchMsgList(_largeMsgBuffer,
-                                msgIter->second->getSourceId(), 
+                                msgIter->second->getSourceId(),
                                 msgIter->second->getSequenceNumber()+i);
                     msgIter->second->getPayload().append( nextMsg->second->getPayload() );
                     delete (nextMsg->second);
@@ -242,7 +242,7 @@ void JuniorMgr::checkLargeMsgBuffer()
 					push_back(msgIter->second);
                 _msg_count++;
 
-                // Last, we need to erase the first message in the set from 
+                // Last, we need to erase the first message in the set from
                 // the large message buffer.  Note that we don't delete
                 // the actual message, since it still needs to be delivered to the app.
                 msgIter = _largeMsgBuffer.erase(msgIter);
@@ -296,8 +296,8 @@ bool JuniorMgr::addMsgToBuffer(Message* msg)
     return true;
 }
 
-JrErrorCode JuniorMgr::sendto( unsigned int destination, 
-                       unsigned int size, 
+JrErrorCode JuniorMgr::sendto( unsigned int destination,
+                       unsigned int size,
                        const char* buffer,
                        int priority,
                        int flags,
@@ -318,7 +318,7 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
     JAUS_ID destId(destination);
     if (destId.containsWildcards())
     {
-        // This is a broadcast, so make sure we turn off ack/nak, 
+        // This is a broadcast, so make sure we turn off ack/nak,
         // and we meet the size limit (broadcasts cannot be parsed into
         // multiple packets.
         flags &= 0xFFFFFFFE;
@@ -348,7 +348,7 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 		msg.setSequenceNumber(_message_counter);
         if (flags & ServiceConnection) msg.setServiceConnection(1);
         if (flags & ExperimentalFlag) msg.setExperimental(1);
-        if (flags & GuaranteeDelivery) 
+        if (flags & GuaranteeDelivery)
 		{
 			msg.setAckNakFlag(1);
 
@@ -358,7 +358,7 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 			_outstanding_ack_request_acked = false;
 		}
 
-        
+
 		// Increment the counter so the next message gets a new sequence number
         _message_counter++;
 
@@ -372,11 +372,11 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
         // broken up.
         if (payload_size < size)
         {
-            if (bytes_sent == 0) 
+            if (bytes_sent == 0)
 				msg.setDataControlFlag(Message::FirstMsg);
-            else if ((bytes_sent + payload_size) == size) 
+            else if ((bytes_sent + payload_size) == size)
 				msg.setDataControlFlag(Message::LastMsg);
-            else 
+            else
 				msg.setDataControlFlag(Message::MiddleMsg);
         }
 
@@ -388,9 +388,9 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
         // Pend here for ACK-NAK.  This will be triggered by the JrReceive call.
         // We wait a configurable period of time, resend a configurable number of times.
         if (flags & GuaranteeDelivery)
-        {	
+        {
 			unsigned long last_msg_time = JrGetTimestamp();
-            int send_count = 0;
+            unsigned int send_count = 0;
             while (!_outstanding_ack_request_acked)
             {
 
@@ -402,9 +402,9 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 						return Timeout;
 
 					// If we have to resend a message that is part of a large data
-					// stream, the data control flags need to be updated.  This 
+					// stream, the data control flags need to be updated.  This
 					// seems wonky to have to do, but it's part of JAUS.
-					if (msg.getDataControlFlag() == Message::MiddleMsg) 
+					if (msg.getDataControlFlag() == Message::MiddleMsg)
 						msg.setDataControlFlag(Message::MiddleResentMsg);
 
 					// Resend the message and update the "last sent" timestamp
@@ -429,10 +429,9 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
                         int* flags,
                         MessageCode* code)
 {
-    // Put the entire message in an archive, so we can 
-    // Check the socket for incoming messages.  
+    // Put the entire message in an archive, so we can
+    // Check the socket for incoming messages.
     MessageList msglist;
-    Transport::TransportError ret = _transport->recvMsg(msglist);
 
     // Process each message in the received list
     while (!msglist.empty())
@@ -445,7 +444,7 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
         if (msg->getAckNakFlag() == 1) sendAckMsg( msg );
 
         // Check if this is the acknowledgement we've been waiting for.
-        if ((msg->getAckNakFlag() == 3) && 
+        if ((msg->getAckNakFlag() == 3) &&
             (msg->getSequenceNumber() == _outstanding_ack_request_seqnum) &&
 			(msg->getSourceId() == _outstanding_ack_request_source) )
         {
@@ -497,7 +496,7 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
 			if (*buffer != NULL)
 			{
 				*bufsize = data_size;
-	            memcpy( *buffer, data_ptr, *bufsize);			
+	            memcpy( *buffer, data_ptr, *bufsize);
 			}
 			else
 				ret = NoMemory;
@@ -520,13 +519,13 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
 // only for limited functionality targets, like handheld devices (iPhone).
 JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
 {
-    // For single application, we don't use configuration files.  
+    // For single application, we don't use configuration files.
 	// All parameters are pre-compiled defaults.
     // Set-up the data logger
     Logger::get()->setMsgLevel((enum Logger::LogMsgType) 3);
 
     // Check for degenerate value
-    if (id == 0) 
+    if (id == 0)
     {
         JrError << "Cannot connect clients with id = 0\n";
         return InvalidID;
@@ -575,7 +574,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     if (!logfile.empty()) Logger::get()->openOutputFile(logfile);
 
     // Check for degenerate value
-    if (id == 0) 
+    if (id == 0)
     {
         JrError << "Cannot connect clients with id = 0\n";
         return InvalidID;
@@ -589,11 +588,11 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
         return InvalidID;
     }
 
-    // Spawn the RTE.  Note that hte spawn process will 
+    // Spawn the RTE.  Note that hte spawn process will
     // ensure that we don't create a duplicate.
     // NOTE: We assume that someone else runs NodeManager for us.
     // JrSpawnProcess("NodeManager", config_file);
-	
+
     // The name of our local socket is the string form of our ID.
     std::stringstream name; name << id;
 

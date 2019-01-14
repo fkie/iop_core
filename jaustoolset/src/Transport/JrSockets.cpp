@@ -42,11 +42,11 @@ using namespace DeVivo::Junior;
 #endif
 
 JrSocket::JrSocket(std::string name):
-     sock(),
      _is_connected(false),
      _map(),
      _socket_name(name),
-	 _type(POLL)
+     _type(POLL),
+     sock()
 {
     my_name = "JSocket";
 }
@@ -151,7 +151,7 @@ Transport::TransportError JrSocket::sendMsg(Message& msg, SocketId sockname)
     memcpy(addr.sun_path, sockname.c_str(), sockname.length());
     int ret = sendto(sock, archive.getArchive(), archive.getArchiveLength(), 0,
        (struct sockaddr *)&addr, sizeof(struct sockaddr_un));
-    if (ret != archive.getArchiveLength())
+    if (ret != (int)archive.getArchiveLength())
 	{
 		JrError << "Unable to write on local socket (" << ret << " of "
 			<< archive.getArchiveLength() << "written)\n";
@@ -179,7 +179,7 @@ Transport::TransportError JrSocket::sendMsg(Message& msg)
         // specified in the message may contain wildcard characters.  We need to loop
         // through all known destinations, sending to any that match (except the source).
         JAUS_ID dest = msg.getDestinationId();
-		for (int i = 0; i < _map.getList().size(); i++)
+		for (unsigned int i = 0; i < _map.getList().size(); i++)
         {
             if (dest == _map.getList()[i]->getId())
             {
@@ -282,7 +282,7 @@ Transport::TransportError JrSocket::broadcastMsg(Message& msg)
         // Loop through all known destinations, sending the message to
         // each socket that matches the destination (including wildcards).
         JAUS_ID dest = msg.getDestinationId();
-		for (int i = 0; i < _map.getList().size(); i++)
+		for (unsigned int i = 0; i < _map.getList().size(); i++)
         {
             if ((msg.getDestinationId() == _map.getList()[i]->getId()) &&
                 (msg.getSourceId() != _map.getList()[i]->getId()))

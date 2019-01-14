@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      TCPConnection.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/08/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -69,12 +69,12 @@ Transport::TransportError JTCPConnection::sendMsg(Message& msg)
 
     // Send the data
     int val = send(_socket, payload.getArchive(), payload.getArchiveLength(), 0);
-    if (val < 0) 
+    if (val < 0)
     {
         JrError << "Unable to send TCP packet.  Error: " << getSocketError << std::endl;
         result = Transport::Failed;
     }
-    else if (val != payload.getArchiveLength())
+    else if (val != (int)payload.getArchiveLength())
     {
         JrError << "Unable to send full TCP packet.  Sent  " << val << " of " <<
             payload.getArchiveLength() << " bytes.\n";
@@ -95,8 +95,8 @@ Transport::TransportError JTCPConnection::recvMsg(MessageList& msglist)
     Transport::TransportError ret = Transport::NoMessages;
 
     // We need to check the socket for waiting data.  If we
-    // process data on the socket, we can 
-    // subsequently check the archive to see if it contains a full 
+    // process data on the socket, we can
+    // subsequently check the archive to see if it contains a full
     // message.  Any messages get added to the list returned
     // to the caller.
     struct timeval timeout;
@@ -123,7 +123,7 @@ Transport::TransportError JTCPConnection::recvMsg(MessageList& msglist)
 
         // Make sure we record the JAUS_ID of the sender
         if (_id.val == 0) _id = msg->getSourceId();
-        if (_version == UnknownVersion) 
+        if (_version == UnknownVersion)
             _version = _incoming_stream.getVersion();
 
         // Add the message to the list and change the return value
@@ -168,7 +168,7 @@ void JTCPConnectionList::closeConnection(int socket)
 
 void JTCPConnectionList::closeAllConnections()
 {
-    // Loop through the map entries, deleting the connection 
+    // Loop through the map entries, deleting the connection
 	// before clearing the entire map.
     std::map<int, JTCPConnection*>::iterator iter;
     for (iter = _connections.begin(); iter != _connections.end(); iter++)
@@ -186,7 +186,7 @@ JTCPConnection* JTCPConnectionList::getConnection(JAUS_ID id, MsgVersion version
     // to romp through the map manually.
     std::map<int, JTCPConnection*>::iterator iter;
     for (iter = _connections.begin(); iter != _connections.end(); iter++)
-        if ((id == iter->second->getId()) && 
+        if ((id == iter->second->getId()) &&
 			(version == iter->second->getVersion()))
 			return iter->second;
     return NULL;

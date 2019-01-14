@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JUDPTransport.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -85,11 +85,11 @@ Transport::TransportError JUDPTransport::initialize( ConfigData& config )
     _socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (_socket < 0)
     {
-        JrError << "Unable to create socket for UDP communication.  Error: " 
+        JrError << "Unable to create socket for UDP communication.  Error: "
             << getSocketError << std::endl;
         return InitFailed;
     }
-	
+
     // Bind the socket to the public JAUS port
     struct sockaddr_in sockAddr;
     sockAddr.sin_family = AF_INET;
@@ -108,7 +108,7 @@ Transport::TransportError JUDPTransport::initialize( ConfigData& config )
     setsockopt(_socket, SOL_SOCKET, SO_RCVBUF, (char*)&buffer_size, length);
     setsockopt(_socket, SOL_SOCKET, SO_SNDBUF, (char*)&buffer_size, length);
 
-    // 
+    //
     // Set-up for multicast:
     //  1) No loopback
     //  2) TTL value set by configuration file
@@ -119,14 +119,14 @@ Transport::TransportError JUDPTransport::initialize( ConfigData& config )
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_TTL, (const char*) &multicast_TTL, sizeof(multicast_TTL));
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_IF, (const char*) &sockAddr, sizeof(sockAddr));
-    mreq.imr_multiaddr.s_addr = _multicastAddr.addr; 
+    mreq.imr_multiaddr.s_addr = _multicastAddr.addr;
 
 	//
 	// INADDR_ANY join the multicast group on the default NIC
 	//    always do this, just in case _interfaces.size() == 0
 	//
     mreq.imr_interface.s_addr = INADDR_ANY;
-    if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+    if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
             (const char*) &mreq, sizeof(mreq)) != 0)
 			JrError << "Error joining multicast group on any address: " << getSocketError << std::endl;
 
@@ -139,12 +139,12 @@ Transport::TransportError JUDPTransport::initialize( ConfigData& config )
     for (addy = _interfaces.begin(); addy != _interfaces.end(); ++addy)
     {
         mreq.imr_interface.s_addr = *addy;
-        if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+        if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
             (const char*) &mreq, sizeof(mreq)) != 0 && getSocketError != 98)
                         // do not print error if it is allready in use. This is already bind by join to any address.
 			JrError << "Error joining multicast group on interface '" << inet_ntoa(*(in_addr*) &mreq.imr_interface.s_addr) << "': " << getSocketError << std::endl;
 
-		JrInfo << "Found network interface: " << 
+		JrInfo << "Found network interface: " <<
 			inet_ntoa(*(in_addr*) &mreq.imr_interface.s_addr) << std::endl;
     }
 
@@ -161,7 +161,7 @@ Transport::TransportError JUDPTransport::sendMsg(Message& msg)
     Transport::TransportError result = AddrUnknown;
 
     //
-    // Get the destination id from the message.  
+    // Get the destination id from the message.
     //
     JAUS_ID destId = msg.getDestinationId();
 
@@ -169,11 +169,11 @@ Transport::TransportError JUDPTransport::sendMsg(Message& msg)
     // Creating a byte stream (payload) for the message
     //
     JUDPArchive archive;
-    
+
     //
     // Loop through all known destination, sending to each match.
     //
-    for (int i = 0; i < _map.getList().size(); i++)
+    for (unsigned int i = 0; i < _map.getList().size(); i++)
     {
         // Store a local variable for convenience
         JAUS_ID id = _map.getList()[i]->getId();
@@ -205,10 +205,9 @@ Transport::TransportError JUDPTransport::sendMsg(Message& msg)
 				// the version of that received message.  Otherwise, take a hint
 				// from the UseOPC2.75_Header config parameter.
 				MsgVersion prevVersion = UnknownVersion;
-				if ((_map.getMsgVersion(id, prevVersion)) &&
-					(prevVersion == OPC) || (prevVersion == AS5669))
+				if ((_map.getMsgVersion(id, prevVersion)) && ((prevVersion == OPC) || (prevVersion == AS5669)))
 					version = prevVersion;
-				else version = (_use_opc ? OPC : AS5669);				
+				else version = (_use_opc ? OPC : AS5669);
 			}
 
 			// pack for the selected version
@@ -219,16 +218,16 @@ Transport::TransportError JUDPTransport::sendMsg(Message& msg)
             dest.sin_family = AF_INET;
             dest.sin_addr.s_addr = _map.getList()[i]->getAddress().addr;
             dest.sin_port = _map.getList()[i]->getAddress().port;
-            
-            // Lastly, send the message.  
+
+            // Lastly, send the message.
             int val = sendto(_socket, archive.getArchive(), archive.getArchiveLength(),
                        0, (struct sockaddr*) &dest, sizeof(dest));
-            if (val < 0) 
+            if (val < 0)
             {
                 JrError << "Unable to send UDP packet.  Error: " << getSocketError << std::endl;
                 result = Failed;
             }
-            else 
+            else
             {
                 JrDebug << "Sent " << archive.getArchiveLength() << " bytes on UDP port, interface " << i << "\n";
                 result = Ok;
@@ -248,9 +247,7 @@ Transport::TransportError JUDPTransport::recvMsg(MessageList& msglist)
 {
     char buffer[5000];
     Transport::TransportError ret = NoMessages;
-    unsigned short jausMsgLength;
-    unsigned char version;
- 
+
     // Check the recv port in a loop, exiting only when we have
     // no messages in the buffer (or we received 10 packets).
     for (int i=0; i<10; i++)
@@ -265,20 +262,20 @@ Transport::TransportError JUDPTransport::recvMsg(MessageList& msglist)
         struct sockaddr_in source;
         int source_length = sizeof(source);
         int result = recvfrom(_socket, buffer, 5000, 0,
-                              (struct sockaddr*) &source, 
+                              (struct sockaddr*) &source,
                               (socklen_t*) &source_length);
         if (result <= 0) break;
         JrDebug << "Read " << result << " bytes on UDP port, attempt " << i << "\n";
 
-        // 
-        // Pull off the source IP info for convenience.  
+        //
+        // Pull off the source IP info for convenience.
         //
         IP_ADDRESS sourceAddr( source );
 
         //
-        // Getting to this point means we have a message.  
-        // Check what type, so we use the appropriate archive.  
-        // 
+        // Getting to this point means we have a message.
+        // Check what type, so we use the appropriate archive.
+        //
         JUDPArchive raw_msg;
 
         // Otherwise, set the data from the receive buffer.
@@ -301,7 +298,7 @@ Transport::TransportError JUDPTransport::recvMsg(MessageList& msglist)
             _map.addElement( msg->getSourceId(), sourceAddr, raw_msg.getVersion() );
 
             // Add the message to the list and change the return value
-            JrDebug << "Found valid UDP message (size " << msg->getDataLength() << 
+            JrDebug << "Found valid UDP message (size " << msg->getDataLength() <<
                 ", seq " << msg->getSequenceNumber() << ")\n";
             msglist.push_back(msg);
             ret = Ok;
@@ -361,7 +358,7 @@ Transport::TransportError JUDPTransport::broadcastMsg(Message& msg)
 		{
 			struct in_addr sockAddr;
 			sockAddr.s_addr = *iter;
-			setsockopt (_socket, IPPROTO_IP, IP_MULTICAST_IF, 
+			setsockopt (_socket, IPPROTO_IP, IP_MULTICAST_IF,
 				(const char*) &sockAddr, sizeof(sockAddr));
 
 			JrDebug << "broadcast UDP message on interface " <<
@@ -378,7 +375,7 @@ Transport::TransportError JUDPTransport::broadcastMsg(Message& msg)
 				ret = Failed;
 			} else {
 				JrDebug << "Broadcasted " << archive.getArchiveLength() <<
-					" bytes on interface " << inet_ntoa( *(struct in_addr*) &sockAddr.s_addr ) 
+					" bytes on interface " << inet_ntoa( *(struct in_addr*) &sockAddr.s_addr )
 					<< std::endl;
 			}
 		}

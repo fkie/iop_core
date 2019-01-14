@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      Archive.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -43,7 +43,7 @@ namespace Junior {
 template<typename S, typename T>
 void scaleValue(S in, T& out, double min_value, double max_value)
 {
-    double scale_factor = (max_value - min_value) / 
+    double scale_factor = (max_value - min_value) /
                                  (double)(pow(2, sizeof(T)*8) - 1);
     out = (T) ( (in - min_value) / scale_factor + 0.5 );
 }
@@ -51,21 +51,21 @@ void scaleValue(S in, T& out, double min_value, double max_value)
 template<typename S, typename T>
 void unscaleValue(S in, T& out, double min_value, double max_value)
 {
-    double scale_factor = (max_value - min_value) / 
+    double scale_factor = (max_value - min_value) /
                             (double)(pow(2, sizeof(S)*8) - 1);
     out = (T) (in * scale_factor + min_value );
 }
-    
 
 
-class Archive 
+
+class Archive
 {
 public:
 
     Archive():
        data(),
-       data_length(0),
        buffer_size(0),
+       data_length(0),
        offset(0),
        pack_mode(LittleEndian)
     {
@@ -89,7 +89,7 @@ public:
     {
         if ((sizeof(T)!=2) && (sizeof(T)!=4)) return value;
         char temp[sizeof(T)];
-        for (int i=0; i < sizeof(T); i++)
+        for (unsigned int i=0; i < sizeof(T); i++)
             temp[i] = ((char*)(&value))[sizeof(T)-1-i];
         return *((T*) temp);
     }
@@ -110,7 +110,7 @@ public:
 			T tempValue = swapBytes(value);
 			memcpy( data+data_length, (void*) &tempValue, sizeof(T) );
         }
-        else 
+        else
             memcpy( data+data_length, (void*) &value, sizeof(T) );
         data_length += sizeof(T);
     }
@@ -196,7 +196,7 @@ public:
     template<class T> void setValueAt(int index, T value)
     {
         // Switch to network byte ordering if the length of the value
-        // is more than a single byte.  
+        // is more than a single byte.
         bool isBigHost = (htons(256) == 256);
         if (( isBigHost && (pack_mode == LittleEndian)) ||
             (!isBigHost && (pack_mode == BigEndian)))
@@ -204,7 +204,7 @@ public:
 			T temp = swapBytes(value);
 			memcpy(data+index, &temp, sizeof(value));
         }
-        else 
+        else
 			memcpy(data+index, &value, sizeof(value));
     }
 
@@ -229,7 +229,7 @@ public:
     char*          getArchive()       { return data; }
 
     // Debugging
-    void printArchive(int size);
+    void printArchive(unsigned int size);
 
 protected:
 
@@ -237,13 +237,13 @@ protected:
     unsigned int buffer_size;
     unsigned int data_length;
     int            offset;
-    enum PackMode  pack_mode; 
+    enum PackMode  pack_mode;
 
     void growBuffer(unsigned int newLength);
 
 };
 
-inline void Archive::printArchive(int size)
+inline void Archive::printArchive(unsigned int size)
 {
     // get the stream from the logger
     std::ostream& out = Logger::get()->getStream(Logger::full);
@@ -312,9 +312,9 @@ inline void Archive::insertAt( int index, Archive& archive )
     char* temp_data = (char*) malloc( buffer_size );
     int tail_size = data_length - index;
     memcpy( temp_data, &data[index], tail_size );
-    memcpy( &data[index+length], temp_data, tail_size ); 
+    memcpy( &data[index+length], temp_data, tail_size );
     free(temp_data);
-    
+
     // insert the stuff from the new archive
     memcpy( &data[index], archive.getArchive(), length );
     data_length += length;
@@ -323,7 +323,7 @@ inline void Archive::insertAt( int index, Archive& archive )
 inline void Archive::removeAt( int index, int length )
 {
     // Shift the tail data forward and reduce the count.
-    char* tail = &data[index + length]; 
+    char* tail = &data[index + length];
     memmove( &data[index], tail, data_length - length - index);
     data_length -= length;
 }

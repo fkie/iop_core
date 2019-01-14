@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JuniorAPI.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -33,7 +33,7 @@ static std::vector<long> handles;
 
 // This function checks all known handles for pending
 // messages.  Any handle with 1 or more messages
-// waiting is returned in the list.  This function does 
+// waiting is returned in the list.  This function does
 // not allocate any memory; therefore, the list must be
 // allocated by the calling application, with a maximum
 // size passed in 'size_of_list'.  This value will be modified
@@ -47,7 +47,7 @@ JrErrorCode DllExport JrCheckAllHandles(long* list, int* size_of_list)
 	if (size_of_list == NULL) return InvalidParams;
 
     // Check each known handle for outstanding messages.
-    for (int i=0; i < handles.size(); i++)
+    for (unsigned int i=0; i < handles.size(); i++)
     {
         if (handles[i] == 0) continue;
         if (((JuniorMgr*) handles[i])->pending())
@@ -57,7 +57,7 @@ JrErrorCode DllExport JrCheckAllHandles(long* list, int* size_of_list)
         }
     }
 
-    // If we actually have more handles with messages than 
+    // If we actually have more handles with messages than
     // the list allows us to return, mark as Overflow.
     if (count > *size_of_list) ret = Overflow;
     *size_of_list = count;
@@ -66,8 +66,8 @@ JrErrorCode DllExport JrCheckAllHandles(long* list, int* size_of_list)
 
 
 JrErrorCode DllExport JrSend(long handle,
-           unsigned int destination, 
-           unsigned int bufsize, 
+           unsigned int destination,
+           unsigned int bufsize,
            const char* buffer,
            int priority,
            int flags,
@@ -104,13 +104,13 @@ JrErrorCode DllExport JrConnect(unsigned int id, const char* config_file, long* 
 {
     if (handle == NULL) return InitFailed;
 
-    // Create and initialize Junior Manager, to manage this 
-    // connection to the RTE.  
+    // Create and initialize Junior Manager, to manage this
+    // connection to the RTE.
     JuniorMgr* mgr = new JuniorMgr();
     JrErrorCode ret;
-    if ((config_file == NULL) || strlen(config_file) == 0) 
+    if ((config_file == NULL) || strlen(config_file) == 0)
         ret = mgr->connect(id, "");
-    else 
+    else
         ret = mgr->connect(id, config_file);
     if (ret != Ok)
     {
@@ -126,13 +126,13 @@ JrErrorCode DllExport JrConnect(unsigned int id, const char* config_file, long* 
 }
 
 JrErrorCode DllExport JrDisconnect(long handle)
-{    
+{
     if (handle == 0) return NotInitialized;
     JuniorMgr* mgr = (JuniorMgr*) handle;
     delete(mgr);
 
     // find it in the static list
-    for (int i=0; i < handles.size(); i++)
+    for (unsigned int i=0; i < handles.size(); i++)
     {
         if (handles[i] == handle)
         {

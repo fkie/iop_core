@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      OS.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -61,9 +61,9 @@ void DeVivo::Junior::JrSpawnProcess(std::string path, std::string arg)
 
         // Now create the process that points to the path
         cmd = path + " " + arg + "\0";
-        BOOL result = CreateProcess(  NULL, LPSTR(cmd.c_str()), NULL, NULL, FALSE, 
+        BOOL result = CreateProcess(  NULL, LPSTR(cmd.c_str()), NULL, NULL, FALSE,
             HIGH_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL,  NULL,  &si, &pi);
-        if(result == 0)  
+        if(result == 0)
             JrError << "Could not create process " << path << std::endl;
 
         // Wait for it to spool up before returning
@@ -113,15 +113,15 @@ std::list<unsigned int> DeVivo::Junior::JrGetIPAddresses()
 
 #if defined(WINDOWS) || defined(__CYGWIN__) || defined(NO_IF_ADDRS)
 
-    // Windows doesn't support ioctl calls, and the gethostbyname is a 
+    // Windows doesn't support ioctl calls, and the gethostbyname is a
     // better method anyway....
     char ac[80];
     if (gethostname(ac, sizeof(ac)) == 0)
     {
         struct hostent *phe = gethostbyname(ac);
-        if (phe != 0) 
+        if (phe != 0)
 		{
-            for (int i = 0; phe->h_addr_list[i] != 0; ++i) 
+            for (int i = 0; phe->h_addr_list[i] != 0; ++i)
                 addresses.push_back(((in_addr*)phe->h_addr_list[i])->s_addr);
     }
 		else
@@ -168,7 +168,7 @@ std::list<unsigned int> DeVivo::Junior::JrGetIPAddresses()
 bool DeVivo::Junior::JrStrCaseCompare(std::string str1, std::string str2)
 {
 #ifdef WINDOWS
-    return 
+    return
         (CompareString(LOCALE_SYSTEM_DEFAULT, NORM_IGNORECASE,
           str1.c_str(), str1.size(), str2.c_str(), str2.size())==2);
 #else
@@ -185,7 +185,7 @@ int DeVivo::Junior::JrSpawnThread(void*(*func_ptr)(void*), void* func_arg)
     pthread_t thread_info;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);    
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     if(pthread_create(&thread_info, &attr, func_ptr, func_arg) != 0)
         JrError << "Could not create thread\n";
     pthread_attr_destroy(&attr);
@@ -285,7 +285,7 @@ void DeVivo::Junior::JrSignal::signal()
 #endif
 }
 
-#if defined(WINDOWS) 
+#if defined(WINDOWS)
 VOID CALLBACK TimerRoutine(PVOID arg, BOOLEAN TimerOrWaitFired)
 {
     ((DeVivo::Junior::JrTimer*) arg)->call_user_function();
@@ -310,15 +310,15 @@ static void handleTimeout(sigval_t sig)
 #endif
 
 
-DeVivo::Junior::JrTimer::JrTimer(void (*func_ptr)(void*), 
-                                 void* func_arg, 
+DeVivo::Junior::JrTimer::JrTimer(void (*func_ptr)(void*),
+                                 void* func_arg,
                                  unsigned int timeout)
 {
     this->func_ptr = func_ptr;
     this->func_arg = func_arg;
     timeout_ms = timeout;
 
-#if defined(WINDOWS) 
+#if defined(WINDOWS)
     tHandle = 0;
 #elif defined(__MAC__)
     threadId = 0;
@@ -329,7 +329,7 @@ DeVivo::Junior::JrTimer::JrTimer(void (*func_ptr)(void*),
     sev.sigev_notify_function = handleTimeout;
     sev.sigev_value.sival_ptr = this;
     sev.sigev_notify_attributes = NULL;
-    int result = timer_create(CLOCK_REALTIME, &sev, &timerid);
+    timer_create(CLOCK_REALTIME, &sev, &timerid);
 #endif
 }
 
@@ -368,15 +368,15 @@ void DeVivo::Junior::JrTimer::start()
 
 void DeVivo::Junior::JrTimer::stop()
 {
-#if defined(WINDOWS) 
-    if (tHandle != 0) 
+#if defined(WINDOWS)
+    if (tHandle != 0)
     {
         DeleteTimerQueueTimer(NULL, tHandle, NULL);
         CloseHandle(tHandle);
         tHandle = 0;
     }
 #elif defined(__MAC__)
-    if (threadId != 0) 
+    if (threadId != 0)
     {
         JrKillThread(threadId);
         threadId = 0;

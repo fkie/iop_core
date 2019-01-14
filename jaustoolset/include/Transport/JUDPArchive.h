@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JUDPArchive.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -52,8 +52,8 @@ class JUDPArchive : public TransportArchive
 	MsgVersion getVersion();
 
   protected:
-	int getHeaderSize();
-	int getFooterSize();
+	unsigned int getHeaderSize();
+	unsigned int getFooterSize();
     unsigned short getDataLength();
 	char* getDataPtr();
 };
@@ -67,7 +67,7 @@ inline MsgVersion JUDPArchive::getVersion()
 
 	// for the OPC case, it is not sufficent to only
 	// check the first byte
-	if (strncmp(&version, "J", 1)==0) 
+	if (strncmp(&version, "J", 1)==0)
 	{
 		if (getArchiveLength() < 8) return UnknownVersion;
 		if (strncmp(data, "JAUS01.0", 8) != 0) return UnknownVersion;
@@ -78,7 +78,7 @@ inline MsgVersion JUDPArchive::getVersion()
 	return UnknownVersion;
 }
 
-inline int JUDPArchive::getHeaderSize()
+inline unsigned int JUDPArchive::getHeaderSize()
 {
 	if (getVersion() == UnknownVersion) return 0; //failure
 	if (getVersion() == AS5669) return 21; // header size is fixed
@@ -91,7 +91,7 @@ inline int JUDPArchive::getHeaderSize()
 	return (13 + (hc_flags ? 2 : 0));
 }
 
-inline int JUDPArchive::getFooterSize()
+inline unsigned int JUDPArchive::getFooterSize()
 {
 	if (getVersion() == AS5669A) return 2;
 	return 0;
@@ -99,7 +99,7 @@ inline int JUDPArchive::getFooterSize()
 
 inline unsigned short JUDPArchive::getDataLength()
 {
-	unsigned short length = 0; 
+	unsigned short length = 0;
 
 	// Make sure we've got enough to read
 	if (getArchiveLength() < getHeaderSize()) return length;
@@ -144,7 +144,7 @@ inline bool JUDPArchive::isArchiveValid()
 	if (getArchiveLength() < getHeaderSize()) return false;
 
 	// Pull data size from archive and make sure we exceed that
-	if (getArchiveLength() < (getDataLength()+getHeaderSize()+getFooterSize())) 
+	if (getArchiveLength() < (getDataLength()+getHeaderSize()+getFooterSize()))
 		return false;
 
 	// getting here implies success
@@ -155,7 +155,7 @@ inline void JUDPArchive::removeHeadMsg()
 {
 	// keep the transport specific header
 	int bytes_to_keep = (getVersion() == OPC) ? 8 : 1;
-	int length = getHeaderSize()+getDataLength()+getFooterSize();
+	unsigned int length = getHeaderSize()+getDataLength()+getFooterSize();
 	if (length > getArchiveLength()) clear(); // error catching
 	else removeAt(bytes_to_keep, length - bytes_to_keep);
 }
@@ -194,8 +194,6 @@ inline bool JUDPArchive::pack(Message& msg, MsgVersion version)
 
 inline bool JUDPArchive::unpack(Message& msg)
 {
-	char temp8; unsigned short temp16;
-
 	// check for a good archive before unpacking
 	if (!isArchiveValid()) return false;
 

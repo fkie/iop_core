@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JSerialArchive.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -53,8 +53,8 @@ class JSerialArchive : public TransportArchive
 	MsgVersion getVersion();
 
   protected:
-	int getHeaderSize();
-	int getFooterSize();
+	unsigned int getHeaderSize();
+	unsigned int getFooterSize();
     unsigned short getDataLength();
 	char* getDataPtr();
 	bool usesExplicitAddress();
@@ -86,7 +86,7 @@ inline MsgVersion JSerialArchive::getVersion()
 	return UnknownVersion;
 }
 
-inline int JSerialArchive::getHeaderSize()
+inline unsigned int JSerialArchive::getHeaderSize()
 {
 	char addressSize = usesExplicitAddress() ? 2 : 0;
 	if (getVersion() == AS5669) return (29+addressSize);
@@ -101,7 +101,7 @@ inline int JSerialArchive::getHeaderSize()
 	return 0; // failure case
 }
 
-inline int JSerialArchive::getFooterSize()
+inline unsigned int JSerialArchive::getFooterSize()
 {
 	if (getVersion() == AS5669) return 4;
 	if (getVersion() == AS5669A) return 6;
@@ -110,24 +110,23 @@ inline int JSerialArchive::getFooterSize()
 
 inline unsigned short JSerialArchive::getDataLength()
 {
-	unsigned short length = 0; 
-	int offset, extra_bytes;
+	unsigned short length = 0;
 
 	// Make sure we've got enough to read
 	if (getArchiveLength() < getHeaderSize()) return length;
 	setPackMode( Archive::LittleEndian );
-	char addressSize = usesExplicitAddress() ? 2 : 0;
+	char addressSize = (char)usesExplicitAddress() ? 2 : 0;
 
 	// The offset and extra_bytes is dependent on the version
 	if (getVersion() == AS5669)
 	{
-		getValueAt( 11 + addressSize, length ); 
+		getValueAt( 11 + addressSize, length );
 		return (length - 16); // remove the 16 byte header size
 	}
 	else
 	{
 		char hc_flags; getValueAt(9+addressSize, hc_flags); hc_flags &= 0x03;
-		getValueAt( 10 + addressSize, length ); 
+		getValueAt( 10 + addressSize, length );
 		return (length - 14 - (hc_flags ? 2 : 0)); // remove header size
 	}
 
@@ -164,7 +163,7 @@ inline bool JSerialArchive::isArchiveValid()
     }
 
     // Verify that the packet matches the given length
-	int extra_bytes = addressSize + 13;
+	unsigned int extra_bytes = addressSize + 13;
     unsigned short packetLength = 0; getValueAt(3, packetLength);
     if (getArchiveLength() < (packetLength + extra_bytes))
     {
@@ -198,7 +197,7 @@ inline bool JSerialArchive::isArchiveValid()
     unsigned short packet_checksum;
     getValueAt(data_length-2, packet_checksum);
     unsigned short local_packet_checksum = crc_calculate(
-            (unsigned char*)&data[7+addressSize], 
+            (unsigned char*)&data[7+addressSize],
             local_header_checksum, getArchiveLength()-4-7-addressSize);
     if (packet_checksum != local_packet_checksum)
     {
@@ -227,8 +226,8 @@ inline bool JSerialArchive::pack(Message& msg, MsgVersion version)
 	setPackMode( Archive::LittleEndian );
 
 	// most stuff is common between the header types
-	*this << (char) 0x10; // DLE	
-	*this << (char) 0x01; // SOH	
+	*this << (char) 0x10; // DLE
+	*this << (char) 0x01; // SOH
 	*this << (char) ((version == AS5669) ? 1 : 2); //version
 	*this << (unsigned short) (msg.getDataLength()+((version==AS5669)?20:14));
     *this << (char) 0x10; // <DLE>
@@ -252,19 +251,19 @@ inline bool JSerialArchive::pack(Message& msg, MsgVersion version)
 	TransportArchive::packFtr(msg, version);
 
 	// Now finish up the serial footer
-	*this << (char) 0x10; // DLE	
+	*this << (char) 0x10; // DLE
 	*this << (char) 0x03; // ETX
 
 	// Compute the packet checksum
     unsigned short packet_checksum = crc_calculate(
-        (unsigned char*)&data[7], 
+        (unsigned char*)&data[7],
         header_checksum, getArchiveLength()-2-7);
 	*this << packet_checksum;
 
     // insert DLE markers for data fields
     // that coincidentally have the same value as the DLE.
-    int SOH_shift = 0;
-    for (int i=0; i<data_length; i++)
+    unsigned int SOH_shift = 0;
+    for (unsigned int i=0; i<data_length; i++)
     {
         // First make sure this is not an actual diagraph
         // (and therefore *should* be a DLE.
@@ -282,9 +281,9 @@ inline bool JSerialArchive::pack(Message& msg, MsgVersion version)
             char* temp_data = (char*) malloc( buffer_size );
             int tail_size = data_length - i;
             memcpy( temp_data, &data[i], tail_size );
-            memcpy( &data[i+1], temp_data, tail_size ); 
+            memcpy( &data[i+1], temp_data, tail_size );
             free(temp_data);
-            
+
             // now insert the DLE
             data[i] = 0x10;
             data_length += 1;

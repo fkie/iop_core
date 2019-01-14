@@ -756,7 +756,7 @@ Receive::Receive()
 	m_Name = "Receive";
 }
 
-Receive::Receive(const Receive &value)
+Receive::Receive(const Receive &value) : JTS::InternalEvent()
 {
 	/// Initiliaze the protected variables
 	/// No Initialization of m_Body necessary.

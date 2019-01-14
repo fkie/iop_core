@@ -338,7 +338,7 @@ int DllExport RunJuniorRTE(std::string config_file)
                         tport != _transports.end(); ++tport)
                         if ((*tport)->getName() != "JUDP-LB") (*tport)->sendMsg(*msg);
                 }
-                
+
                 // If the transport is JSerial, forword the recived msg out the loopback port
                 if ((*_iter)->getName() == "JSerial")
                 {
@@ -356,4 +356,5 @@ int DllExport RunJuniorRTE(std::string config_file)
     JrInfo << "Shutting down Junior RTE...\n";
     for (_iter = _transports.begin(); _iter != _transports.end(); ++_iter)
         delete (*_iter);
+    return 0;
 }

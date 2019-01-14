@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      Message.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -49,9 +49,8 @@ typedef std::list<TimeStampedMsg>::iterator TimeStampedMsgListIter;
 class Message
 {
 public:
-    Message():
-            _code(0),_source(0),_destination(0), _priority(6), _acknak(0), 
-			_control(None),_bcast(0), _service_connection(0), _experimental(0), _payload(){}
+    Message(): _code(0),_source(0),_destination(0), _priority(6), _acknak(0),
+               _control(None),_bcast(0), _sequence(0), _payload(), _service_connection(0), _experimental(0){}
    ~Message(){}
 
     //
@@ -83,7 +82,7 @@ public:
 		if (_priority == 15) return 3;
 		return ((_priority-3)/3);
 	}
-	
+
     //
     // Functions for ack/nak
     //
