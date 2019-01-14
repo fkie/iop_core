@@ -85,13 +85,30 @@ public:
         setData( temp.getArchive(), temp.getArchiveLength() );
     }
 
-    template<typename T> T swapBytes(T value)
-    {
-        if ((sizeof(T)!=2) && (sizeof(T)!=4)) return value;
-        char temp[sizeof(T)];
-        for (unsigned int i=0; i < sizeof(T); i++)
-            temp[i] = ((char*)(&value))[sizeof(T)-1-i];
-        return *((T*) temp);
+//    replaced by next methods
+//    template<typename T> T swapBytes(T value)
+//    {
+//        if ((sizeof(T)!=2) && (sizeof(T)!=4)) return value;
+//        char temp[sizeof(T)];
+//        for (unsigned int i=0; i < sizeof(T); i++)
+//            temp[i] = ((char*)(&value))[sizeof(T)-1-i];
+//        return *((T*) temp);
+//    }
+
+    template<int N>
+    void byteswap_array(char (&bytes)[N]) {
+      // Optimize this with a platform-specific API as desired.
+      for (char *p = bytes, *end = bytes + N - 1; p < end; ++p, --end) {
+        char tmp = *p;
+        *p = *end;
+        *end = tmp;
+      }
+    }
+
+    template<typename T>
+    T swapBytes(T value) {
+      byteswap_array(*reinterpret_cast<char (*)[sizeof(value)]>(&value));
+      return value;
     }
 
     // templated operator to append data on the archive

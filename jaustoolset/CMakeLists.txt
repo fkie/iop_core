@@ -74,7 +74,6 @@ target_link_libraries(JTSNodeManager
 
 find_package(Java)
 include(UseJava)
-
 set(JAVA_SOURCE_FILES
     src/org/jts/codegenerator/CodeGenerator.java
     src/org/jts/jsidl/binding/Start.java

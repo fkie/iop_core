@@ -172,7 +172,7 @@ public class ServiceSetResolver
 	
 	protected void resolveClientOf()
 	{
-		java.util.Hashtable msgsToAdd = new java.util.Hashtable();
+		java.util.Hashtable<ServiceDef, ServiceDef> msgsToAdd = new java.util.Hashtable<>();
 
 		// Resolve the client-of for each service def.  Note that we add the messages
 		// to an interim location first, until all services are checked.  Only then

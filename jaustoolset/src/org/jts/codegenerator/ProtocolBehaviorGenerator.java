@@ -100,10 +100,10 @@ public class ProtocolBehaviorGenerator {
             org.jts.jsidl.binding.StateMachine sm = pBehavior.getStateMachine().get(i);
 
             org.jts.jsidl.binding.Start st_start = pBehavior.getStart().get(i);
-            List<org.jts.jsidl.binding.State> flattenedStates = new ArrayList();
+            List<org.jts.jsidl.binding.State> flattenedStates = new ArrayList<>();
 
             // a list of state wrappers for the state machine
-            List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList = new ArrayList();
+            List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList = new ArrayList<>();
 
             // testing short class name
             sm.setName( org.jts.codegenerator.support.InheritanceHelper.shortenStateMachineName(sd, sm) );
@@ -319,7 +319,7 @@ public class ProtocolBehaviorGenerator {
 
         // we need to make clones of each state in every state wrapper
         // this step is needed to insure duplicate actions are not taken on the same state
-        List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList = new ArrayList();
+        List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList = new ArrayList<>();
 
         Iterator<org.jts.codegenerator.protocolBehavior.StateWrapper> unflattenedStateWrapperIterator = wrapperList.iterator();
 
