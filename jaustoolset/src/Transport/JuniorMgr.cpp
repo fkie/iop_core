@@ -432,6 +432,8 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
     // Put the entire message in an archive, so we can
     // Check the socket for incoming messages.
     MessageList msglist;
+    // Transport::TransportError ret =
+    _transport->recvMsg(msglist);
 
     // Process each message in the received list
     while (!msglist.empty())

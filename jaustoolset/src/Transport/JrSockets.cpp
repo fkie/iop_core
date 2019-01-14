@@ -323,7 +323,7 @@ Transport::TransportError JrSocket::initialize(ConfigData& config)
     memset(addr.sun_path, 0, sizeof(addr.sun_path));
     memcpy(addr.sun_path, s.str().c_str(), s.str().length());
     unlink(addr.sun_path);
-    JrError << "Bind for local socket (" << s.str() << ")." << std::endl;
+    JrInfo << "Bind for local socket (" << s.str() << ")." << std::endl;
     if (bind(sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_un)) != 0)
     {
 
