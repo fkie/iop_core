@@ -76,9 +76,15 @@ target_link_libraries(JTSNodeManager
 find_package(Java)
 include(UseJava)
 
+if (NOT ${Java_FOUND})
+    message(FATAL_ERROR "java not found")
+endif()
+message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler")
+
 # include java.se.ee in java version 9
-if (${Java_VERSION_MINOR} EQUAL "9")
-    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.sex.ee)
+#if (${Java_VERSION_MAJOR} EQUAL "9" OR ${Java_VERSION_MAJOR} EQUAL "10")
+if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
+    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.se.ee)
 endif()
 
 set(JAVA_SOURCE_FILES

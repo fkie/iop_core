@@ -299,6 +299,7 @@ public class CppCode
      * @param strVector
      * @deprecated
      */
+    @Deprecated
 	public static void getClassWrapper(String className, CodeLines code, Vector<String> strVector)
 	{
 		Vector<String> publicMethods = new Vector<String>();
