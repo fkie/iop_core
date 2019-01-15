@@ -66,9 +66,14 @@ macro(iop_init)
   message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
   set(IOP_INIT_OK 1)
   find_program(IOP_DIFF diff)
-  find_program(IOP_JAVA java)
-  if(NOT IOP_JAVA)
-    message(FATAL_ERROR "Cannot find java executable")
+  find_package(Java)
+  if (NOT ${Java_FOUND})
+    message(FATAL_ERROR "java not found")
+  endif()
+  message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler")
+
+  if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
+    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
   endif()
 endmacro()
 
@@ -136,7 +141,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.headers"
-    COMMAND "${IOP_JAVA}" -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAR} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
+    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAR} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}

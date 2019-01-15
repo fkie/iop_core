@@ -26,10 +26,12 @@ along with this program; or you can read the full license at
 
 using namespace iop;
 
-
-GNU_CONST_STATIC_FLOAT_DECLARATION float EventsConfig::MINIMUM_RATE = 0.1f;
-GNU_CONST_STATIC_FLOAT_DECLARATION float EventsConfig::MAXIMUM_RATE = 25.0f;
-GNU_CONST_STATIC_FLOAT_DECLARATION float EventsConfig::RATE_PRECISION = 0.1f;
+#if __GNUC__ > 5
+#else
+const float EventsConfig::MINIMUM_RATE = 0.1f;
+const float EventsConfig::MAXIMUM_RATE = 25.0f;
+const float EventsConfig::RATE_PRECISION = 0.1f;
+#endif
 
 EventsConfig::EventsConfig()
 {

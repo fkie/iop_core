@@ -30,17 +30,17 @@ along with this program; or you can read the full license at
 namespace iop
 {
 
-#if __GNUC__ > 5
- #define GNU_CONST_STATIC_FLOAT_DECLARATION constexpr
-#else
- #define GNU_CONST_STATIC_FLOAT_DECLARATION const
-#endif
-
 class EventsConfig {
 public:
-	static GNU_CONST_STATIC_FLOAT_DECLARATION float MINIMUM_RATE;
-	static GNU_CONST_STATIC_FLOAT_DECLARATION float MAXIMUM_RATE;
-	static GNU_CONST_STATIC_FLOAT_DECLARATION float RATE_PRECISION;
+#if __GNUC__ > 5
+	static constexpr float MINIMUM_RATE = 0.1f;
+	static constexpr float MAXIMUM_RATE = 25.0f;
+	static constexpr float RATE_PRECISION = 0.1f;
+#else
+	static const float MINIMUM_RATE;
+	static const float MAXIMUM_RATE;
+	static const float RATE_PRECISION;
+#endif
 	EventsConfig();
 	EventsConfig(EventsConfig const& from);
 	const EventsConfig& operator=(const EventsConfig& from);

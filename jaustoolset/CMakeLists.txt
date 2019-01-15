@@ -84,7 +84,7 @@ message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler")
 # include java.se.ee in java version 9
 #if (${Java_VERSION_MAJOR} EQUAL "9" OR ${Java_VERSION_MAJOR} EQUAL "10")
 if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
-    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.se.ee)
+    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
 endif()
 
 set(JAVA_SOURCE_FILES
