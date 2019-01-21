@@ -11,12 +11,12 @@ To generate sources from JSIDL files the `iop_build_fkie` extends `CMakeLists.tx
 
 ### `iop_init` Parameter description
 ```makefile
-iop_init(COMPONENT_ID 33)
+iop_init(COMPONENT_ID 0)
 ```
 
 ####  : COMPONENT_ID
-This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `iop_primitive_driver_fkie` it is `build/iop/urn.jaus.jss.mobility/iop_primitive_driver_fkie/jaus/Iop_primitive_driver_fkie_33`
-> after we use a fork of JTS you can set it to `0` the only effect is the generated path name in the build folder.
+This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `iop_primitive_driver_fkie` it is `build/iop/urn.jaus.jss.mobility/iop_primitive_driver_fkie/jaus/Iop_primitive_driver_fkie_0`
+> after we use only a part of JTS-sources you can set it to `0` the only effect is the generated path name in the build folder.
 
 
 

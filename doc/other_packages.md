@@ -30,6 +30,8 @@ _git clone https://github.com/fkie/iop_core_
     - iop_global_waypoint_driver_fkie
     - iop_global_waypoint_list_driver_fkie
     - iop_local_pose_sensor_fkie
+    - iop_local_waypoint_driver_fkie
+    - iop_local_waypoint_list_driver_fkie
     - iop_primitive_driver_fkie
 
 - **sensing**: _urn.jaus.jss.environmentSensing_ - services
@@ -42,6 +44,7 @@ _git clone https://github.com/fkie/iop_core_
 - **ugv**: _urn.jaus.jss.ugv_ - services
     - _git clone [https://github.com/fkie/iop_jaus_ugv](https://github.com/fkie/iop_jaus_ugv)_
     - iop_illumination_fkie
+    - iop_power_plant_fkie
     - iop_stabilizer_driver_fkie
 
 
@@ -65,6 +68,8 @@ The clients are used on the OCU side to control an IOP compliant robot.
     - iop_client_global_waypoint_driver_fkie
     - iop_client_global_waypoint_list_driver_fkie
     - iop_client_local_pose_sensor_fkie
+    - iop_client_local_waypoint_driver_fkie
+    - iop_client_local_waypoint_list_driver_fkie
     - iop_client_primitive_driver_fkie
 
 - **sensing_clients**: clients for _urn.jaus.jss.environmentSensing_ - services
@@ -77,6 +82,7 @@ The clients are used on the OCU side to control an IOP compliant robot.
 - **ugv**: clients for _urn.jaus.jss.ugv_ - services
     - _git clone [https://github.com/fkie/iop_jaus_ugv_clients](https://github.com/fkie/iop_jaus_ugv_clients)_
     - iop_client_illumination_fkie
+    - iop_client_power_plant_fkie
     - iop_client_stabilizer_driver_fkie
 
 ## IOP services
@@ -120,3 +126,4 @@ Basically we can use the available ROS GUIs. But some GUI components are very sp
 ## Configuration Examples
 - **iop_cfg_sim_stage_fkie**: Example with state simulator
 	- _git clone [https://github.com/fkie/iop_cfg_sim_stage_fkie](https://github.com/fkie/iop_cfg_sim_stage_fkie)_
+	- _git clone [https://github.com/fkie/iop_cfg_sim_turtle_fkie](https://github.com/fkie/iop_cfg_sim_turtle_fkie)_

@@ -8,8 +8,8 @@ Build status of latest version:
 # Installation of the ROS/IOP Bridge
 
 ## Install dependencies for JAUS Toolset
-ROS/IOP Bridge uses JAUS Toolset (JTS) to generate basic C++ code from JSIDL definitions of JAUS. You find the JAUS Toolset desciption [here](http://jaustoolset.org/). Currently a fort of JTS is used.
-JTS will be downloaded from github.com and build while you build the ROS/IOP Bridge sources. For successful build JTS needs follow external software:
+ROS/IOP Bridge uses JAUS Toolset (JTS) to generate basic C++ code from JSIDL definitions of JAUS. You find the JAUS Toolset desciption [here](http://jaustoolset.org/). Currently only a part of sources of JTS is used.
+This part will build while you build the ROS/IOP Bridge sources. For successful build JTS needs follow external software:
 
 Install OpenJKD:
 
@@ -17,9 +17,6 @@ Install OpenJKD:
 
 >If you prefer Oracle Java, see [here](doc/install_oracle_java.md)
 
-Install  **scons** and **ant**:
-
-    sudo apt-get install scons ant -y
 
 ## Set up your ROS environment
 
