@@ -23,7 +23,7 @@ along with this program; or you can read the full license at
 #include <iostream>
 #include <signal.h>
 #include "Transport/OS.h"
-#include "Iop_discovery_client_fkie.h"
+#include "Fkie_iop_discovery_client.h"
 
 #include <fkie_iop_builder/ros_init.h>
 
@@ -37,7 +37,7 @@ static void handle_exit_signal( int signum )
 
 int main(int argc, char *argv[])
 {
-	Iop_discovery_client_fkie* cmpt = iop::ros_init<Iop_discovery_client_fkie>(argc, argv, "iop_client_discovery", 127, 0x40, 200);
+	Fkie_iop_discovery_client* cmpt = iop::ros_init<Fkie_iop_discovery_client>(argc, argv, "iop_client_discovery", 127, 0x40, 200);
 
 	// Catch exit signals
 	signal( SIGINT, handle_exit_signal );

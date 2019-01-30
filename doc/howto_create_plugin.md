@@ -2,7 +2,7 @@
 
 Let's see all the steps we need to create a plugin to use within ROS/IOP-Bridge. For this example we take an existing service which offers own functionality and also exports a library which is used by other services: *urn:jaus:jss:environmentSensing:VisualSensor*.
 
-First of all we need an JSIDL which describes the service with all input/output messages and protocol behaviour. You find these definitions in the JAUS standard, in JAUS Toolset (GUI/resources/xml/.) or in `iop_builder_fkie/jsidl/`. The definitions in `iop_builder_fkie/jsidl/` are copies from JTS. The JSIDL files already used in plugins were modified to pass the received message as argument to the service handler:
+First of all we need an JSIDL which describes the service with all input/output messages and protocol behaviour. You find these definitions in the JAUS standard, in JAUS Toolset (GUI/resources/xml/.) or in `fkie_iop_builder/jsidl/`. The definitions in `fkie_iop_builder/jsidl/` are copies from JTS. The JSIDL files already used in plugins were modified to pass the received message as argument to the service handler:
 ```
     <action name="accessControl.events.transport.Send">             -->  <action name="sendReportVisualSensorCapabilities">
        <argument value=" 'ReportVisualSensorCapabilities' "/>       -->  <argument value="msg"/>
@@ -10,14 +10,14 @@ First of all we need an JSIDL which describes the service with all input/output 
     </action>
 ```
 
-Now we create a new ROS package (in our case *iop_visual_sensor_fkie*) which depends on `roscpp`, `iop_component_fkie` and `iop_accesscontrol_fkie`. Each plugin should depend on `iop_component_fkie` to get the funtionatlities of [Bridge-Plugins](../iop_component_fkie/README.md) and [Builder-package](../iop_builder_fkie/README.md). The `iop_accesscontrol_fkie` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
+Now we create a new ROS package (in our case *fkie_iop_visual_sensor*) which depends on `roscpp`, `fkie_iop_component` and `fkie_iop_accesscontrol`. Each plugin should depend on `fkie_iop_component` to get the funtionatlities of [Bridge-Plugins](../fkie_iop_component/README.md) and [Builder-package](../fkie_iop_builder/README.md). The `fkie_iop_accesscontrol` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
 ```
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>roscpp</build_depend>
-    <build_depend>iop_accesscontrol_fkie</build_depend>
+    <build_depend>fkie_iop_accesscontrol</build_depend>
     <run_depend>roscpp</run_depend>
-    <run_depend>iop_accesscontrol_fkie</run_depend>
-    <run_depend>iop_component_fkie</run_depend>
+    <run_depend>fkie_iop_accesscontrol</run_depend>
+    <run_depend>fkie_iop_component</run_depend>
 ```
 
 ### Generate and include JTS source
@@ -43,7 +43,7 @@ In the next step we add JAUS services to `CMakeLists.txt`:
 The call `iop_init(COMPONENT_ID 0)` can stay for all plugins the same. In `iop_code_generator::IDLS` we list all JAUS services included in this plugin. It is our service and all services in the inherit tree. The services we inherit from are already implemented in other packages and we want use them. To do this we add this services to `iop_code_generator::EXTERN_SERVICES`. Thereby we use the directory name created by JTS for these services.
 > ! internally our build script deletes all generated sources defined in `EXTERN_SERVICES` after creation by JTS.
 
-Now we open a terminal and go to our package and run `catkin build --this`. This generates in `catkin_ws/build/iop_visual_sensor_fkie/jaus/Iop_visual_sensor_fkie_0` the source files for our service. In order to extend the functionality of the generated service, we copy the following files into our package, respecting the directory structure:
+Now we open a terminal and go to our package and run `catkin build --this`. This generates in `catkin_ws/build/fkie_iop_visual_sensor/jaus/Fkie_iop_visual_sensor_0` the source files for our service. In order to extend the functionality of the generated service, we copy the following files into our package, respecting the directory structure:
 ```
     include/urn_jaus_jss_environmentSensing_VisualSensor/VisualSensor_ReceiveFSM.h
     src/urn_jaus_jss_environmentSensing_VisualSensor/VisualSensor_ReceiveFSM.cpp
@@ -67,7 +67,7 @@ Now we can implement the functionality for the service by extending the two file
 
 ### Add plugin functionality
 
-Additionally we have to add the plugin functionality! We have to create a plugin class inherited from `iop::PluginInterface` which is localted at `iop_component_fkie/iop_plugin_interface.h`. The plugin class should create an instance of our new JAUS service by providing the needed parameter to it. We create two files `src/VisualSensorPlugin.h` and `src/VisualSensorPlugin.cpp` with folling content:
+Additionally we have to add the plugin functionality! We have to create a plugin class inherited from `iop::PluginInterface` which is localted at `fkie_iop_component/iop_plugin_interface.h`. The plugin class should create an instance of our new JAUS service by providing the needed parameter to it. We create two files `src/VisualSensorPlugin.h` and `src/VisualSensorPlugin.cpp` with folling content:
 #### src/VisualSensorPlugin.h:
 ```cpp
 #ifndef VISUALSENSORPLUGIN_H
@@ -78,7 +78,7 @@ Additionally we have to add the plugin functionality! We have to create a plugin
 #include "urn_jaus_jss_core_Events/EventsService.h"
 #include "urn_jaus_jss_core_Transport/TransportService.h"
 
-#include <iop_component_fkie/iop_plugin_interface.h>
+#include <fkie_iop_component/iop_plugin_interface.h>
 
 namespace iop
 {
@@ -150,7 +150,7 @@ Do not forget to add the .cpp file to the `CMakeLists.txt`:
 
 Now we specify the IOP plugin description, so it can be found if we include it into our component. We create a new file `plugin_iop.xml` in root of our package with follow content:
 ```
-    <library path="libiop_visual_sensor_fkie">
+    <library path="libfkie_iop_visual_sensor">
       <class name="VisualSensor" type="iop::VisualSensorPlugin" base_class_type="iop::PluginInterface">
         <description>
           VisualSensor Service Plugin
@@ -161,12 +161,12 @@ Now we specify the IOP plugin description, so it can be found if we include it i
       </class>
     </library>
 ```
-The values for *iop_service* tag are taken from JSIDL definition. The *class* tag describes our plugin and the class we created. For more details see [Bridge-Plugins](../iop_component_fkie/README.md).
+The values for *iop_service* tag are taken from JSIDL definition. The *class* tag describes our plugin and the class we created. For more details see [Bridge-Plugins](../fkie_iop_component/README.md).
 
 Then we include our plugin definition to the `package.xml`:
 ```
     <export>
-      <iop_component_fkie plugin="${prefix}/plugin_iop.xml" />
+      <fkie_iop_component plugin="${prefix}/plugin_iop.xml" />
     </export>
 ```
 
@@ -182,11 +182,11 @@ Add source files to the library:
 Specify libraries to link a library against:
 ```target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})```
 
-The service of this package is used by other packages, like *iop_digital_video_fkie* or *iop_still_image_fkie*. So that catkin works properly we have to configure `catkin_package`:
+The service of this package is used by other packages, like *fkie_iop_digital_video* or *fkie_iop_still_image*. So that catkin works properly we have to configure `catkin_package`:
 ```makefile
     catkin_package(
         LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS iop_accesscontrol_fkie
+        CATKIN_DEPENDS fkie_iop_accesscontrol
     )
 ```
 
@@ -214,4 +214,4 @@ If the package will be used as installed package we have to add install directiv
     )
 ```
 
-done! Build the package with `catkin build iop_visual_sensor_fkie`
+done! Build the package with `catkin build fkie_iop_visual_sensor`

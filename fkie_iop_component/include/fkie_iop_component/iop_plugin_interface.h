@@ -37,8 +37,8 @@ namespace iop
 		 * plugin.
 		 * The URL, ID and version of the service are specified in plugin_iop.xml with follow
 		 * format:
-		 * <library path="libiop_events_1_0_fkie">
-		 * 	<class name="Events_1_0" type="iop::EventsPlugin_1_0" base_class_type="iop::PluginInterface">
+		 * <library path="libfkie_iop_events">
+		 * 	<class name="Events" type="iop::EventsPlugin" base_class_type="iop::PluginInterface">
 		 * 		<description> Events Service Plugin </description>
 		 * 		<iop_service name="Events" id="urn:jaus:jss:core:Events" version="1.0">
 		 * 			<inherits_from id="urn:jaus:jss:core:Transport" min_version="1.0"/>

@@ -30,7 +30,7 @@ namespace iop
 	class EventHandlerInterface
 	{
 		/**
-		 * The interface is used by the iop_event_fkie to forward events to clients.
+		 * The interface is used by the fkie_iop_event to forward events to clients.
 		 * To receive events IOP client components should include this interface.
 		 */
 	public:

@@ -5,7 +5,7 @@ This package is part of [ROS/IOP Bridge](https://github.com/fkie/iop_core/blob/m
 
 The `fkie_iop_builder` package is the base of the ROS/IOP-Bridge. It uses the JAUS Toolset (JTS) to generate the source code from JSIDL files. The JSIDL files describe the JAUS messages and the structure of the IOP/JAUS services. They are also located in this package. In general the JSIDL file can be stored in each plugin. But it is recommended to store these in this package.
 
-To generate sources from JSIDL files the `iop_build_fkie` extends `CMakeLists.txt` by three scripts: `iop_init`, `iop_export_service` and `iop_code_generator`. Each ROS/IOP plugin should include at least `iop_init` and `iop_code_generator` in `CMakeLists.txt` to build a plugin.
+To generate sources from JSIDL files the `fkie_iop_builder` extends `CMakeLists.txt` by three scripts: `iop_init`, `iop_export_service` and `iop_code_generator`. Each ROS/IOP plugin should include at least `iop_init` and `iop_code_generator` in `CMakeLists.txt` to build a plugin.
 
 
 
@@ -15,7 +15,7 @@ iop_init(COMPONENT_ID 0)
 ```
 
 ####  : COMPONENT_ID
-This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `fkie_iop_primitive_driver` it is `build/iop/urn.jaus.jss.mobility/fkie_iop_primitive_driver/jaus/Iop_primitive_driver_fkie_0`
+This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `fkie_iop_primitive_driver` it is `build/iop/urn.jaus.jss.mobility/fkie_iop_primitive_driver/jaus/Fkie_iop_primitive_driver_0`
 > after we use only a part of JTS-sources you can set it to `0` the only effect is the generated path name in the build folder.
 
 

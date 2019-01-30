@@ -60,7 +60,7 @@ Go to the root folder of your ROS workspace and type:
 
     catkin build
 
->In case of "permission denied" errors you have to mark the \*.py files in *jaus\_builder\_fkie/cmake/* as runnable
+>In case of "permission denied" errors you have to mark the \*.py files in *fkie\_iop\_builder/cmake/* as runnable
 >You can also use `catkin build` instead of `catkin_make`, if you have [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) installed
 
 >If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/GUI/templates/Common/SConstruct*
@@ -83,11 +83,11 @@ On each host you run IOP components you need to start the JTS-`nodeManager`:
 
 ## Example
 
-For a simple example with turtlesim see [iop_cfg_sim_turtle_fkie](https://github.com/fkie/iop_cfg_sim_turtle_fkie/blob/master/README.md) package.
+For a simple example with turtlesim see [fkie_iop_cfg_sim_turtle](https://github.com/fkie/iop_examples/blob/master/fkie_iop_cfg_sim_turtle/README.md) package.
 
-The **iop_cfg_sim_stage_fkie** package contains working configuration files specified to run with a stage simulator.
+The **fkie_iop_cfg_sim_stage** package contains working configuration files specified to run with a stage simulator.
 
-You can find the description to this example [here](https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/README.md)
+You can find the description to this example [here](https://github.com/fkie/iop_examples/blob/master/fkie_iop_cfg_sim_stage/README.md)
 
 
 ----
@@ -95,6 +95,6 @@ You can find the description to this example [here](https://github.com/fkie/iop_
 ## [How it works - an overview](doc/how_it_works.md)
 ## [IOP packages - an overview](doc/other_packages.md)
 ## [IOP core packages](doc/iop_core_packages.md)
-## [Builder-package](iop_builder_fkie/README.md)
+## [Builder-package](fkie_iop_builder/README.md)
 ## [How to start with own configuration](doc/howto_minimal_config.md)
 ## [How to create own plugin](doc/howto_create_plugin.md)

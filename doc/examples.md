@@ -4,10 +4,10 @@ For convenient usage of ROS environment use the `node_manager` of `multimaster_f
 
 On each host you run IOP components you need to start the JTS-`nodeManager`:
 ```bash
-rosrun iop_builder_fkie jaus_node_manager.sh start
+rosrun fkie_iop_builder jaus_node_manager.sh start
 ```
 
-## `iop_cfg_sim_stage_fkie`
+## `fkie_iop_cfg_sim_stage`
 This package contains working configuration files specified to run with a stage simulator.
 
-You can find the description to this example on https://github.com/fkie/iop_cfg_sim_stage_fkie/blob/master/README.md
+You can find the description to this example on https://github.com/fkie/iop_examples/blob/master/fkie_iop_cfg_sim_stage/README.md
