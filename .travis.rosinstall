@@ -1,5 +1,6 @@
 - git:
     local-name: iop_msgs
     uri: https://github.com/fkie/iop_msgs
+    version: before_renamed
 
 
