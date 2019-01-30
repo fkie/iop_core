@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>fkie_iop_builder</name>
+  <version>1.1.0</version>
+  <description>JAUS build helper. It generates CPP sources from JSIDL files.
+  An installed JausToolSet is required. This is done by scripts in jaustoolset.
+  If some error occurs regarding missing "pthread" and "timer" the libpthread and
+  librt have to be included.
+
+  This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in
+  GUI/templates/Common/SConstruct
+  </description>
+  <author>Timo Roehling</author>
+  <author>Alexander Tiderko</author>
+  <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
+  <license>GPLv2</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>jaustoolset</depend>
+  <depend>python-lxml</depend>
+</package>
+
