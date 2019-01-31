@@ -22,8 +22,8 @@ along with this program; or you can read the full license at
 
 #include <cmath>
 
-#ifndef INCLUDE_FKIE_IOP_BUILDER_COMMON_H_
-#define INCLUDE_FKIE_IOP_BUILDER_COMMON_H_
+#ifndef INCLUDE_FKIE_IOP_BUILDER_UTIL_H_
+#define INCLUDE_FKIE_IOP_BUILDER_UTIL_H_
 
 template<typename F>
 F pround(const F& f, unsigned int decs=4)
@@ -36,4 +36,4 @@ F pround(const F& f, unsigned int decs=4)
 }
 
 
-#endif /* INCLUDE_FKIE_IOP_BUILDER_COMMON_H_ */
+#endif /* INCLUDE_FKIE_IOP_BUILDER_UTIL_H_ */
