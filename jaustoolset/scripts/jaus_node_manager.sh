@@ -1,5 +1,11 @@
 #!/bin/bash
 
+_term() {
+	echo "Caught SIGTERM signal!"
+	kill -TERM "$child" 2>/dev/null
+	echo "exit $child"
+}
+
 JTS_RUNNING="$( ps h -C JTSNodeManager )"
 if [ "$1" == "start" ]; then
 	if [ "$JTS_RUNNING" ]; then
@@ -9,8 +15,13 @@ if [ "$1" == "start" ]; then
 	# go back to root of jaustoolset
 	JTS_BIN_PATH="$( dirname "$0" )"
 	JTS_BIN_PATH="$( dirname "$JTS_BIN_PATH" )"
+	trap '_term' TERM INT
 	echo "rosrun jaustoolset JTSNodeManager $JTS_BIN_PATH/cfg/nm.cfg"
-	cd $JTS_BIN_PATH && rosrun jaustoolset JTSNodeManager $JTS_BIN_PATH/cfg/nm.cfg
+	cd $JTS_BIN_PATH
+	rosrun jaustoolset JTSNodeManager $JTS_BIN_PATH/cfg/nm.cfg &
+	child=$!
+	echo "JTSNodeManager process id: $child"
+	wait "$child"
 	exit
 fi
 
