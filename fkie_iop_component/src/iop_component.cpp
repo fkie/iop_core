@@ -130,10 +130,10 @@ void Component::load_plugins()
 			}
 		}
 	}
-	if (has_range_sensor_service & has_discovery_client_service) {
+	if (has_discovery_service & has_discovery_client_service) {
 		ROS_WARN("In this version you do not need to include Discovery and DiscoverClient in the same component!");
 	}
-	if (has_discovery_service & has_visual_sensor_service) {
+	if (has_range_sensor_service & has_visual_sensor_service) {
 		throw std::logic_error("You can not use RangeSensor{Client} and VisualSensor{Client} in the same component, since they use the same GeometricProperties message type!");
 	}
 	// determine paths for xml files with plugin description
