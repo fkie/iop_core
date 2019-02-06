@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JrLogger.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -23,6 +23,8 @@
  *
  ************************************************************************
  */
+
+#include <sys/time.h>
 
 #include "Transport/JrLogger.h"
 
@@ -53,8 +55,10 @@ std::ostream& Logger::startMsg(std::string filename, int line, enum LogMsgType t
     // flush any previous messages
     stream.flush();
 
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
     // Insert formatted text
-    stream << "(" << filename << ", line " << line << ") " << enum2Str(type) << ": ";
+    stream << "(" << filename << ", line " << line << ") [" << tp.tv_sec << "." << tp.tv_usec << "] " << enum2Str(type) << ": ";
     return stream;
 }
 
@@ -81,11 +85,11 @@ void Logger::openOutputFile(std::string filename)
 
     // Open the given filename
     filestream.open(filename.c_str(), std::fstream::out | std::fstream::app);
-    if (!filestream.is_open()) 
+    if (!filestream.is_open())
         JrError << "Unable to open log file: " << filename << std::endl;
 }
 
-// 
+//
 // closes the log file.  Subsequent log outputs
 // will be forced to standard out.
 //
