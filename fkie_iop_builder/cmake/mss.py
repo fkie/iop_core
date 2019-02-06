@@ -42,12 +42,12 @@ class RefDissolver(object):
     self.const_types = {}
 
   def add_message_set(self, srcpath):
-    dirname = srcpath
-    if not os.path.isdir(dirname):
-      dirname = os.path.dirname(srcfile)
-    messageset_path = os.path.join(dirname, 'MessageSet')
+    messageset_path = srcpath
+    if not os.path.isdir(messageset_path):
+      messageset_path = os.path.dirname(srcfile)
+      messageset_path = os.path.join(messageset_path, 'MessageSet')
     if os.path.exists(messageset_path):
-      if dirname not in self.included_message_sets:
+      if messageset_path not in self.included_message_sets:
         print "JAUS: Include MessageSets from %s" % messageset_path
         delayed_files = []
         for messagefile in os.listdir(messageset_path):
@@ -62,7 +62,9 @@ class RefDissolver(object):
           message_def_tree = self._replace_constants(msfile)
           if message_def_tree is not None:
             self.mset_root.append(message_def_tree)
-        self.included_message_sets.append(dirname)
+        self.included_message_sets.append(messageset_path)
+    else:
+        print "JAUS: MessageSet '%s' not exists, ignore!" % messageset_path
 
   def _replace_constants(self, msg_file):
     print "JAUS:   Include MessageSet file %s" % msg_file
@@ -236,5 +238,6 @@ service_set = ServiceSet(service_set_name, service_set_id, ref_dissolver)
 for srcfile in argv[4:]:
   ref_dissolver.add_message_set(srcfile)
 for srcfile in argv[4:]:
-  service_set.append(srcfile)
+  if os.path.isfile(srcfile):
+      service_set.append(srcfile)
 service_set.write(outfile)
