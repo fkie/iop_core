@@ -43,6 +43,7 @@ public:
 	JausAddress();
 	JausAddress(jUnsignedShortInteger subsystemID, jUnsignedByte nodeID, jUnsignedByte componentID);
 	JausAddress(jUnsignedInteger value);
+	JausAddress(std::string value);
 	JausAddress(JausAddress const& from);
 	virtual ~JausAddress();
 

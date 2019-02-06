@@ -30,8 +30,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 *********************  END OF LICENSE ***********************************/
 
-#include "Transport/JausAddress.h"
+#include <cstdio>
 
+#include "Transport/JausAddress.h"
 
 JausAddress::JausAddress()
 {
@@ -63,6 +64,21 @@ JausAddress::JausAddress(jUnsignedInteger value)
 	jUnsignedInteger tempValue;
 	tempValue = value;
 	*((jUnsignedInteger*)address) = tempValue;
+}
+
+JausAddress::JausAddress(std::string value)
+{
+	address = malloc(sizeof(jUnsignedInteger));
+	if (address == NULL) return;
+	else size = sizeof(jUnsignedInteger);
+
+	int p1, p2, p3;
+	int scan_result = std::sscanf(value.c_str(), "%d.%d.%d", &p1, &p2, &p3);
+	if (scan_result == 3) {
+		jUnsignedInteger tempValue;
+		tempValue = (p1 << 16) | (p2 << 8) | p3;
+		*((jUnsignedInteger*)address) = tempValue;
+	}
 }
 
 JausAddress::JausAddress(JausAddress const& from) : Address()
