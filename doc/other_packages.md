@@ -33,6 +33,7 @@ _git clone https://github.com/fkie/iop_core_
     - fkie_iop_local_waypoint_driver
     - fkie_iop_local_waypoint_list_driver
     - fkie_iop_primitive_driver
+    - fkie_iop_velocity_state_sensor
 
 - **sensing**: _urn.jaus.jss.environmentSensing_ - services
     - _git clone [https://github.com/fkie/iop_jaus_sensing](https://github.com/fkie/iop_jaus_sensing)_
@@ -71,6 +72,7 @@ The clients are used on the OCU side to control an IOP compliant robot.
     - fkie_iop_client_local_waypoint_driver
     - fkie_iop_client_local_waypoint_list_driver
     - fkie_iop_client_primitive_driver
+    - fkie_iop_client_velocity_state_sensor
 
 - **sensing_clients**: clients for _urn.jaus.jss.environmentSensing_ - services
     - _git clone [https://github.com/fkie/iop_jaus_sensing_clients](https://github.com/fkie/iop_jaus_sensing_clients)_
