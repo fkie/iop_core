@@ -70,10 +70,21 @@ macro(iop_init)
   if (NOT ${Java_FOUND})
     message(FATAL_ERROR "java not found")
   endif()
-  message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler")
+  message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler version: ${Java_VERSION_MAJOR}")
 
   if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
     set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
+  endif()
+  if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
+    # the module JAXB marked as deprecated since java 9
+    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
+    set(jaustoolset_INCLUDE_JARS ${jaustoolset_INCLUDE_JARS_LT11})
+  elseif (${Java_VERSION_MAJOR} MATCHES "^(6|7|8)$")
+    set(jaustoolset_INCLUDE_JARS ${jaustoolset_INCLUDE_JARS_LT11})
+  else ()
+    # the module JAXB removed from JDK since java 11
+    # use own libraries
+    set(jaustoolset_INCLUDE_JARS ${jaustoolset_INCLUDE_JARS_S11})
   endif()
 endmacro()
 

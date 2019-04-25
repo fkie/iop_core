@@ -81,12 +81,6 @@ if (NOT ${Java_FOUND})
 endif()
 message(STATUS "use ${Java_JAVAC_EXECUTABLE} compiler")
 
-# include java.se.ee in java version 9
-#if (${Java_VERSION_MAJOR} EQUAL "9" OR ${Java_VERSION_MAJOR} EQUAL "10")
-if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
-    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
-endif()
-
 set(JAVA_SOURCE_FILES
     src/org/jts/codegenerator/CodeGenerator.java
     src/org/jts/codegenerator/ArrayGenerator.java
@@ -244,6 +238,18 @@ set(JAVA_SOURCE_FILES
 )
 # some variables like INCLUDE_LOCAL_JARS
 include(cmake/jts_cfg.cmake)
+
+if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
+    # the module JAXB marked as deprecated since java 9
+    set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
+    set(INCLUDE_LOCAL_JARS ${INCLUDE_LOCAL_JARS_LT11})
+elseif (${Java_VERSION_MAJOR} MATCHES "^(6|7|8)$")
+    set(INCLUDE_LOCAL_JARS ${INCLUDE_LOCAL_JARS_LT11})
+else ()
+    # the module JAXB removed from JDK since java 11
+    # use own libraries
+    set(INCLUDE_LOCAL_JARS ${INCLUDE_LOCAL_JARS_S11})
+endif()
 
 add_jar(iop_codegenerator ${JAVA_SOURCE_FILES}
     INCLUDE_JARS ${INCLUDE_LOCAL_JARS}
