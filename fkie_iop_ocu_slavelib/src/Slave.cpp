@@ -388,6 +388,7 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 				if (pGetManagementClient() != 0) {
 					pGetManagementClient()->delete_emergency_client();
 				}
+				break;
 			case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
 				pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 				break;
