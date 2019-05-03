@@ -151,10 +151,13 @@ Transport::TransportError JrSocket::sendMsg(Message& msg, SocketId sockname)
     memcpy(addr.sun_path, sockname.c_str(), sockname.length());
     int ret = sendto(sock, archive.getArchive(), archive.getArchiveLength(), 0,
        (struct sockaddr *)&addr, sizeof(struct sockaddr_un));
-    if (ret != (int)archive.getArchiveLength())
+	if (ret != (int) archive.getArchiveLength())
 	{
-		JrError << "Unable to write on local socket (" << ret << " of "
-			<< archive.getArchiveLength() << "written)\n";
+		if (ret != -1)
+		{
+			JrError << "Unable to write on local socket '" << sockname.c_str() << "' (" << ret << " of "
+					<< archive.getArchiveLength() << "written)\n";
+		}
 		return Failed;
 	}
 #endif

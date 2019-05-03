@@ -35,47 +35,43 @@ Component* Component::global_ptr = 0;
 Component::Component(unsigned int subsystem, unsigned short node, unsigned short component)
 {
 	global_ptr = this;
+	p_own_address = JausAddress(subsystem, node, component);
 	p_pnh = ros::NodeHandle("~");
-	std::string config("nm.cfg");
+	p_config_path = "nm.cfg";
 	if (p_pnh.hasParam("jaus_config")) {
 		// read configuration from private parameter
-		p_pnh.getParam("jaus_config", config);
+		p_pnh.getParam("jaus_config", p_config_path);
 	} else {
 		ros::NodeHandle nh;
 		if (nh.hasParam("jaus_config")) {
 			// read configuration from namespace parameter
-			nh.getParam("jaus_config", config);
+			nh.getParam("jaus_config", p_config_path);
 		} else {
 			// try to detect from jaustoolset package
-			config = ros::package::getPath("jaustoolset") + "/cfg/nm.cfg";
+			p_config_path = ros::package::getPath("jaustoolset") + "/cfg/nm.cfg";
 		}
 	}
-	if (config.compare("nm.cfg") == 0) {
+	if (p_config_path.compare("nm.cfg") == 0) {
 		char cwd[1024];
 		if (getcwd(cwd, sizeof(cwd)) != NULL) {
-			ROS_INFO("JAUS configuration file: %s, pwd: %s", config.c_str(), cwd);
+			ROS_INFO("JAUS configuration file: %s, pwd: %s", p_config_path.c_str(), cwd);
 		} else {
-			ROS_INFO("JAUS configuration file: %s", config.c_str());
+			ROS_INFO("JAUS configuration file: %s", p_config_path.c_str());
 		}
 	} else {
-		ROS_INFO("JAUS configuration file: %s", config.c_str());
+		ROS_INFO("JAUS configuration file: %s", p_config_path.c_str());
 	}
-	this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler, config);
-	while (ros::ok() && ! jausRouter->isConnected()) {
-		ROS_INFO("Try reconnect to JAUS nodeManager...");
-		sleep(1);
-		delete this->jausRouter;
-		this->jausRouter = new IopJausRouter(JausAddress(subsystem, node, component), ieHandler, config);
-	}
-	if (ros::ok() && jausRouter->isConnected()) {
-		p_class_loader = NULL;
-		ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
-		load_plugins();
-	}
+	p_has_1_1_transport = false;
+	p_class_loader = NULL;
+	jausRouter = NULL;
+	// spawn another thread
+	p_connect_thread = new boost::thread(boost::bind(&Component::p_connect_2_rte, this));
 }
 
 Component::~Component()
 {
+	p_connect_thread->join();
+	delete p_connect_thread;
 	std::map<std::string, boost::shared_ptr<iop::PluginInterface> >::iterator it;
 	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
 		std::cout << "  delete service:" << it->second.get()->get_service_uri() << std::endl;
@@ -90,9 +86,24 @@ Component::~Component()
 	std::cout << "Shutdown component finished" << std::endl;
 }
 
+void Component::p_connect_2_rte()
+{
+	ROS_INFO("Connect to JAUS nodeManager...");
+	this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path);
+	while (ros::ok() && ! jausRouter->isConnected()) {
+		sleep(1);
+		delete this->jausRouter;
+		this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path);
+	}
+	if (ros::ok() && jausRouter->isConnected()) {
+		ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
+		load_plugins();
+		start_component();
+	}
+}
+
 void Component::load_plugins()
 {
-	p_has_1_1_transport = false;
 	p_discovery_client = boost::shared_ptr<iop::PluginInterface>();
 	std::vector<std::string> plugin_names;
 	XmlRpc::XmlRpcValue v;

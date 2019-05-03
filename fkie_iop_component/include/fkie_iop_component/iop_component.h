@@ -83,6 +83,7 @@ namespace iop
 		static Component* global_ptr;
 		virtual void processInternalEvent(JTS::InternalEvent* ie);
 
+		JausAddress p_own_address;
 		bool p_has_1_1_transport;
 		boost::shared_ptr<iop::PluginInterface> p_discovery_client;
 		std::map<std::string, std::string > p_service_package_list;
@@ -92,8 +93,11 @@ namespace iop
 		std::map<std::string, iop::PluginInterface::ServiceInfo> p_cache_service_info;
 		std::vector<ServiceInfo> service_list;
 		IopJausRouter* jausRouter;
+		std::string p_config_path;
+		boost::thread *p_connect_thread;
 		ros::NodeHandle p_pnh;
 
+		void p_connect_2_rte();
 		void load_plugins();
 		boost::shared_ptr<iop::PluginInterface> p_init_plugin(std::string name, pluginlib::ClassLoader<iop::PluginInterface>& class_loader);
 		iop::PluginInterface::ServiceInfo p_read_service_info(std::string serviceid, std::string manifest);

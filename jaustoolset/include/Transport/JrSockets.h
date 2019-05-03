@@ -60,6 +60,7 @@ public:
 
 	// speciality functions not forced by the parent class
     TransportError setDestination(std::string destination);
+    SocketId getDestination() { return _connected_dest; }
     TransportError removeDestination(JAUS_ID id);
     unsigned char  messagesInQueue();
 

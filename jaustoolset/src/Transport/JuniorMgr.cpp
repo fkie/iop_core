@@ -568,7 +568,10 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     config.getValue(debug_level, "LogMsgLevel", "Log_Configuration");
 	int connection_timeout = 100;
 	config.getValue(connection_timeout, "ConnectionTimeout", "API_Configuration");
-	if (connection_timeout < 50) connection_timeout = 50;
+	if (connection_timeout < 100) {
+		JrWarn << "Specified ConnectionTimeout=" << connection_timeout << " is to low, increase to 100\n";
+		connection_timeout = 100;
+	}
 
     // Now set-up the data logger
     if (debug_level > (int) Logger::full) debug_level = (int) Logger::full;
@@ -617,7 +620,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     msg.setDestinationId(0);
     msg.setMessageCode(Connect);
     mySocket->sendMsg(msg);
-    JrInfo << "Sending client connection request to Junior Run-Time Engine...\n";
+    JrInfo << "Connects to Junior Run-Time Engine through " << mySocket->getDestination().c_str() << "...\n";
 
     // Wait for a connection accept message
     MessageList msglist;
@@ -629,13 +632,12 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
         {
             // timeout.
             delete mySocket;
-            JrError << "Timeout waiting for response from Run-Time Engine (Timeout=" <<
-				connection_timeout << ")\n";
+//            JrError << "Timeout waiting for response from Run-Time Engine (Timeout=" << connection_timeout << ")\n";
             return Timeout;
         }
 
         // Resend the connection request msg
-        if ((counter % 25) == 0) mySocket->sendMsg(msg);
+        if ((counter % 50) == 0) mySocket->sendMsg(msg);
 
         // Check for incoming messages
         mySocket->recvMsg(msglist);

@@ -44,15 +44,15 @@ JausRouter::JausRouter(JausAddress jausAddress, InternalEventHandler* ieHandler,
 {
 	this->jausAddress = jausAddress;
 	jrHandle = 0;
+	isRunning = false;
 	int error = JrConnect(jausAddress.get(), config.c_str(), &jrHandle);
 	if (error != 0) {
-		printf("UNABLE TO CONNECT TO THE NODE MANAGER, error: %d.  IS IT RUNNING?\n", error);
 		pIsConnected = false;
 	} else {
 		pIsConnected = true;
 	}
 	this->ieHandler = ieHandler;
-	this->transportType = Version_1_0;
+	this->transportType = Version_1_1;
 }
 
 JausRouter::~JausRouter()

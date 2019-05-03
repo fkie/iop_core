@@ -32,7 +32,7 @@ ConfigData::ConfigError XmlConfig::parseFile(const  std::string& filename)
 	doc.LoadFile(filename.c_str());
 	if (doc.Error())
 	{
-		JrError << "Failed to parse config file: " << filename << std::endl;
+		JrError << "Failed to parse config file: " << filename << ": " << doc.ErrorDesc() << " at " << doc.ErrorRow() << ":" << doc.ErrorCol() << std::endl;
 
 		// Cast the TinyXML errors to our enum
 		if (doc.ErrorId() == TiXmlBase::TIXML_ERROR_OPENING_FILE) 

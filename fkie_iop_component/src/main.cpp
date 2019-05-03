@@ -35,9 +35,6 @@ int main(int argc, char *argv[])
 	{
 		iop::Component* cmpt = iop::ros_init<iop::Component>(argc, argv, "iop_component_default", 126, 0x40, 81);
 
-		// Start the component and the services
-		cmpt->start_component();
-
 		// Wait until signaled to exit
 		//    exit_signal.wait();
 		ros::spin();
