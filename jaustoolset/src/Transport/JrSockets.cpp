@@ -254,7 +254,7 @@ Transport::TransportError JrSocket::recvMsg(MessageList& msglist)
         Message* msg = new Message();
         archive.unpack(*msg);
 
-		JrDebug << "Received socket message from " << msg->getSourceId().val << " (" << JausAddress(msg->getSourceId().val).str() << ")" << std::endl;
+		JrDebug << "Received socket message from " << JausAddress(msg->getSourceId().val).str() << std::endl;
 
         // If we're not a connected socket, open a response
         // channel to the sender so we can talk to it later.
@@ -299,51 +299,67 @@ Transport::TransportError JrSocket::broadcastMsg(Message& msg)
 
 Transport::TransportError JrSocket::initialize(ConfigData& config)
 {
-    // Set-up is considerably different for UNIX sockets and
-    // Windows named pipes.
+	// Set-up is considerably different for UNIX sockets and
+	// Windows named pipes.
 #ifdef WINDOWS
-    std::stringstream s; s << SOCK_PATH; s << _socket_name;
+	std::stringstream s; s << SOCK_PATH; s << _socket_name;
 	DWORD timeout = (_type == POLL) ? 0 : MAILSLOT_WAIT_FOREVER;
-    sock = CreateMailslot(s.str().c_str(), 0, timeout, NULL);
-    if (sock == INVALID_HANDLE_VALUE)
-    {
-        JrError << "Internal error.  Cannot initialize mailslot for IPC comms\n";
-        return Failed;
-    }
+	sock = CreateMailslot(s.str().c_str(), 0, timeout, NULL);
+	if (sock == INVALID_HANDLE_VALUE)
+	{
+		JrError << "Internal error.  Cannot initialize mailslot for IPC comms\n";
+		return Failed;
+	}
 #else
 
-    // Create the socket
-    sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-    if (sock==-1) return InitFailed;
+	// Create the socket
+	sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+	if (sock == -1)
+		return InitFailed;
 
-    // Bind to the given filename
-    struct sockaddr_un addr;
-    addr.sun_family = AF_UNIX;
-    std::stringstream s; s << SOCK_PATH; s << _socket_name;
-    memset(addr.sun_path, 0, sizeof(addr.sun_path));
-    memcpy(addr.sun_path, s.str().c_str(), s.str().length());
-    unlink(addr.sun_path);
-    JrInfo << "Bind for local socket (" << s.str() << ")." << std::endl;
-    if (bind(sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_un)) != 0)
-    {
+	// Bind to the given filename
+	struct sockaddr_un addr;
+	addr.sun_family = AF_UNIX;
+	std::stringstream s;
+	s << SOCK_PATH;
+	s << _socket_name;
+	memset(addr.sun_path, 0, sizeof(addr.sun_path));
+	memcpy(addr.sun_path, s.str().c_str(), s.str().length());
+	JrInfo << "Bind for local socket (" << s.str() << ")." << std::endl;
+	int bindres = bind(sock, (struct sockaddr *) &addr,
+			sizeof(struct sockaddr_un));
+	if (bindres != 0)
+	{
+		if (errno == 98)
+		{
+			// in case of restart nodes we need to wait until previous node unlinks the socket
+			JrError << "Socket (" << s.str()
+					<< ") currently in use. Wait 3 seconds and try to unlink and bind ..."
+					<< std::endl;
+			JrSleep(3000);
+			unlink(addr.sun_path);
+			bindres = bind(sock, (struct sockaddr *) &addr,
+					sizeof(struct sockaddr_un));
+		}
+		if (bindres != 0)
+		{
+			JrError << "Bind failed for local socket (" << s.str()
+					<< ").  errno=" << errno << std::endl;
+			return InitFailed;
+		}
+	}
+	// Read the configuration file for buffer size info
+	socklen_t buffer_size = 10000;
+	config.getValue(buffer_size, "MaxBufferSize", "UDP_Configuration");
 
-        JrError << "Bind failed for local socket (" << s.str() << ").  errno=" <<
-            errno << std::endl;
-        return InitFailed;
-    }
-
-    // Read the configuration file for buffer size info
-    socklen_t buffer_size = 10000;
-    config.getValue(buffer_size, "MaxBufferSize", "UDP_Configuration");
-
-    // Increase the size of the send/receive buffers
-    int length = sizeof(buffer_size);
-    setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char*)&buffer_size, length);
-    setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char*)&buffer_size, length);
+	// Increase the size of the send/receive buffers
+	int length = sizeof(buffer_size);
+	setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char*) &buffer_size, length);
+	setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char*) &buffer_size, length);
 
 #endif
 
-    return Ok;
+	return Ok;
 }
 
 Transport::TransportError JrSocket::setDestination(std::string destination)
