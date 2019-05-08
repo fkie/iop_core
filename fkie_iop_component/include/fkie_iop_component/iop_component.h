@@ -37,13 +37,16 @@ along with this program; or you can read the full license at
 
 namespace iop
 {
+	class Component;
 	class IopJausRouter: public JTS::JausRouter
 	{
 	public:
-		IopJausRouter(JausAddress jausAddress, JTS::InternalEventHandler* ieHandler, std::string config) : JTS::JausRouter(jausAddress, ieHandler, config) {}
+		IopJausRouter(JausAddress jausAddress, JTS::InternalEventHandler* ieHandler, std::string config, Component* component) : JTS::JausRouter(jausAddress, ieHandler, config), p_component(component) {}
 		~IopJausRouter() {}
 
-		TransportType getTransportType() { return transportType; }
+		Component* getComponent() { return p_component; }
+	protected:
+		Component* p_component;
 	};
 
 	class Component : public JTS::EventReceiver
@@ -60,31 +63,29 @@ namespace iop
 		bool has_service(std::string service_uri);
 		void start_component();
 		void shutdown_component();
+		// level: 0-OK, 1-WARNING, 2-ERROR, 3 STALE
+		void send_diagnostic(int level, std::string message);
 
 		JTS::Service* get_service(std::string service_name);
 	protected:
 
 		struct ServiceInfo {
-			ServiceInfo(JTS::Service* si, std::string uri, bool is_transport_1_1) {
+			ServiceInfo(JTS::Service* si, std::string uri) {
 				this->service = si;
 				this->uri = uri;
-				this->transport_type = is_transport_1_1;
 			}
 			ServiceInfo() {
 				this->service = 0;
 				this->uri = "";
-				this->transport_type = true;
 			}
 			JTS::Service* service;
 			std::string uri;
-			bool transport_type;
 		};
 
 		static Component* global_ptr;
 		virtual void processInternalEvent(JTS::InternalEvent* ie);
 
 		JausAddress p_own_address;
-		bool p_has_1_1_transport;
 		boost::shared_ptr<iop::PluginInterface> p_discovery_client;
 		std::map<std::string, std::string > p_service_package_list;
 		pluginlib::ClassLoader<iop::PluginInterface>* p_class_loader;
@@ -96,6 +97,7 @@ namespace iop
 		std::string p_config_path;
 		boost::thread *p_connect_thread;
 		ros::NodeHandle p_pnh;
+		ros::Publisher p_publisher_diagnostics;
 
 		void p_connect_2_rte();
 		void load_plugins();

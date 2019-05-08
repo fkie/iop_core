@@ -23,11 +23,7 @@ add_library(${PROJECT_NAME}
     src/EventReceiver.cpp
     src/InternalEvents/InternalEventHandler.cpp
     src/InternalEvents/Receive.cpp
-    src/InternalEvents/Receive_1_0.cpp
-    src/InternalEvents/Receive_1_1.cpp
     src/InternalEvents/Send.cpp
-    src/InternalEvents/Send_1_0.cpp
-    src/InternalEvents/Send_1_1.cpp
     src/Messages/MessageTransport.cpp
     src/Service.cpp
     src/SimpleThread.cpp

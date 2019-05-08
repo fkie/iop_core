@@ -3,30 +3,30 @@ JAUS Tool Set
 Copyright (c)  2010, United States Government
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
+Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-       Redistributions of source code must retain the above copyright notice, 
+       Redistributions of source code must retain the above copyright notice,
 this list of conditions and the following disclaimer.
 
-       Redistributions in binary form must reproduce the above copyright 
-notice, this list of conditions and the following disclaimer in the 
+       Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
 documentation and/or other materials provided with the distribution.
 
-       Neither the name of the United States Government nor the names of 
-its contributors may be used to endorse or promote products derived from 
+       Neither the name of the United States Government nor the names of
+its contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 *********************  END OF LICENSE ***********************************/
 
@@ -57,6 +57,7 @@ public:
 class StateMachine
 {
 public:
+	enum Priority {Low=3, Standard=6, High=9, Critical=12};
 	StateMachine(){};
 	virtual ~StateMachine(){};
 
@@ -72,11 +73,12 @@ public:
 	void processNotifications(std::string state, InternalEvent* ie = NULL);
 
 	// Send a message via the JAUS (external) queue
-	void sendJausMessage(JTS::Message& msg, JausAddress dest);
+	void sendJausMessage(JTS::Message& msg, JausAddress dest, int priority = StateMachine::Priority::Standard);
 	void sendJausMessage(const jUnsignedInteger length,
-						 const unsigned char* buffer, 
-						 JausAddress dest);
-		
+						 const unsigned char* buffer,
+						 JausAddress dest,
+						 int priority = StateMachine::Priority::Standard);
+
 protected:
 
 	InternalEventHandler* ieHandler;
@@ -92,8 +94,9 @@ inline void StateMachine::setHandlers(InternalEventHandler *ieHandler,
 	this->jausRouter = jausRouter;
 }
 
-inline void StateMachine::sendJausMessage(JTS::Message& msg, 
-										  JausAddress dest)
+inline void StateMachine::sendJausMessage(JTS::Message& msg,
+										  JausAddress dest,
+										  int priority)
 {
 	// Encode the message
 	unsigned int bufsize = msg.getSize();
@@ -101,15 +104,16 @@ inline void StateMachine::sendJausMessage(JTS::Message& msg,
 	msg.encode(buffer);
 
 	// and send...
-	sendJausMessage(bufsize, buffer, dest);
-	
+	sendJausMessage(bufsize, buffer, dest, priority);
+
 	// Free the buffer we used to encode the message
 	delete[] buffer;
 }
 
 inline void StateMachine::sendJausMessage(const jUnsignedInteger bufsize,
-										  const unsigned char* buffer, 
-										  JausAddress dest)
+										  const unsigned char* buffer,
+										  JausAddress dest,
+										  int priority)
 {
 	// Send the response.  We enclose
 	// the response message in a transport envelope that includes
@@ -119,11 +123,11 @@ inline void StateMachine::sendJausMessage(const jUnsignedInteger bufsize,
 	response.getBody()->getSendRec()->setDestSubsystemID(dest.getSubsystemID());
 	response.getBody()->getSendRec()->setDestNodeID(dest.getNodeID());
 	response.getBody()->getSendRec()->setDestComponentID(dest.getComponentID());
-	jausRouter->sendMessage( &response );
+	jausRouter->sendMessage( &response, priority );
 }
 
 inline void StateMachine::registerNotification( std::string StateName,
-								  InternalEventHandler *ieHandler, 
+								  InternalEventHandler *ieHandler,
 								  std::string EventName, std::string SourceName)
 {
 	StateChangeNotificationEvent* n = new StateChangeNotificationEvent();
@@ -148,7 +152,7 @@ inline void StateMachine::processNotifications(std::string state, InternalEvent*
 			{
 				// ... this FSM was actually the CAUSE of the state change in the first place.
 				// In other words, detect the loop and don't send notification back to the
-				// original source of the transition.  This stops a parent from notifying 
+				// original source of the transition.  This stops a parent from notifying
 				// a child, who in turn notifies the parent, who in turn notifies the child ad nauseum.
 			}
 			else

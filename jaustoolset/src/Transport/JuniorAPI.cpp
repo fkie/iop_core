@@ -119,6 +119,7 @@ JrErrorCode DllExport JrConnect(unsigned int id, const char* config_file, long* 
     }
     else
     {
+        mgr->start();
         *handle = (long)mgr;
         handles.push_back((long) mgr);
     }
@@ -129,6 +130,7 @@ JrErrorCode DllExport JrDisconnect(long handle)
 {
     if (handle == 0) return NotInitialized;
     JuniorMgr* mgr = (JuniorMgr*) handle;
+    mgr->stop();
     delete(mgr);
 
     // find it in the static list

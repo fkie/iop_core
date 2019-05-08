@@ -28,6 +28,7 @@
 #include <sstream>
 #include <algorithm>
 
+
 #ifdef SINGLE_LIB_ONLY
 #include "Transport/JUDPTransport.h"
 #else
@@ -54,10 +55,12 @@ JuniorMgr::JuniorMgr():
 	_outstanding_ack_request_source = 0;
 	_outstanding_ack_request_seqnum = 0;
 	_outstanding_ack_request_acked = false;
+	isRunning = true;
 }
 
 JuniorMgr::~JuniorMgr()
 {
+	_lock_socket.lock();
     if (_transport)
     {
 #ifndef SINGLE_LIB_ONLY
@@ -69,7 +72,43 @@ JuniorMgr::~JuniorMgr()
 #endif
         delete(_transport);
     }
+    _lock_socket.unlock();
 }
+
+void JuniorMgr::stop()
+{
+	printf("STOP MNAGER\n");
+	isRunning = false;
+	_signal_queue_send.signal();
+}
+
+void JuniorMgr::run()
+{
+	while (isRunning) {
+		Message* value = NULL;
+		_lock_queue_send.lock();
+		// Check each priority based send buffer (highest first) looking for a message to send.
+		for (int j = JrMaxPriority; j >= 0; j--)
+		{
+			if (!_buffers_send[j].empty())
+			{
+				// Found a non-empty buffer.  Pop the message out and return the data.
+				value = _buffers_send[j].front();
+				_buffers_send[j].pop_front();
+				break;
+			}
+		}
+		_lock_queue_send.unlock();
+		if (value != NULL && _transport != NULL) {
+			sendOrBroadcast(*value);
+			delete value;
+			value = NULL;
+		} else {
+			_signal_queue_send.wait();
+		}
+	}
+}
+
 
 unsigned int JuniorMgr::umin(unsigned int x, unsigned int y)
 {
@@ -85,7 +124,24 @@ void JuniorMgr::sendAckMsg( Message* incoming )
     response.setSequenceNumber(incoming->getSequenceNumber());
     response.setAckNakFlag(3);
     response.setPriority(incoming->getPriority());
+    _lock_socket.lock();
     _transport->sendMsg(response);
+    _lock_socket.unlock();
+}
+
+bool JuniorMgr::appendSendMessage(Message& msg)
+{
+	_lock_queue_send.lock();
+	if (_buffers_send[minint(msg.getPriority(), JrMaxPriority)].size() < _maxMsgHistory)
+	{
+		_buffers_send[minint(msg.getPriority(), JrMaxPriority)].push_back(&msg);
+		_lock_queue_send.unlock();
+		_signal_queue_send.signal();
+	} else {
+		_lock_queue_send.unlock();
+		return false;
+	}
+	return true;
 }
 
 void JuniorMgr::sendOrBroadcast(Message& msg)
@@ -94,6 +150,7 @@ void JuniorMgr::sendOrBroadcast(Message& msg)
 	// for intelligent distribution.  When building for a single application,
 	// however, the Run-Time Engine is disabled.  Some of the intelligence
 	// must therefore be pulled into the Manager.
+	_lock_socket.lock();
 #ifndef SINGLE_LIB_ONLY
 	_transport->sendMsg(msg);
 #else
@@ -123,6 +180,7 @@ void JuniorMgr::sendOrBroadcast(Message& msg)
         _transport->broadcastMsg(msg);
     }
 #endif
+    _lock_socket.unlock();
 }
 
 // Returns the number of messages waiting, either in a local buffer or
@@ -130,7 +188,9 @@ void JuniorMgr::sendOrBroadcast(Message& msg)
 unsigned char JuniorMgr::pending()
 {
 #ifndef SINGLE_LIB_ONLY
+	_lock_socket.lock();
     unsigned char count = _msg_count + ((JrSocket*)_transport)->messagesInQueue();
+	_lock_socket.unlock();
     return (count);
 #else
 	return (_msg_count);
@@ -190,6 +250,7 @@ void JuniorMgr::checkLargeMsgBuffer()
         if ((unsigned long)(JrGetTimestamp() - msgIter->first) > (_oldMsgTimeout*1000))
         {
             // Discard the message and remove from the list
+        	std::cout << "delete old message" << std::endl;
             delete (msgIter->second);
             msgIter = _largeMsgBuffer.erase(msgIter);
             continue;
@@ -235,6 +296,7 @@ void JuniorMgr::checkLargeMsgBuffer()
                     delete (nextMsg->second);
                     _largeMsgBuffer.erase(nextMsg);
                 }
+                //std::cout << "big message ok with " << msgcount << " parts" << std::endl;
 
                 // Now that we have a complete message, add it to the delivery buffer
                 // and remove it from the unfinished message buffer.
@@ -265,6 +327,7 @@ bool JuniorMgr::addMsgToBuffer(Message* msg)
     if ((msg->getAckNakFlag() == 2) || (msg->getAckNakFlag() == 3) ||
         isDuplicateMsg(msg) || (msg->getSourceId().val == 0))
     {
+    	printf("  DROP message: %d\n", msg->getSequenceNumber());
         delete msg;
         return false;
     }
@@ -308,7 +371,8 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 
     // Modify the priority to not exceed the 4 bit space
     if (priority > JrMaxPriority) priority = JrMaxPriority;
-
+    if (priority < JrMinPriority) priority = JrMinPriority;
+//    printf("send with prio: %d, flags: %d\n", priority, flags);
     // As per the Standard, ServiceConnection and ACK/NAK cannot
     // be set at the same time
     if ((flags & 0x03) == 0x03) return InvalidParams;
@@ -336,21 +400,23 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 
     // We can never send more than 4079 bytes in a single
     // message, so break up large data sets.
+    // printf("PID of this process: %d\n", getpid());
     unsigned int bytes_sent = 0;
     do
     {
         // Create the message
-        Message msg;
-        msg.setDestinationId(destination);
-        msg.setSourceId(_id);
-        msg.setPriority(priority);
-        msg.setMessageCode(code);
-		msg.setSequenceNumber(_message_counter);
-        if (flags & ServiceConnection) msg.setServiceConnection(1);
-        if (flags & ExperimentalFlag) msg.setExperimental(1);
+        Message* msg = new Message();
+        msg->setDestinationId(destination);
+        msg->setSourceId(_id);
+        msg->setPriority(priority);
+        msg->setMessageCode(code);
+		msg->setSequenceNumber(_message_counter);
+        if (flags & ServiceConnection) msg->setServiceConnection(1);
+        if (flags & ExperimentalFlag) msg->setExperimental(1);
         if (flags & GuaranteeDelivery)
 		{
-			msg.setAckNakFlag(1);
+        	printf("  set ack, flags: %d\n", flags);
+			msg->setAckNakFlag(1);
 
 			// The outstanding ACK request is shared with the receive loop.
 			_outstanding_ack_request_source = destination;
@@ -365,7 +431,7 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
         // Set the payload, being careful not to exceed
         // 4079 bytes on any individual message.
         unsigned int payload_size = umin(_max_msg_size, size - bytes_sent);
-        msg.setPayload(payload_size, &buffer[bytes_sent]);
+        msg->setPayload(payload_size, &buffer[bytes_sent]);
 
         // Fill in the data control flags, so the receiver
         // can piece together the original message if it was
@@ -373,49 +439,52 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
         if (payload_size < size)
         {
             if (bytes_sent == 0)
-				msg.setDataControlFlag(Message::FirstMsg);
+				msg->setDataControlFlag(Message::FirstMsg);
             else if ((bytes_sent + payload_size) == size)
-				msg.setDataControlFlag(Message::LastMsg);
+				msg->setDataControlFlag(Message::LastMsg);
             else
-				msg.setDataControlFlag(Message::MiddleMsg);
+				msg->setDataControlFlag(Message::MiddleMsg);
         }
 
         // Send the message to the RTE for distribution
-        sendOrBroadcast(msg);
-        bytes_sent += payload_size;
-
-
-        // Pend here for ACK-NAK.  This will be triggered by the JrReceive call.
-        // We wait a configurable period of time, resend a configurable number of times.
-        if (flags & GuaranteeDelivery)
-        {
-			unsigned long last_msg_time = JrGetTimestamp();
-            unsigned int send_count = 0;
-            while (!_outstanding_ack_request_acked)
-            {
-
-                // See if it's time to resend the message (or timeout)
-                if ((unsigned long)(JrGetTimestamp() - last_msg_time) > _ack_timeout)
-                {
-					// If we exceeded the max tries count, return failure
-                    if (++send_count > _max_retries)
-						return Timeout;
-
-					// If we have to resend a message that is part of a large data
-					// stream, the data control flags need to be updated.  This
-					// seems wonky to have to do, but it's part of JAUS.
-					if (msg.getDataControlFlag() == Message::MiddleMsg)
-						msg.setDataControlFlag(Message::MiddleResentMsg);
-
-					// Resend the message and update the "last sent" timestamp
-                    sendOrBroadcast(msg);
-                    last_msg_time = JrGetTimestamp();
-                }
-
-				// sleep a bit to free up the CPU
-                JrSleep(10);
-            }
+        if (appendSendMessage(*msg)) {
+            bytes_sent += payload_size;
+        } else {
+            return Timeout;
         }
+
+        // not used in
+//        // Pend here for ACK-NAK.  This will be triggered by the JrReceive call.
+//        // We wait a configurable period of time, resend a configurable number of times.
+//        if (flags & GuaranteeDelivery)
+//        {
+//			unsigned long last_msg_time = JrGetTimestamp();
+//            unsigned int send_count = 0;
+//            while (!_outstanding_ack_request_acked)
+//            {
+//
+//                // See if it's time to resend the message (or timeout)
+//                if ((unsigned long)(JrGetTimestamp() - last_msg_time) > _ack_timeout)
+//                {
+//					// If we exceeded the max tries count, return failure
+//                    if (++send_count > _max_retries)
+//						return Timeout;
+//
+//					// If we have to resend a message that is part of a large data
+//					// stream, the data control flags need to be updated.  This
+//					// seems wonky to have to do, but it's part of JAUS.
+//					if (msg.getDataControlFlag() == Message::MiddleMsg)
+//						msg.setDataControlFlag(Message::MiddleResentMsg);
+//
+//					// Resend the message and update the "last sent" timestamp
+//                    sendOrBroadcast(msg);
+//                    last_msg_time = JrGetTimestamp();
+//                }
+//
+//				// sleep a bit to free up the CPU
+//                JrSleep(10);
+//            }
+//        }
     } while(bytes_sent < size);  // continue to loop until we've sent
                                  // the entire buffer.
     return Ok;
@@ -452,6 +521,7 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
         {
 			// Found a match.  Signal to the send call that it
 			// no longer has to wait on the ack.
+        	printf("  it is an ACK for: %d\n", msg->getSequenceNumber());
             _outstanding_ack_request_acked = true;
 			delete msg;
         }
@@ -463,6 +533,7 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
 		else
 		{
 			// Either this is a NAK, or an unexpected ACK. Silently discard.
+			printf("  delete because of AckNak: %d\n", msg->getAckNakFlag());
 			delete msg;
 		}
     }
@@ -489,7 +560,6 @@ JrErrorCode JuniorMgr::recvfrom(unsigned int* sender,
             }
             unsigned int data_size; char* data_ptr;
             value->getPayload(data_size, data_ptr);
-
 			// Assume success
 			JrErrorCode ret = Ok;
 
@@ -542,7 +612,9 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     }
 
 	ConfigData dummy;
+	_lock_socket.lock();
     _transport = new JUDPTransport();
+	_lock_socket.unlock();
 	if (_transport->initialize(dummy) != Transport::Ok) return InitFailed;
     _id.val     = id;
 
@@ -666,8 +738,9 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     config.getValue(_maxMsgHistory, "MaxMsgHistory", "API_Configuration");
     config.getValue(_oldMsgTimeout, "OldMsgTimeout", "API_Configuration");
     config.getValue(_detectDuplicates, "DropDuplicateMsgs", "API_Configuration");
-    config.getValue(_max_retries, "MaxAckNakRetries", "API_Configuration");
-    config.getValue(_ack_timeout, "AckTimeout", "API_Configuration");
+    // we send through domain socket, the messages should be save or we have  another problems...
+    // config.getValue(_max_retries, "MaxAckNakRetries", "API_Configuration");
+    // config.getValue(_ack_timeout, "AckTimeout", "API_Configuration");
     config.getValue(_max_msg_size, "MTU_Size", "API_Configuration");
 	if (_max_msg_size > 4079)
 	{

@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JuniorMgr.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -26,6 +26,7 @@
 #include "Transport.h"
 #include "JuniorAPI.h"
 #include "OS.h"
+#include "SimpleThread.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -37,8 +38,9 @@ typedef std::pair<unsigned long, MsgId> TimeStampedMsgId;
 typedef std::list<TimeStampedMsgId> MsgIdList;
 typedef std::list<TimeStampedMsgId>::iterator MsgIdListIter;
 const int JrMaxPriority = 15;
+const int JrMinPriority = 3;
 
-class JuniorMgr
+class JuniorMgr :  public JTS::SimpleThread
 {
 public:
 
@@ -46,27 +48,29 @@ public:
     ~JuniorMgr();
 
     // The public functions mirror the API equivalents.
-    JrErrorCode sendto( unsigned int destination, unsigned int size, 
+    JrErrorCode sendto( unsigned int destination, unsigned int size,
                 const char* buffer, int priority, int flags, MessageCode code = 0);
 
     JrErrorCode recvfrom( unsigned int* sender, unsigned int* bufsize,
                   char** buffer, int* priority, int* flags, MessageCode* code = NULL);
-    
+
     JrErrorCode connect(unsigned int id, std::string config_file);
 
     unsigned char pending( );
+    void stop();
 
 private:
- 
+
     // Define a couple of private helper functions
     unsigned int umin(unsigned int x, unsigned int y);
     void sendAckMsg(Message* source);
 	void sendOrBroadcast(Message& msg);
+	bool appendSendMessage(Message& msg);
     bool addMsgToBuffer(Message* msg);
     void checkLargeMsgBuffer();
     bool isDuplicateMsg(Message* msg);
-    TimeStampedMsgListIter searchMsgList(TimeStampedMsgList& list, 
-                                         JAUS_ID sender, 
+    TimeStampedMsgListIter searchMsgList(TimeStampedMsgList& list,
+                                         JAUS_ID sender,
                                          unsigned short seqnum);
 
     // Private data.
@@ -84,7 +88,7 @@ private:
     // Configuration data
     unsigned short _maxMsgHistory;      // as a message count
     unsigned short _oldMsgTimeout;      // in seconds
-    unsigned char  _detectDuplicates; 
+    unsigned char  _detectDuplicates;
 
 	// We now allow the receive loop to find the ack/nak response,
 	// rather than doing it from the send loop.  But that means
@@ -94,11 +98,18 @@ private:
 	JAUS_ID _outstanding_ack_request_source;
 	unsigned short _outstanding_ack_request_seqnum;
 	bool _outstanding_ack_request_acked;
+
+	bool isRunning;
+	MessageList        _buffers_send[JrMaxPriority+1];
+	DeVivo::Junior::JrSignal _signal_queue_send;
+	DeVivo::Junior::JrMutex _lock_queue_send;
+	DeVivo::Junior::JrMutex _lock_socket;
+	virtual void run();
 };
 
 inline TimeStampedMsgListIter JuniorMgr::searchMsgList(
-                                         TimeStampedMsgList& list, 
-                                         JAUS_ID sender, 
+                                         TimeStampedMsgList& list,
+                                         JAUS_ID sender,
                                          unsigned short seqnum)
 {
     for (TimeStampedMsgListIter iter = list.begin();

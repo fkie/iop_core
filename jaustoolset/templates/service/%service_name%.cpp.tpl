@@ -9,7 +9,6 @@ namespace %service_namespace%
 	
 %service_name%::%service_name%(JTS::JausRouter* jausRouter %parent_service_list%) : Service()
 {
-	jausRouter->setTransportType(%service_transport_type%);
 	
 %statemachine_assignment_list%
 }

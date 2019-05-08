@@ -39,10 +39,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 
 #include "JausUtils.h"
-#include "InternalEvents/Receive_1_0.h"
-#include "InternalEvents/Send_1_0.h"
-#include "InternalEvents/Receive_1_1.h"
-#include "InternalEvents/Send_1_1.h"
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
 #include "InternalEvents/InternalEventHandler.h"
@@ -66,14 +62,9 @@ public:
 	JausRouter(JausAddress jausAddress, InternalEventHandler* ieHandler, std::string config="nm.cfg");
 	~JausRouter();
 
-	enum TransportType {Version_1_0, Version_1_1};
-
 	bool isConnected() {return pIsConnected;}
-	void sendMessage(Send* msg);
-	void sendMessage(Send_1_0* msg);
-	void sendMessage(Send_1_1* msg);
+	void sendMessage(Send* msg, int priority = 6);
 	void routeMessage(JausAddress sender, unsigned int bufsize, const unsigned char* buffer);
-	void setTransportType( TransportType type);
 
 	void stop();
 
@@ -89,7 +80,6 @@ protected:
 	long jrHandle;
 	JausAddress jausAddress;
 	InternalEventHandler* ieHandler;
-	TransportType transportType;
 };
 
 };

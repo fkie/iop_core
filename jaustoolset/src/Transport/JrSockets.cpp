@@ -257,7 +257,7 @@ Transport::TransportError JrSocket::recvMsg(MessageList& msglist)
         Message* msg = new Message();
         archive.unpack(*msg);
 
-		JrDebug << "Received socket message from " << JausAddress(msg->getSourceId().val).str() << std::endl;
+		JrDebug << "Received " << bytes << " bytes socket message from " << JausAddress(msg->getSourceId().val).str() << ", seqnr: " << msg->getSequenceNumber() << std::endl;
 
         // If we're not a connected socket, open a response
         // channel to the sender so we can talk to it later.

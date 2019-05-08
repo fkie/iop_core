@@ -159,6 +159,7 @@ protected:
 	bool p_is_registered;
 	bool p_on_registration;
 	int p_count_discover_tries;
+	int p_current_diagnostic_level;
 	std::vector<iop::DiscoveryServiceDef> p_own_uri_services;
 	JausAddress p_addr_discovery_service;
 	int p_timeout_discover_service;

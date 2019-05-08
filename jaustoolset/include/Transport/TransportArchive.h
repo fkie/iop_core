@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      TransportArchive.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -44,7 +44,7 @@ class TransportArchive : public Archive
     ~TransportArchive(){}
 
 	// A transport archive converts a message into a byte stream
-	// by serializing or "packing".  
+	// by serializing or "packing".
 	virtual bool pack(Message& msg, MsgVersion version) = 0;
 	virtual bool unpack(Message& msg) = 0;
 
@@ -73,7 +73,7 @@ inline void TransportArchive::packHdr(Message& msg, MsgVersion version)
 	{
 		*this << (char) 0; // Message type and header compression
 		*this << (unsigned short) (msg.getDataLength()+14); // data & header
-		*this << (char) (msg.getScaledPriority() | (msg.getBroadcast() << 2) | 
+		*this << (char) (msg.getScaledPriority() | (msg.getBroadcast() << 2) |
 			(msg.getAckNakFlag() << 4) | (msg.getDataControlFlagAsChar(version)<<6));
 		*this << (unsigned int) msg.getDestinationId().val;  // destination
 		*this << (unsigned int) msg.getSourceId().val;		// source
@@ -81,13 +81,19 @@ inline void TransportArchive::packHdr(Message& msg, MsgVersion version)
 	else
 	{
 		// Priority and acknowledgement, service connection, experimental
-		*this << ((char)(msg.getPriority() | (msg.getAckNakFlag() << 4) | 
+//		std::cout << "  msg.getPriority(): " << (int)msg.getPriority() << ", msg.getAckNakFlag(): " << (int)msg.getAckNakFlag() << std::endl;
+//		std::cout << "  msg.getServiceConnection(): " << (int)msg.getServiceConnection() << ", msg.getExperimental(): " << (int)msg.getExperimental() << std::endl;
+		if (msg.getAckNakFlag() == 3) {
+			printf("      PACK vers 1 with ack: %d\n", msg.getAckNakFlag());
+		}
+		*this << ((char)(msg.getPriority() | (msg.getAckNakFlag() << 4) |
 			          (msg.getServiceConnection() << 6) | (msg.getExperimental() << 7)));
 		*this << (char) 2; // version
 		*this << (unsigned short) msg.getMessageCode(); // command code
 		*this << (unsigned int) msg.getDestinationId().val; // destination
 		*this << (unsigned int) msg.getSourceId().val;      // source
-		*this << ((unsigned short)(msg.getDataLength() | 
+//		std::cout << "  msg.getDataLength(): " << (int)msg.getDataLength() << ", msg.FLAGS(): " << (int)msg.getDataControlFlagAsChar(version) << std::endl;
+		*this << ((unsigned short)(msg.getDataLength() |
 					(msg.getDataControlFlagAsChar(version)<<12)));
 		*this << (unsigned short) msg.getSequenceNumber();  // sequence number
 	}
@@ -99,7 +105,7 @@ inline void TransportArchive::packFtr( Message& msg, MsgVersion version )
     setPackMode( Archive::LittleEndian );
 
 	// Footers are only defined for 5669 rev A
-	if (version == AS5669A) 
+	if (version == AS5669A)
 		*this << (unsigned short) msg.getSequenceNumber();
 }
 
@@ -121,7 +127,7 @@ inline void TransportArchive::unpackHdr( Message& msg, MsgVersion version )
 		*this >> temp8; // message properties
 		msg.setScaledPriority(temp8 & 0x03);
 		msg.setBroadcast((temp8 & 0x0C) >> 2);
-		msg.setAckNakFlag((temp8 & 0x30) >> 4); 
+		msg.setAckNakFlag((temp8 & 0x30) >> 4);
 		msg.setDataControlFlagAsChar((temp8 & 0xC0)>>6, version);
 		*this >> temp32; msg.setDestinationId(JAUS_ID(temp32)); // destination
 		*this >> temp32; msg.setSourceId(JAUS_ID(temp32)); // source
@@ -130,7 +136,7 @@ inline void TransportArchive::unpackHdr( Message& msg, MsgVersion version )
 	{
 		*this >> temp8; // message properties
 		msg.setPriority(temp8 & 0x0F);
-		msg.setAckNakFlag((temp8 & 0x30) >> 4); 
+		msg.setAckNakFlag((temp8 & 0x30) >> 4);
 		msg.setServiceConnection((temp8 & 0x40) >> 6);
 		msg.setExperimental((temp8 & 0x80) >> 7);
 		*this >> temp8; // discard version
@@ -149,7 +155,7 @@ inline void TransportArchive::unpackFtr( Message& msg, MsgVersion version )
     setPackMode( Archive::LittleEndian );
 
 	// Footers are only defined for 5669 rev A
-	if (version == AS5669A) 
+	if (version == AS5669A)
 	{
 		unsigned short temp16;
 		*this >> temp16; msg.setSequenceNumber(temp16);

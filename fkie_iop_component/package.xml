@@ -14,10 +14,12 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>diagnostic_msgs</build_depend>
   <build_depend>fkie_iop_builder</build_depend>
   <build_depend>pluginlib</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>tinyxml</build_depend>
+  <run_depend>diagnostic_msgs</run_depend>
   <run_depend>fkie_iop_builder</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>roscpp</run_depend>

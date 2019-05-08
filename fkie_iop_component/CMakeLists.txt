@@ -5,6 +5,7 @@ project(fkie_iop_component)
 # add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  diagnostic_msgs
   fkie_iop_builder
   pluginlib
   roscpp
@@ -15,7 +16,7 @@ iop_init_paths()
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS fkie_iop_builder pluginlib roscpp
+    CATKIN_DEPENDS diagnostic_msgs fkie_iop_builder pluginlib roscpp
 )
 
 

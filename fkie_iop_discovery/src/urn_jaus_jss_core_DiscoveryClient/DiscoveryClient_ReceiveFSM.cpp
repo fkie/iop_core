@@ -25,6 +25,7 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <ros/console.h>
+#include <fkie_iop_component/iop_component.h>
 #include <fkie_iop_component/iop_config.h>
 
 
@@ -56,6 +57,7 @@ DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transpo
 	p_on_registration = false;
 	p_count_discover_tries = 0;
 	p_timeout_event = new InternalEvent("Timeout", "ControlTimeout");
+	p_current_diagnostic_level = 3;
 	p_timeout_discover_service = 60;
 }
 
@@ -115,6 +117,9 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 	p_timeout_timer.start();
 	if (!register_own_services) {
 		pRegistrationFinished();
+	}
+	if (!p_is_registered) {
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Register services");
 	}
 }
 
@@ -179,22 +184,33 @@ void DiscoveryClient_ReceiveFSM::pRegistrationFinished()
 {
 	p_is_registered = true;
 	ROS_INFO_NAMED("DiscoveryClient", "Service registration by discovery service finished!");
+	p_current_diagnostic_level = 0;
+	dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "Registration finished");
 	pCheckTimer();
 }
 
 void DiscoveryClient_ReceiveFSM::pCheckTimer()
 {
 	int timeoutts = TIMEOUT_STANDBY;
+	bool in_discover = false;
 	if (!p_is_registered || pHasToDiscover(65535)) {
 		timeoutts = TIMEOUT_DISCOVER;
 		if (p_count_discover_tries > TIMEOUT_STANDBY / TIMEOUT_DISCOVER) {
 			if (timeoutts != TIMEOUT_STANDBY) {
 				ROS_DEBUG_NAMED("DiscoveryClient", "max tries for discovery services reached, increase timeout");
 				timeoutts = TIMEOUT_STANDBY;
+				p_current_diagnostic_level = 1;
+				dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Not all services discovered");
 			}
 		}
+		in_discover = true;
 	}
+
 	if (p_current_timeout != timeoutts) {
+		if (!in_discover) {
+			p_current_diagnostic_level = 0;
+			dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "All services discovered");
+		}
 		if (p_current_timeout > timeoutts) {
 			ROS_INFO_NAMED("DiscoveryClient", "reduce timeout to %d sec", timeoutts);
 		} else {
@@ -829,6 +845,9 @@ void DiscoveryClient_ReceiveFSM::query_identification(int query_type, jUnsignedS
 	msg.getBody()->getQueryIdentificationRec()->setQueryType(query_type);
 	ROS_DEBUG_NAMED("DiscoveryClient", "send QueryIdentification to subsystem.node.comp: %i.%d.%d of type %d, next query in %i sec",
 			subsystem, (int)node, (int)component, query_type, p_current_timeout);
+	if ((p_current_diagnostic_level == 0 || p_current_diagnostic_level == 3) && (!p_is_registered || pHasToDiscover(65535))) {
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Discover services");
+	}
 	sendJausMessage(msg,JausAddress(subsystem, node, component)); //0xFFFF, 0xFF, 0xFF
 }
 

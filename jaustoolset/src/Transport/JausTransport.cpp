@@ -52,17 +52,11 @@ JausRouter::JausRouter(JausAddress jausAddress, InternalEventHandler* ieHandler,
 		pIsConnected = true;
 	}
 	this->ieHandler = ieHandler;
-	this->transportType = Version_1_1;
 }
 
 JausRouter::~JausRouter()
 {
 	JrDisconnect(jrHandle);
-}
-
-void JausRouter::setTransportType( TransportType type)
-{
-	transportType = type;
 }
 
 void JausRouter::routeMessage(JausAddress sender, unsigned int bufsize, const unsigned char* buffer)
@@ -72,26 +66,6 @@ void JausRouter::routeMessage(JausAddress sender, unsigned int bufsize, const un
 	std::cout << "[JausRouter::routeMessage] Local Component : 0x" << std::hex << msg_id << std::dec << std::endl;
 #endif
 
-/**
-        if (transportType == Version_1_1)
-        {
-            Receive_1_1* message = new Receive_1_1();
-            message->getBody()->getReceiveRec()->getSourceID()->setSubsystemID(sender.getSubsystemID());
-            message->getBody()->getReceiveRec()->getSourceID()->setNodeID(sender.getNodeID());
-            message->getBody()->getReceiveRec()->getSourceID()->setComponentID(sender.getComponentID());
-            message->getBody()->getReceiveRec()->getMessagePayload()->set(bufsize, (unsigned char*) buffer);
-            ieHandler->invoke(message);
-        }
-        else
-        {
-            Receive_1_0* message = new Receive_1_0();
-            message->getBody()->getReceiveRec()->setSrcSubsystemID(sender.getSubsystemID());
-            message->getBody()->getReceiveRec()->setSrcNodeID(sender.getNodeID());
-            message->getBody()->getReceiveRec()->setSrcComponentID(sender.getComponentID());
-            message->getBody()->getReceiveRec()->getMessagePayload()->set(bufsize, (unsigned char*) buffer);
-            ieHandler->invoke(message);
-        }
-**/
         Receive* message = new Receive();
         message->getBody()->getReceiveRec()->getSourceID()->setSubsystemID(sender.getSubsystemID());
         message->getBody()->getReceiveRec()->getSourceID()->setNodeID(sender.getNodeID());
@@ -100,7 +74,7 @@ void JausRouter::routeMessage(JausAddress sender, unsigned int bufsize, const un
         ieHandler->invoke(message);
 }
 
-void JausRouter::sendMessage(Send* msg)
+void JausRouter::sendMessage(Send* msg, int priority)
 {
 #ifdef DEBUG
                 unsigned short msg_id = *((unsigned short*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
@@ -124,79 +98,9 @@ void JausRouter::sendMessage(Send* msg)
           //JrErrorCode ret =
           JrSend(jrHandle, destination.get(),
                  msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-                 (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
+                 (const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData(),
+				 priority);
 }
-
-void JausRouter::sendMessage(Send_1_0* msg)
-{
-#ifdef DEBUG
-		unsigned short msg_id = *((unsigned short*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
-		std::cout << "[JausRouter::sendMessage] Sending msg 0x" << std::hex << msg_id << std::dec << std::endl;
-#endif
-
-	/// Pull the destination ID
-	JausAddress destination(msg->getBody()->getSendRec()->getDestSubsystemID(),
-							msg->getBody()->getSendRec()->getDestNodeID(),
-							msg->getBody()->getSendRec()->getDestComponentID());
-
-	// If the destination is local, loopback to the routeMessage function
-	if (destination == jausAddress)
-	{
-			routeMessage(destination,
-				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-				msg->getBody()->getSendRec()->getMessagePayload()->getData());
-	}
-	// Otherwise, forward Message to NodeManager.
-	else
-		// JrErrorCode ret =
-		JrSend(jrHandle, destination.get(),
-				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-				(const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
-}
-
-void JausRouter::sendMessage(Send_1_1* msg)
-{
-#ifdef DEBUG
-		unsigned short msg_id = *((unsigned short*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
-		std::cout << "[JausRouter::sendMessage] Sending msg 0x" << std::hex << msg_id << std::dec << std::endl;
-#endif
-
-	/// Pull the destination ID
-	JausAddress destination(msg->getBody()->getSendRec()->getDestinationID()->getSubsystemID(),
-							msg->getBody()->getSendRec()->getDestinationID()->getNodeID(),
-							msg->getBody()->getSendRec()->getDestinationID()->getComponentID());
-
-	// If the destination is local, loopback to the routeMessage function
-	if (destination == jausAddress)
-	{
-			routeMessage(destination,
-				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-				msg->getBody()->getSendRec()->getMessagePayload()->getData());
-	}
-	// Otherwise, forward Message to NodeManager.
-	else
-		// JrErrorCode ret =
-		JrSend(jrHandle, destination.get(),
-				msg->getBody()->getSendRec()->getMessagePayload()->getLength(),
-				(const char*) msg->getBody()->getSendRec()->getMessagePayload()->getData());
-}
-
-
-
-//void JausRouter::updateTable(InternalEventHandler* handler, std::set<jUnsignedShortInteger> &inputMessageList, TransportType type)
-//{
-//	if (inputMessageList.size() > 0)
-//	{
-//		for (std::set<jUnsignedShortInteger>::iterator j = inputMessageList.begin(); j != inputMessageList.end(); j++)
-//		{
-//#ifdef DEBUG
-//			std::cout << "[JausRouter::updateTable] Adding 0x" << std::hex << *j << std::dec << std::endl;
-//#endif
-//
-//			msgIDToHandlerTable[*j].push_back(std::make_pair(handler, type));
-//		}
-//	}
-//}
 
 
 void JausRouter::stop()

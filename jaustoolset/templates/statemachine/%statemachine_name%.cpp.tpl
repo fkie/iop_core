@@ -1,5 +1,6 @@
 %copyright%
 
+#include <fkie_iop_component/iop_config.h>
 %user_include_definitions%
 
 %user_constants_definitions%
@@ -23,6 +24,8 @@ namespace %service_namespace%
 void %statemachine_name%::setupNotifications()
 {
 %setup_notifications%
+
+	iop::Config cfg("%statemachine_name%");
 }
 
 %action_method_definitions%

@@ -243,7 +243,6 @@ public class ServiceDefGenerator
                     StringBuffer smArguments = new StringBuffer();
 					StringBuffer smParentList = new StringBuffer();
                     StringBuffer smFSMList = new StringBuffer();
-                    StringBuffer smTransportType = new StringBuffer();
 
                     // Get the list of parent services
                     Vector<Reference> parentList = new Vector<Reference>();
@@ -291,15 +290,6 @@ public class ServiceDefGenerator
 
                     // Specify the transport type...
                     ServiceDef top = org.jts.codegenerator.support.InheritanceHelper.getTopParent( sDef, sSet );
-                    if ( top.getId().equalsIgnoreCase("urn:jaus:jss:core:Transport") &&
-                         top.getVersion().equals("1.1") )
-                    {
-                        smTransportType.append("JausRouter::Version_1_1");
-                    }
-                    else
-                    {
-                        smTransportType.append("JausRouter::Version_1_0");
-                    }
 
                     // Set-up the template replacement hash table.
                     replaceTable.put("%statemachine_variable_list%", smVariableList.toString());
@@ -311,7 +301,6 @@ public class ServiceDefGenerator
                     replaceTable.put("%start_state_actions%", pbGen.entryActionCalls.toString());
                     replaceTable.put("%transition_calls%", getTransitionCallsWithParameters(pbGen, srcDir));
 					replaceTable.put("%default_transition_calls%", pbGen.defaultCalls.toString());
-                    replaceTable.put("%service_transport_type%", smTransportType.toString());
 
                     svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));;
                     for (String msg : msgInputList)

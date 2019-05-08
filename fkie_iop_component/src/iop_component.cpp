@@ -26,6 +26,8 @@ along with this program; or you can read the full license at
 #include "fkie_iop_component/iop_component.h"
 #include "JausUtils.h"
 #include <XmlRpcException.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
 
 using namespace JTS;
 using namespace iop;
@@ -37,6 +39,7 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 	global_ptr = this;
 	p_own_address = JausAddress(subsystem, node, component);
 	p_pnh = ros::NodeHandle("~");
+	p_publisher_diagnostics = p_pnh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 100, true);
 	p_config_path = "nm.cfg";
 	if (p_pnh.hasParam("jaus_config")) {
 		// read configuration from private parameter
@@ -61,7 +64,6 @@ Component::Component(unsigned int subsystem, unsigned short node, unsigned short
 	} else {
 		ROS_INFO("JAUS configuration file: %s", p_config_path.c_str());
 	}
-	p_has_1_1_transport = false;
 	p_class_loader = NULL;
 	jausRouter = NULL;
 	// spawn another thread
@@ -89,17 +91,33 @@ Component::~Component()
 void Component::p_connect_2_rte()
 {
 	ROS_INFO("Connect to JAUS nodeManager...");
-	this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path);
+	send_diagnostic(3, "Connecting to RTE");
+	this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path, this);
 	while (ros::ok() && ! jausRouter->isConnected()) {
 		sleep(1);
 		delete this->jausRouter;
-		this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path);
+		send_diagnostic(2, "Timeout, connecting to RTE");
+		this->jausRouter = new IopJausRouter(p_own_address, ieHandler, p_config_path, this);
 	}
 	if (ros::ok() && jausRouter->isConnected()) {
 		ROS_INFO("JAUS ID: %d", this->jausRouter->getJausAddress()->get());
+		send_diagnostic(3, "Load Plug-Ins");
 		load_plugins();
 		start_component();
+		send_diagnostic(0, "Started");
 	}
+}
+
+void Component::send_diagnostic(int level, std::string message)
+{
+	diagnostic_msgs::DiagnosticArray dmsg;
+	dmsg.header.stamp = ros::Time::now();
+	diagnostic_msgs::DiagnosticStatus diag;
+	diag.level = level;
+	diag.name = ros::this_node::getName();
+	diag.message = message;
+	dmsg.status.push_back(diag);
+	p_publisher_diagnostics.publish(dmsg);
 }
 
 void Component::load_plugins()
@@ -168,23 +186,17 @@ void Component::load_plugins()
 	ROS_INFO("... plugin loading complete!");
 	// register the services
 	if (p_discovery_client != NULL) {
-		ROS_INFO("Register services by discovery service...");
+		ROS_INFO("Add services to register by discovery service...");
 		for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
 			p_discovery_client->register_service(it->second.get());
 		}
-		ROS_INFO("... register complete");
+		ROS_INFO("... all services added");
 	} else {
 		ROS_INFO("Discovery client not found, the services will not be registered!");
 	}
 	ROS_INFO("Initialize plugins ...");
 	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
 		it->second.get()->init_service();
-	}
-	if (p_has_1_1_transport) {
-		ROS_INFO("Use transport version 1.1");
-		jausRouter->setTransportType(JausRouter::Version_1_1);
-	} else {
-		ROS_INFO("Use transport version 1.0");
 	}
 	ROS_INFO("... initialization complete");
 }
@@ -207,9 +219,7 @@ boost::shared_ptr<iop::PluginInterface> Component::p_init_plugin(std::string nam
 			plugin->create_service(this->jausRouter);
 			JTS::Service* iop_service = plugin->get_service();
 			ROS_DEBUG_NAMED("PluginLoader", "Initialized IOP-plugin for %s v%d.%d", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
-			bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
-			p_has_1_1_transport = p_has_1_1_transport | is_transport_1_1;
-			ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
+			ServiceInfo si(iop_service, plugin->get_service_uri());
 			p_plugins_map[name] = plugin;
 			service_list.push_back(si);
 			if (plugin->is_discovery_client()) {
@@ -244,9 +254,7 @@ boost::shared_ptr<iop::PluginInterface> Component::p_init_plugin(std::string nam
 			plugin->create_service(this->jausRouter);
 			JTS::Service* iop_service = plugin->get_service();
 			ROS_DEBUG_NAMED("PluginLoader", "Initialization for %s v%d.%d done.", plugin->get_service_uri().c_str(), plugin->get_version_number_major(), plugin->get_version_number_minor());
-			bool is_transport_1_1 = jausRouter->getTransportType() == JTS::JausRouter::Version_1_1;
-			p_has_1_1_transport = p_has_1_1_transport | is_transport_1_1;
-			ServiceInfo si(iop_service, plugin->get_service_uri(), is_transport_1_1);
+			ServiceInfo si(iop_service, plugin->get_service_uri());
 			p_plugins_map[name] = plugin;
 			service_list.push_back(si);
 			if (plugin->is_discovery_client()) {
@@ -408,7 +416,7 @@ void Component::processInternalEvent(InternalEvent *ie)
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED: %s - transport_type: %d, message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id, casted_ie->getName().c_str());
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED: %s - message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), id, casted_ie->getName().c_str());
 				}
 			}
 		}
@@ -423,7 +431,7 @@ void Component::processInternalEvent(InternalEvent *ie)
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED DEFAULT: %s - transport_type: %d, message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), service_list.at(i-1).transport_type, id, casted_ie->getName().c_str());
+					ROS_DEBUG_NAMED("InternalProcess", "PROCESSED DEFAULT: %s - message type: %x, transition: %s", service_list.at(i-1).uri.c_str(), id, casted_ie->getName().c_str());
 				}
 			}
 		}

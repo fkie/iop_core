@@ -49,7 +49,7 @@ public:
 
 	std::string str() {
 		std::ostringstream result;
-		result << getSubsystemID() << "." << (int)getNodeID() << "." << (int)getComponentID();
+		result << getSubsystemID() << "." << (int)getNodeID() << "." << (int)getComponentID() << "-" << get();
 		return result.str();
 	}
 	const JausAddress& operator=(const JausAddress& from);
