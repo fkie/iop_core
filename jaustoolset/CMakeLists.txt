@@ -26,11 +26,6 @@ add_library(${PROJECT_NAME}
     src/InternalEvents/Send.cpp
     src/Service.cpp
     src/SimpleThread.cpp
-    src/rte/JSerial.cpp
-    src/rte/JTCPTransport.cpp
-    src/rte/JUDPTransportLB.cpp
-    src/rte/JuniorRTE.cpp
-    src/rte/TCPConnection.cpp
     src/Transport/Address.cpp
     src/Transport/ChecksumCRC.cpp
     src/Transport/JUDPTransport.cpp
@@ -55,7 +50,14 @@ target_link_libraries(${PROJECT_NAME}
 ## build JTSNodeManager          ##
 ###################################
 
-add_executable(JTSNodeManager src/rte/jts_node_manager.cpp)
+add_executable(JTSNodeManager 
+    src/rte/jts_node_manager.cpp
+    src/rte/JSerial.cpp
+    src/rte/JTCPTransport.cpp
+    src/rte/JUDPTransportLB.cpp
+    src/rte/JuniorRTE.cpp
+    src/rte/TCPConnection.cpp
+)
 target_link_libraries(JTSNodeManager
                       ${PROJECT_NAME}
                       ${catkin_LIBRARIES}
