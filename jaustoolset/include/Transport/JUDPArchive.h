@@ -65,15 +65,6 @@ inline MsgVersion JUDPArchive::getVersion()
 	if (version == 1) return AS5669;
 	if (version == 2) return AS5669A;
 
-	// for the OPC case, it is not sufficent to only
-	// check the first byte
-	if (strncmp(&version, "J", 1)==0)
-	{
-		if (getArchiveLength() < 8) return UnknownVersion;
-		if (strncmp(data, "JAUS01.0", 8) != 0) return UnknownVersion;
-		return OPC;
-	}
-
 	// catch all...
 	return UnknownVersion;
 }
@@ -82,7 +73,6 @@ inline unsigned int JUDPArchive::getHeaderSize()
 {
 	if (getVersion() == UnknownVersion) return 0; //failure
 	if (getVersion() == AS5669) return 21; // header size is fixed
-	if (getVersion() == OPC) return 24; // header size is fixed
 
 	// For AS5669 revision A, the presence or absence of the
 	// header compression fields changes the size of the header.
@@ -106,12 +96,7 @@ inline unsigned short JUDPArchive::getDataLength()
 	setPackMode( Archive::LittleEndian );
 
 	// Location of the data size field depends on the header
-	if (getVersion() == OPC)
-	{
-		getValueAt(20, length);
-		length &= 0x0FFF;
-	}
-	else if (getVersion() == AS5669)
+	if (getVersion() == AS5669)
 	{
 		getValueAt(17, length);
 		length &= 0x0FFF;
@@ -154,7 +139,7 @@ inline bool JUDPArchive::isArchiveValid()
 inline void JUDPArchive::removeHeadMsg()
 {
 	// keep the transport specific header
-	int bytes_to_keep = (getVersion() == OPC) ? 8 : 1;
+	int bytes_to_keep = 1;
 	unsigned int length = getHeaderSize()+getDataLength()+getFooterSize();
 	if (length > getArchiveLength()) clear(); // error catching
 	else removeAt(bytes_to_keep, length - bytes_to_keep);
@@ -167,12 +152,7 @@ inline bool JUDPArchive::pack(Message& msg, MsgVersion version)
 	setPackMode( Archive::LittleEndian );
 
 	// header depends on the version we're packing for
-	if (version == OPC)
-	{
-		memcpy(data, "JAUS01.0", 8);
-		data_length = 8;
-	}
-	else if (version == AS5669)
+	if (version == AS5669)
 	{
 		*this << (char) 1; // version
 		*this << (unsigned short) 0; // header compression
@@ -201,12 +181,7 @@ inline bool JUDPArchive::unpack(Message& msg)
 	rewind(); setPackMode( Archive::LittleEndian );
 
 	// pull JUDP header data depending on version
-	if (getVersion() == OPC)
-	{
-		// ignore the first 8 bytes
-		Archive::offset = 8;
-	}
-	else if (getVersion() == AS5669)
+	if (getVersion() == AS5669)
 	{
 		// ignore the first 5 bytes
 		Archive::offset = 5;

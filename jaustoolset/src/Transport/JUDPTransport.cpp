@@ -46,8 +46,7 @@ JUDPTransport::JUDPTransport():
     _map(),
     _socket(0),
     _multicastAddr(),
-    _interfaces(),
-	_use_opc(0)
+    _interfaces()
 {
     my_name = "JUDP";
 }
@@ -69,7 +68,6 @@ Transport::TransportError JUDPTransport::initialize( ConfigData& config )
     config.getValue(multicast_addr, "MulticastAddr", "UDP_Configuration");
     int buffer_size = 10000;
     config.getValue(buffer_size, "MaxBufferSize", "UDP_Configuration");
-    config.getValue(_use_opc, "UseOPC2.75_Header", "UDP_Configuration");
 
     // Set-up the multicast address based on config data
     _multicastAddr.port = htons(port);
@@ -195,19 +193,17 @@ Transport::TransportError JUDPTransport::sendMsg(Message& msg)
             //
             // Now pack the message into the transport archive.  Note that the
 			// header format depends on the version, which in turn depends on
-			// the presence of a non-zero message code.  UDP has the added complication
-			// of needing to support backward compatibility with OPC.
+			// the presence of a non-zero message code.
             //
 			MsgVersion version = AS5669A;
 			if (msg.getMessageCode() != 0)
 			{
 				// If we've received a message from this destination before, use
-				// the version of that received message.  Otherwise, take a hint
-				// from the UseOPC2.75_Header config parameter.
+				// the version of that received message.
 				MsgVersion prevVersion = UnknownVersion;
-				if ((_map.getMsgVersion(id, prevVersion)) && ((prevVersion == OPC) || (prevVersion == AS5669)))
+				if ((_map.getMsgVersion(id, prevVersion)) && (prevVersion == AS5669))
 					version = prevVersion;
-				else version = (_use_opc ? OPC : AS5669);
+				else version = AS5669;
 			}
 
 			// pack for the selected version
@@ -320,11 +316,10 @@ Transport::TransportError JUDPTransport::broadcastMsg(Message& msg)
     //
     // Now pack the message for network transport.  If the message contains
 	// a zero command code, use the AS5669A header.  Otherwise, use
-	// the AS 5669 header UNLESS the UseOPC2.75_Header option is selected.
+	// the AS 5669 header
     //
 	JUDPArchive archive;
 	MsgVersion version = msg.getMessageCode() == 0 ? AS5669A : AS5669;
-	if ((version == AS5669) && (_use_opc)) version = OPC;
     archive.pack( msg, version );
 
     // Create the destination address structure

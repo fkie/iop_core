@@ -46,7 +46,7 @@ static unsigned char getByte(unsigned long in, char num)
 }
 
 // versions of the header/footer supported
-typedef enum { UnknownVersion = 0, OPC, AS5669, AS5669A } MsgVersion;
+typedef enum { UnknownVersion = 0, AS5669, AS5669A } MsgVersion;
 
 // Types for JAUS_ID.  The JAUS ID is simply an unsigned int
 // but has to watch out for wildcard bytes (0xFF) during

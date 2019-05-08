@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JUDPTransport.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -53,7 +53,6 @@ protected:
     int                      _socket;
     IP_ADDRESS               _multicastAddr;
     std::list<unsigned int> _interfaces;
-	int                      _use_opc;
 
 };
 }} // namespace DeVivo::Junior

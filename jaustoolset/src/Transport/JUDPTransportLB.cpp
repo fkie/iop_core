@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JUDPTransportLB.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -47,7 +47,6 @@ JUDPTransportLB::JUDPTransportLB():
     _socket(0),
     _multicastAddr(),
     _interfaces(),
-    _use_opc(0),
     _loopbackAddr()
 {
     my_name = "JUDP-LB";
@@ -72,12 +71,11 @@ Transport::TransportError JUDPTransportLB::initialize( ConfigData& config )
     config.getValue(multicast_addr, "MulticastAddr", "UDP_Loopback_Configuration");
     int buffer_size = 10000;
     config.getValue(buffer_size, "MaxBufferSize", "UDP_Loopback_Configuration");
-    config.getValue(_use_opc, "UseOPC2.75_Header", "UDP_Loopback_Configuration");
 
     // Set-up the multicast address based on config data
     _multicastAddr.port = htons(port);
     _multicastAddr.addr = inet_addr(multicast_addr.c_str());
-    
+
     // Set-up the loopback address based on config data
     _loopbackAddr.port = htons(port);
     _loopbackAddr.addr = inet_addr(loopback_addr.c_str());
@@ -92,7 +90,7 @@ Transport::TransportError JUDPTransportLB::initialize( ConfigData& config )
     _socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (_socket < 0)
     {
-        JrError << "Unable to create socket for UDP Loopback communication.  Error: " 
+        JrError << "Unable to create socket for UDP Loopback communication.  Error: "
             << getSocketError << std::endl;
         return InitFailed;
     }
@@ -115,7 +113,7 @@ Transport::TransportError JUDPTransportLB::initialize( ConfigData& config )
     setsockopt(_socket, SOL_SOCKET, SO_RCVBUF, (char*)&buffer_size, length);
     setsockopt(_socket, SOL_SOCKET, SO_SNDBUF, (char*)&buffer_size, length);
 
-    // 
+    //
     // Set-up for multicast:
     //  1) No loopback
     //  2) TTL value set by configuration file
@@ -126,7 +124,7 @@ Transport::TransportError JUDPTransportLB::initialize( ConfigData& config )
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_TTL, (const char*) &multicast_TTL, sizeof(multicast_TTL));
     setsockopt(_socket, IPPROTO_IP, IP_MULTICAST_IF, (const char*) &sockAddr, sizeof(sockAddr));
-    mreq.imr_multiaddr.s_addr = _multicastAddr.addr; 
+    mreq.imr_multiaddr.s_addr = _multicastAddr.addr;
 
     // Using INADDR_ANY causes us to join the multicast group, but only
     // on the default NIC.  When multiple NICs are present, we need to join
@@ -137,11 +135,11 @@ Transport::TransportError JUDPTransportLB::initialize( ConfigData& config )
     for (addy = _interfaces.begin(); addy != _interfaces.end(); ++addy)
     {
         mreq.imr_interface.s_addr = *addy;
-        if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+        if (setsockopt (_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,
             (const char*) &mreq, sizeof(mreq)) != 0)
             JrError << "Error joining multicast group on LB interface '" << inet_ntoa(*(in_addr*) &mreq.imr_interface.s_addr) << "': " << getSocketError << std::endl;
 
-        JrInfo << "Found network interface: " << 
+        JrInfo << "Found network interface: " <<
             inet_ntoa(*(in_addr*) &mreq.imr_interface.s_addr) << std::endl;
     }
 
@@ -163,7 +161,6 @@ Transport::TransportError JUDPTransportLB::sendMsg(Message& msg)
     JUDPArchive archive;
 
     MsgVersion version = AS5669A;
-    version = (_use_opc ? OPC : AS5669A);
     // pack for the selected version
     archive.pack(msg, version);
 
@@ -172,21 +169,21 @@ Transport::TransportError JUDPTransportLB::sendMsg(Message& msg)
     dest.sin_family = AF_INET;
     dest.sin_addr.s_addr = _loopbackAddr.addr;
     dest.sin_port = _loopbackAddr.port;
-    
-    // Lastly, send the message.  
+
+    // Lastly, send the message.
     int val = sendto(_socket, archive.getArchive(), archive.getArchiveLength(),
                0, (struct sockaddr*) &dest, sizeof(dest));
-    if (val < 0) 
+    if (val < 0)
     {
         JrError << "Unable to send UDP Loopback packet.  Error: " << getSocketError << std::endl;
         result = Failed;
     }
-    else 
+    else
     {
         JrDebug << "Sent " << archive.getArchiveLength() << " bytes on UDP Loopback port\n";
         result = Ok;
     }
-    
+
     return result;
 }
 
@@ -194,7 +191,7 @@ Transport::TransportError JUDPTransportLB::recvMsg(MessageList& msglist)
 {
     char buffer[5000];
     Transport::TransportError ret = NoMessages;
- 
+
     // Check the recv port in a loop, exiting only when we have
     // no messages in the buffer (or we received 10 packets).
     for (int i=0; i<10; i++)
@@ -209,7 +206,7 @@ Transport::TransportError JUDPTransportLB::recvMsg(MessageList& msglist)
         struct sockaddr_in source;
         int source_length = sizeof(source);
         int result = recvfrom(_socket, buffer, 5000, 0,
-                              (struct sockaddr*) &source, 
+                              (struct sockaddr*) &source,
                               (socklen_t*) &source_length);
         if (result <= 0) break;
         JrDebug << "Read " << result << " bytes on UDP Loopback port\n";
@@ -227,11 +224,10 @@ Transport::TransportError JUDPTransportLB::broadcastMsg(Message& msg)
     //
     // Now pack the message for network transport.  If the message contains
     // a zero command code, use the AS5669A header.  Otherwise, use
-    // the AS 5669 header UNLESS the UseOPC2.75_Header option is selected.
+    // the AS 5669 header
     //
     JUDPArchive archive;
     MsgVersion version = msg.getMessageCode() == 0 ? AS5669A : AS5669;
-    if ((version == AS5669) && (_use_opc)) version = OPC;
     archive.pack( msg, version );
 
     // Create the destination address structure
@@ -244,11 +240,11 @@ Transport::TransportError JUDPTransportLB::broadcastMsg(Message& msg)
     std::list<unsigned int>::iterator iter;
     // Just get the first interface
     iter = _interfaces.begin();
-    
+
     // if it is not the end, setup and send
     struct in_addr sockAddr;
     sockAddr.s_addr = *iter;
-    setsockopt (_socket, IPPROTO_IP, IP_MULTICAST_IF, 
+    setsockopt (_socket, IPPROTO_IP, IP_MULTICAST_IF,
         (const char*) &sockAddr, sizeof(sockAddr));
 
     // Lastly, send the message.
@@ -263,7 +259,7 @@ Transport::TransportError JUDPTransportLB::broadcastMsg(Message& msg)
     else
     {
         JrDebug << "Broadcasted " << archive.getArchiveLength() <<
-            " bytes on interface " << inet_ntoa( *(struct in_addr*) &sockAddr.s_addr ) 
+            " bytes on interface " << inet_ntoa( *(struct in_addr*) &sockAddr.s_addr )
             << std::endl;
     }
 
