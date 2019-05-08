@@ -24,12 +24,12 @@
  ************************************************************************
  */
 
-#include "Transport/JTCPTransport.h"
 #include "Transport/ConfigData.h"
 #include "Transport/OS.h"
 #include "Transport/JrLogger.h"
 #include <fcntl.h>
 #include <errno.h>
+#include <rte/JTCPTransport.h>
 #include <sys/types.h>
 
 using namespace DeVivo::Junior;

@@ -27,8 +27,8 @@
 #ifndef  __JSERIAL_ARCHIVE_H
 #define  __JSERIAL_ARCHIVE_H
 
-#include "TransportArchive.h"
-#include "ChecksumCRC.h"
+#include "Transport/TransportArchive.h"
+#include "Transport/ChecksumCRC.h"
 
 namespace DeVivo {
 namespace Junior {

@@ -24,28 +24,25 @@ add_library(${PROJECT_NAME}
     src/InternalEvents/InternalEventHandler.cpp
     src/InternalEvents/Receive.cpp
     src/InternalEvents/Send.cpp
-    src/Messages/MessageTransport.cpp
     src/Service.cpp
     src/SimpleThread.cpp
+    src/rte/JSerial.cpp
+    src/rte/JTCPTransport.cpp
+    src/rte/JUDPTransportLB.cpp
+    src/rte/JuniorRTE.cpp
+    src/rte/TCPConnection.cpp
     src/Transport/Address.cpp
     src/Transport/ChecksumCRC.cpp
-    src/Transport/JSerial.cpp
-    src/Transport/JTCPTransport.cpp
     src/Transport/JUDPTransport.cpp
-    src/Transport/JUDPTransportLB.cpp
     src/Transport/JausAddress.cpp
     src/Transport/JausTransport.cpp
     src/Transport/JrLogger.cpp
     src/Transport/JrSockets.cpp
     src/Transport/JuniorAPI.cpp
     src/Transport/JuniorMgr.cpp
-    src/Transport/JuniorRTE.cpp
     src/Transport/OS.cpp
-    src/Transport/TCPConnection.cpp
     src/Transport/XmlConfig.cpp
-    src/Transport/tinyxml/tinyxml.cpp
-    src/Transport/tinyxml/tinyxmlerror.cpp
-    src/Transport/tinyxml/tinyxmlparser.cpp
+    src/Transport/tinyxml2.cpp
     src/jFixedLengthString.cpp
 )
 
@@ -58,7 +55,7 @@ target_link_libraries(${PROJECT_NAME}
 ## build JTSNodeManager          ##
 ###################################
 
-add_executable(JTSNodeManager src/jts_node_manager.cpp)
+add_executable(JTSNodeManager src/rte/jts_node_manager.cpp)
 target_link_libraries(JTSNodeManager
                       ${PROJECT_NAME}
                       ${catkin_LIBRARIES}

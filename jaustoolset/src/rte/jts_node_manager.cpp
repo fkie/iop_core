@@ -30,57 +30,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 *********************  END OF LICENSE ***********************************/
 
-#ifndef MESSAGEROUTER_H
-#define MESSAGEROUTER_H
+#include "Transport/JuniorAPI.h"
 
-#include <set>
-#include <map>
-#include <queue>
+extern int RunJuniorRTE(std::string config_file);
 
-#include "JausUtils.h"
-#include "Message.h"
-#include "Transport/OS.h"
-
-namespace JTS
+// Main loop
+int main(int argc, char* argv[])
 {
-
-class MessageRouter;	/// Forward Declaration
-class MessageHandler
-{
-public:
-	MessageHandler(MessageRouter *r, DeVivo::Junior::JrSignal* s);
-	virtual ~MessageHandler();
-
-	virtual void send(Message *msg);
-	virtual int receive(Message **msg);
-
-	virtual void addToQueue(Message *msg);
-
-protected:
-	DeVivo::Junior::JrSignal* signal;
-	DeVivo::Junior::JrMutex queueLock;
-	std::queue<Message*> messageQueue;
-	MessageRouter* msgRouter;
-};
-
-
-/**
- * This class is responsible for routing messages between services within a component.
- */
-class MessageRouter
-{
-public:
-	MessageRouter();
-	virtual ~MessageRouter();
-
-	virtual void routeMessage(Message* msg);
-	virtual void updateTable(MessageHandler* msgHandler, std::set<jUnsignedShortInteger> &inputMessageList);
-
-protected:
-	std::map<jUnsignedShortInteger, MessageHandler*> msgIDToMsgHandlerTable;
-};
-
-};
-
-#endif // MESSAGEROUTER_H
-
+	// Pull the config file from the command line arguments
+    std::string config_file = "";
+    if (argc >= 2) config_file = std::string(argv[1]);
+	RunJuniorRTE(config_file);
+}

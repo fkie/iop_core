@@ -24,10 +24,10 @@
  ************************************************************************
  */
 
-#include "Transport/JSerial.h"
 #include "Transport/OS.h"
 #include "Transport/JrLogger.h"
 #include <fcntl.h>
+#include <rte/JSerial.h>
 
 using namespace DeVivo::Junior;
 

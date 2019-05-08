@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      JrLogger.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -34,7 +34,9 @@
 // USE THESE MACROS FOR ALL LOG OUTPUT
 #define JrError (Logger::get()->startMsg(__FILE__, __LINE__, Logger::error))
 #define JrInfo (Logger::get()->startMsg(__FILE__, __LINE__, Logger::info))
+#define JrInfo_ (Logger::get()->startMsg(__FILE__, __LINE__, Logger::info, true))
 #define JrWarn (Logger::get()->startMsg(__FILE__, __LINE__, Logger::warning))
+#define JrWarn_ (Logger::get()->startMsg(__FILE__, __LINE__, Logger::warning, true))
 #define JrDebug (Logger::get()->startMsg(__FILE__, __LINE__, Logger::debug))
 #define JrFull (Logger::get()->startMsg(__FILE__, __LINE__, Logger::full))
 
@@ -51,16 +53,16 @@ public:
     enum LogMsgType {none = 0, error, info, warning, debug, full};
     std::string enum2Str(enum LogMsgType type);
 
-    // Logger is a static class (one per process).  We 
+    // Logger is a static class (one per process).  We
     // supply a function to get the only instance.
     static Logger* get();
 
     // Functions for getting the active stream
     std::ostream& getStream(enum LogMsgType type);
 
-    // Function to start a new log entry.  This 
+    // Function to start a new log entry.  This
     // return the stream, but also inserts standard debugging text
-    std::ostream& startMsg(std::string filename, int line, enum LogMsgType type);
+    std::ostream& startMsg(std::string filename, int line, enum LogMsgType type, bool only_msg=false);
 
     // Functions to change the debug level
     enum LogMsgType getMsgLevel(){return _level;}

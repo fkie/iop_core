@@ -47,7 +47,7 @@ std::ostream& Logger::getStream(enum LogMsgType type)
 //
 // Start a new enty on the active stream
 //
-std::ostream& Logger::startMsg(std::string filename, int line, enum LogMsgType type)
+std::ostream& Logger::startMsg(std::string filename, int line, enum LogMsgType type, bool only_msg)
 {
     // get the desired stream
     std::ostream& stream = getStream(type);
@@ -58,7 +58,11 @@ std::ostream& Logger::startMsg(std::string filename, int line, enum LogMsgType t
     struct timeval tp;
     gettimeofday(&tp, NULL);
     // Insert formatted text
-    stream << "(" << filename << ", line " << line << ") [" << tp.tv_sec << "." << tp.tv_usec << "] " << enum2Str(type) << ": ";
+    if (!only_msg) {
+        stream << "(" << filename << ", line " << line << ") [" << tp.tv_sec << "." << tp.tv_usec << "] " << enum2Str(type) << ": ";
+    } else {
+        stream << enum2Str(type) << ": ";
+    }
     return stream;
 }
 

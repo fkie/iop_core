@@ -1,8 +1,8 @@
-/*! 
+/*!
  ***********************************************************************
- * @file      JTCPTransport.h
- * @author    Dave Martin, DeVivo AST, Inc.  
- * @date      2008/08/05
+ * @file      JSerial.h
+ * @author    Dave Martin, DeVivo AST, Inc.
+ * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
  *
@@ -23,39 +23,51 @@
  *
  ************************************************************************
  */
-#ifndef __JAUS_TCP_TRANSPORT_H
-#define __JAUS_TCP_TRANSPORT_H
+#ifndef __JAUS_SERIAL_TRANSPORT_H
+#define __JAUS_SERIAL_TRANSPORT_H
 
-#include "Transport.h"
-#include "ConnectionList.h"
-#include "TCPConnection.h"
-#include "Types.h"
+#include <rte/JSerialArchive.h>
+#include "Transport/Transport.h"
+#include "Transport/ConnectionList.h"
+#include "Transport/ConfigData.h"
 
 namespace DeVivo {
 namespace Junior {
 
+#ifndef WINDOWS
+typedef int HANDLE;
+#endif
 
-class JTCPTransport : public Transport
+class JSerial : public Transport
 {
 public:
-    JTCPTransport();
-   ~JTCPTransport();
+    JSerial();
+   ~JSerial();
 
     // All functions are abstract
     TransportError sendMsg(Message& msg);
     TransportError broadcastMsg(Message& msg);
     TransportError recvMsg(MessageList& msglist);
-    TransportError initialize(ConfigData& config);
+    TransportError initialize(ConfigData& config, int index);
 
-    // These functions are specific to TCP implementation
-    TransportError acceptConnections();
+	// We need to define the initialize() function as
+	// required by the parent class.  However, this function
+	// simply calls the class-specific form.
+    TransportError initialize(ConfigData& config)
+	{
+		return initialize(config,0);
+	};
 
 protected:
+    HANDLE                  hComm;
+    JSerialArchive          unusedBytes;
+    ConnectionList<HANDLE>  _map;
+    bool                    previousByteWasDLE;
 
-    IpAddressBook       _address_map;      // address book
-    JTCPConnectionList  _connectionsList;  // active connections
-    int                 _listen_socket;
-    bool                _exit_flag;
+    // protected functions
+    TransportError sendMsg(Message& msg, HANDLE handle);
+    TransportError extractMsgsFromPacket(MessageList& msglist);
+    TransportError configureLink(ConfigData& config, int index);
 };
 }} // namespace DeVivo::Junior
 #endif

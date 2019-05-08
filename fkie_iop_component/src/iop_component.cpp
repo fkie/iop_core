@@ -22,7 +22,7 @@ along with this program; or you can read the full license at
 
 #include <exception>
 #include <stdio.h>
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include "fkie_iop_component/iop_component.h"
 #include "JausUtils.h"
 #include <XmlRpcException.h>
@@ -455,30 +455,30 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 	if (!manifest.empty())
 	{
 		ROS_DEBUG_STREAM("Parsing " << manifest);
-		TiXmlDocument document;
-		document.LoadFile(manifest);
-		TiXmlElement * config = document.RootElement();
+		tinyxml2::XMLDocument document;
+		document.LoadFile(manifest.c_str());
+		tinyxml2::XMLElement* config = document.RootElement();
 		if (config == NULL)
 		{
 			ROS_ERROR("Skipping XML Document \"%s\" which had no Root Element.  This likely means the XML is malformed or missing.", manifest.c_str());
 			throw std::logic_error("Wrong iop plugin definition!");
 		}
-		if (config->ValueStr() != "library" &&
-				config->ValueStr() != "class_libraries")
+		if (strcmp(config->Value(), "library") != 0 &&
+				strcmp(config->Value(), "class_libraries") != 0)
 		{
 			ROS_ERROR("The XML document \"%s\" given to add must have either \"library\" or \"class_libraries\" as the root tag", manifest.c_str());
 			throw std::logic_error("Wrong iop plugin definition!");
 		}
 		//Step into the filter list if necessary
-		if (config->ValueStr() == "class_libraries")
+		if (strcmp(config->Value(), "class_libraries") == 0)
 		{
 			config = config->FirstChildElement("library");
 		}
 
-		TiXmlElement* library = config;
+		tinyxml2::XMLElement* library = config;
 		while ( library != NULL)
 		{
-			TiXmlElement* class_element = library->FirstChildElement("class");
+			tinyxml2::XMLElement* class_element = library->FirstChildElement("class");
 			while (class_element)
 			{
 				// test for class name and skip parsing if it is wrong class id
@@ -506,7 +506,7 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 				}
 
 				// format: <iop_service name="Events" id="urn:jaus:jss:core:Events" version="1.0">
-				TiXmlElement* service_element = class_element->FirstChildElement("iop_service");
+				tinyxml2::XMLElement* service_element = class_element->FirstChildElement("iop_service");
 				if (service_element) {
 					result.id = service_element->Attribute("id");
 					if (service_element->Attribute("name") != NULL)
@@ -538,7 +538,7 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 					}
 					// get required_service spec, format: <inherits_from id="urn:jaus:jss:core:Transport" min_version="1.0"/>
 					result.inherits_from = "";
-					TiXmlElement* inherits_from = service_element->FirstChildElement("inherits_from");
+					tinyxml2::XMLElement* inherits_from = service_element->FirstChildElement("inherits_from");
 					if (inherits_from) {
 						if (inherits_from->Attribute("id") != NULL)
 						{
@@ -569,7 +569,7 @@ iop::PluginInterface::ServiceInfo Component::p_read_service_info(std::string ser
 						}
 					}
 					// get plugins depend on, format: <depend id="urn:jaus:jss:core:Transport"/>
-					TiXmlElement* depend_on = service_element->FirstChildElement("depend");
+					tinyxml2::XMLElement* depend_on = service_element->FirstChildElement("depend");
 					while (depend_on) {
 						if (depend_on->Attribute("id") != NULL)
 						{

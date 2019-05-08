@@ -27,7 +27,7 @@
 #ifndef  __JTCP_ARCHIVE_H
 #define  __JTCP_ARCHIVE_H
 
-#include "TransportArchive.h"
+#include "Transport/TransportArchive.h"
 
 namespace DeVivo {
 namespace Junior {

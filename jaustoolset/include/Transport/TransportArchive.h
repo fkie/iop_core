@@ -29,6 +29,7 @@
 
 #include "Archive.h"
 #include "JrLogger.h"
+#include "JrMessage.h"
 
 namespace DeVivo {
 namespace Junior {

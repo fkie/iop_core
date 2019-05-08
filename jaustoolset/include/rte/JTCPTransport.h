@@ -1,8 +1,8 @@
 /*!
  ***********************************************************************
- * @file      JUDPTransportLB.h
+ * @file      JTCPTransport.h
  * @author    Dave Martin, DeVivo AST, Inc.
- * @date      2008/03/03
+ * @date      2008/08/05
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
  *
@@ -23,23 +23,23 @@
  *
  ************************************************************************
  */
-#ifndef __JAUS_UDP_TRANSPORTLB_H
-#define __JAUS_UDP_TRANSPORTLB_H
+#ifndef __JAUS_TCP_TRANSPORT_H
+#define __JAUS_TCP_TRANSPORT_H
 
-#include "Transport.h"
-#include "ConnectionList.h"
-#include <sstream>
-#include <map>
+#include <rte/TCPConnection.h>
+#include "Transport/Transport.h"
+#include "Transport/ConnectionList.h"
+#include "Transport/Types.h"
 
 namespace DeVivo {
 namespace Junior {
 
 
-class JUDPTransportLB : public Transport
+class JTCPTransport : public Transport
 {
 public:
-    JUDPTransportLB();
-   ~JUDPTransportLB();
+    JTCPTransport();
+   ~JTCPTransport();
 
     // All functions are abstract
     TransportError sendMsg(Message& msg);
@@ -47,14 +47,15 @@ public:
     TransportError recvMsg(MessageList& msglist);
     TransportError initialize(ConfigData& config);
 
+    // These functions are specific to TCP implementation
+    TransportError acceptConnections();
+
 protected:
 
-    IpAddressBook            _map;
-    int                      _socket;
-    IP_ADDRESS               _multicastAddr;
-    std::list<unsigned int>  _interfaces;
-    IP_ADDRESS               _loopbackAddr;
-
+    IpAddressBook       _address_map;      // address book
+    JTCPConnectionList  _connectionsList;  // active connections
+    int                 _listen_socket;
+    bool                _exit_flag;
 };
 }} // namespace DeVivo::Junior
 #endif

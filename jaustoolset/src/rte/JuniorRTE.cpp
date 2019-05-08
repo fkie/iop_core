@@ -23,6 +23,9 @@
  *
  ************************************************************************
  */
+#include <rte/JSerial.h>
+#include <rte/JTCPTransport.h>
+#include <rte/JUDPTransportLB.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
@@ -31,9 +34,6 @@
 #include "Transport/JrSockets.h"
 #include "Transport/Transport.h"
 #include "Transport/JUDPTransport.h"
-#include "Transport/JUDPTransportLB.h"
-#include "Transport/JSerial.h"
-#include "Transport/JTCPTransport.h"
 #include "Transport/Types.h"
 #include "Transport/OS.h"
 #include "Transport/JrLogger.h"
@@ -55,8 +55,15 @@ int DllExport RunJuniorRTE(std::string config_file)
     // First thing we need to do is initialize the log, but we can't
     // do that until we read in the log file name from the configuration
     // file.  So we start with opening and parsing the config file...
+    // preset-up the data logger
+    Logger::get()->setMsgLevel((enum Logger::LogMsgType) 3);
+    // We can finally output some proof-of-life info
+    JrInfo << "Hello, and welcome to the JuniorRTE" << std::endl;
+    JrInfo << "Using config file: '" << config_file << "'" << std::endl;
+
     XmlConfig config;
     config.parseFile(config_file);
+
     std::string logfile;
     config.getValue(logfile, "LogFileName", "Log_Configuration");
     int debug_level = 3;
@@ -83,10 +90,6 @@ int DllExport RunJuniorRTE(std::string config_file)
     config.getValue(repeater_mode, "EnableRepeaterMode", "RTE_Configuration");
 	int use_udpLB = 0;
     config.getValue(use_udpLB, "EnableLoopback", "UDP_Loopback_Configuration");
-
-    // We can finally output some proof-of-life info
-    JrInfo << "Hello, and welcome to the JuniorRTE" << std::endl;
-    JrInfo << "Using config file: " << config_file << std::endl;
 
     // For linux, we need to break from the parent's signals
 #ifndef WINDOWS

@@ -24,10 +24,10 @@
  ************************************************************************
  */
 
-#include "Transport/TCPConnection.h"
 #include "Transport/JrLogger.h"
 #include <fcntl.h>
 #include <errno.h>
+#include <rte/TCPConnection.h>
 #include <sys/types.h>
 
 using namespace DeVivo::Junior;

@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      XmlConfig.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -31,7 +31,7 @@
 #endif
 
 #include "ConfigData.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include "JrLogger.h"
 #include "Types.h"
 
@@ -95,7 +95,7 @@ public:
 
 protected:
 
-    TiXmlDocument doc;
+	tinyxml2::XMLDocument doc;
 
 	// Templated function to access DOM
 	template <typename T> ConfigData::ConfigError lookupValue(T& value,

@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
- * @file      JSerial.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @file      JUDPTransportLB.h
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -23,51 +23,38 @@
  *
  ************************************************************************
  */
-#ifndef __JAUS_SERIAL_TRANSPORT_H
-#define __JAUS_SERIAL_TRANSPORT_H
+#ifndef __JAUS_UDP_TRANSPORTLB_H
+#define __JAUS_UDP_TRANSPORTLB_H
 
-#include "Transport.h"
-#include "JSerialArchive.h"
-#include "ConnectionList.h"
-#include "ConfigData.h"
+#include "Transport/Transport.h"
+#include "Transport/ConnectionList.h"
+#include <sstream>
+#include <map>
 
 namespace DeVivo {
 namespace Junior {
 
-#ifndef WINDOWS
-typedef int HANDLE;
-#endif
 
-class JSerial : public Transport
+class JUDPTransportLB : public Transport
 {
 public:
-    JSerial();
-   ~JSerial();
+    JUDPTransportLB();
+   ~JUDPTransportLB();
 
     // All functions are abstract
     TransportError sendMsg(Message& msg);
     TransportError broadcastMsg(Message& msg);
     TransportError recvMsg(MessageList& msglist);
-    TransportError initialize(ConfigData& config, int index);
-
-	// We need to define the initialize() function as
-	// required by the parent class.  However, this function
-	// simply calls the class-specific form.
-    TransportError initialize(ConfigData& config)
-	{ 
-		return initialize(config,0);
-	};
+    TransportError initialize(ConfigData& config);
 
 protected:
-    HANDLE                  hComm;
-    JSerialArchive          unusedBytes;
-    ConnectionList<HANDLE>  _map;
-    bool                    previousByteWasDLE;
 
-    // protected functions
-    TransportError sendMsg(Message& msg, HANDLE handle);
-    TransportError extractMsgsFromPacket(MessageList& msglist);
-    TransportError configureLink(ConfigData& config, int index);
+    IpAddressBook            _map;
+    int                      _socket;
+    IP_ADDRESS               _multicastAddr;
+    std::list<unsigned int>  _interfaces;
+    IP_ADDRESS               _loopbackAddr;
+
 };
 }} // namespace DeVivo::Junior
 #endif

@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      XmlConfig.cpp
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/03/03
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -24,18 +24,19 @@
  ************************************************************************
  */
 #include "Transport/XmlConfig.h"
+using namespace tinyxml2;
 using namespace DeVivo::Junior;
 
 
 ConfigData::ConfigError XmlConfig::parseFile(const  std::string& filename)
 {
-	doc.LoadFile(filename.c_str());
-	if (doc.Error())
+	XMLError load_err = doc.LoadFile(filename.c_str());
+	if (load_err != XML_SUCCESS)
 	{
-		JrError << "Failed to parse config file: " << filename << ": " << doc.ErrorDesc() << " at " << doc.ErrorRow() << ":" << doc.ErrorCol() << std::endl;
+		JrError << "Failed to parse config file: " << filename << "(Error: " << load_err << ")"<< std::endl;
 
 		// Cast the TinyXML errors to our enum
-		if (doc.ErrorId() == TiXmlBase::TIXML_ERROR_OPENING_FILE) 
+		if (load_err == XML_ERROR_FILE_NOT_FOUND)
 			return FileNotFound;
 		return InvalidFile;
 	}
@@ -107,7 +108,7 @@ ConfigData::ConfigError XmlConfig::getValue(double& value,
 	return lookupValue(value, attribute, element, index);
 }
 
-template <typename T> 
+template <typename T>
 ConfigData::ConfigError XmlConfig::lookupValue(T& value,
 											   const std::string& attribute,
 											   const std::string& element,
@@ -115,35 +116,40 @@ ConfigData::ConfigError XmlConfig::lookupValue(T& value,
 
 {
 	// Get the first occurrence of the requested element
-	TiXmlHandle docHandle( &doc );
-	TiXmlElement* ele = docHandle.FirstChild("JrXmlConfig").FirstChild(element.c_str()).ToElement();
-	if (ele == NULL) 
+	bool element_found = false;
+	XMLElement* ele = doc.FirstChildElement("JrXmlConfig");
+	if (ele != NULL)
 	{
-		JrWarn << "Failed to find configuration element: " << element << "\n";
+		ele = ele->FirstChildElement(element.c_str());
+		// Loop through the index values to find the requested element number
+		while (ele != NULL && index > 0 && !element_found)
+		{
+			printf("next, get %s", element.c_str());
+			ele = ele->NextSiblingElement(element.c_str());
+			if (ele != NULL)
+			{
+				element_found = true;
+			}
+			index--;
+		}
+	}
+	if (ele == NULL)
+	{
+		JrWarn_ << "Failed to find configuration element: " << element << ", use default " << attribute << ": " << value << "\n";
 		return ValueNotFound;
 	}
 
-	// Loop through the index values to find the requested element number
-	while ( index > 0 )
-	{
-		ele = ele->NextSiblingElement(element.c_str());
-		if (ele == NULL)
-		{
-			JrWarn<<"Failed to find configuration element: "<<element <<"\n";
-			return ValueNotFound;
-		}
-		index--;
-	}
-
 	// Now that we have the right element, pull the requested attribute.
-	if (ele->QueryValueAttribute(attribute.c_str(), &value) != TIXML_SUCCESS)
+	const char *attr_value;
+	attr_value = ele->Attribute(attribute.c_str());
+	if (attr_value == 0)
 	{
-		JrWarn << "Failed to find configuration attribute: " << attribute<<"\n";
+		JrWarn_ << "Failed to find configuration attribute: " << attribute  << ", use default value: " << value << "\n";
 		return ValueNotFound;
 	}
 
 	// Success!
-	JrDebug << "Found config value: " << attribute << " = " << value << std::endl;
+	JrInfo_ << "Found config value: " << attribute << " = " << value << std::endl;
 	return Ok;
 }
 
@@ -153,12 +159,17 @@ StringList XmlConfig::getAttributes(std::string element)
 	StringList ret;
 
 	// Get the first occurrence of the requested element
-	TiXmlHandle docHandle( &doc );
-	TiXmlElement* ele = docHandle.FirstChild("JrXmlConfig").FirstChild(element.c_str()).ToElement();
-	if (ele == NULL) return ret; 
+	XMLElement* ele = doc.FirstChildElement("JrXmlConfig");
+	if (ele != NULL)
+	{
+		ele = ele->FirstChildElement(element.c_str());
+	}
+
+	if (ele == NULL)
+		return ret;
 
 	// Walk through the attributes, returning a string for each
-	for (TiXmlAttribute* att = ele->FirstAttribute(); att != NULL; att = att->Next())
+	for (const XMLAttribute* att = ele->FirstAttribute(); att != NULL; att = att->Next())
 	{
 		JrDebug << "Found attribute: " << att->Name() << "\n";
 		ret.push_back(att->Name());

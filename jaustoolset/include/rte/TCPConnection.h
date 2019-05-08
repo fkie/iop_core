@@ -1,7 +1,7 @@
-/*! 
+/*!
  ***********************************************************************
  * @file      TCPConnection.h
- * @author    Dave Martin, DeVivo AST, Inc.  
+ * @author    Dave Martin, DeVivo AST, Inc.
  * @date      2008/08/05
  *
  *  Copyright (C) 2008. DeVivo AST, Inc
@@ -26,9 +26,9 @@
 #ifndef __JAUS_TCP_CONNECTION_H
 #define __JAUS_TCP_CONNECTION_H
 
-#include "Transport.h"
-#include "JTCPArchive.h"
-#include "ConnectionList.h"
+#include <rte/JTCPArchive.h>
+#include "Transport/Transport.h"
+#include "Transport/ConnectionList.h"
 #include <map>
 
 namespace DeVivo {
