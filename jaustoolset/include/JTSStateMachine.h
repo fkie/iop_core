@@ -41,6 +41,9 @@ namespace JTS
 {
 
 typedef enum { OnEnter, OnExit } StateChangeType;
+namespace Priority {
+    typedef enum { Low=3, Standard=6, High=9, Critical=12} Priority;
+}
 
 class StateChangeNotificationEvent
 {
@@ -57,7 +60,6 @@ public:
 class StateMachine
 {
 public:
-	enum Priority {Low=3, Standard=6, High=9, Critical=12};
 	StateMachine(){};
 	virtual ~StateMachine(){};
 
@@ -73,11 +75,11 @@ public:
 	void processNotifications(std::string state, InternalEvent* ie = NULL);
 
 	// Send a message via the JAUS (external) queue
-	void sendJausMessage(JTS::Message& msg, JausAddress dest, int priority = StateMachine::Priority::Standard);
+	void sendJausMessage(JTS::Message& msg, JausAddress dest, int priority = Priority::Standard);
 	void sendJausMessage(const jUnsignedInteger length,
 						 const unsigned char* buffer,
 						 JausAddress dest,
-						 int priority = StateMachine::Priority::Standard);
+						 int priority = Priority::Standard);
 
 protected:
 

@@ -141,7 +141,7 @@ void AccessControl_ReceiveFSM::sendConfirmControlAction(RequestControl msg, std:
 	}
 	confirm_msg.getBody()->getConfirmControlRec()->setResponseCode(responseCode);
 	// Now send it to the requesting component
-	sendJausMessage( confirm_msg, sender );
+	sendJausMessage( confirm_msg, sender, Priority::High );
 }
 
 void AccessControl_ReceiveFSM::sendRejectControlAction(ReleaseControl msg, std::string arg0, Receive::Body::ReceiveRec transportData)
@@ -166,7 +166,7 @@ void AccessControl_ReceiveFSM::sendRejectControlAction(ReleaseControl msg, std::
 		ROS_WARN_NAMED("AccessControl", "sendRejectControlAction unknown code: %s", arg0.c_str());
 	}
 	// Now send it to the requesting component
-	sendJausMessage( reject_msg, sender );
+	sendJausMessage( reject_msg, sender, Priority::High );
 }
 
 void AccessControl_ReceiveFSM::sendRejectControlToControllerAction(std::string arg0)
@@ -228,7 +228,7 @@ void AccessControl_ReceiveFSM::sendReportControlAction(QueryControl msg, Receive
 	response.getBody()->getReportControlRec()->setComponentID(cid);
 	response.getBody()->getReportControlRec()->setAuthorityCode(p_current_authority);
 	ROS_DEBUG_NAMED("AccessControl", "Sending ReportControl to %s; current controller: %d.%d.%d", sender.str().c_str(), sid, nid, cid);
-	sendJausMessage(response, sender);
+	sendJausMessage(response, sender, Priority::High);
 }
 
 void AccessControl_ReceiveFSM::sendReportTimeoutAction(QueryTimeout msg, Receive::Body::ReceiveRec transportData)
