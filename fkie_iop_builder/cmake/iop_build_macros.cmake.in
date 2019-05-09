@@ -62,6 +62,8 @@ macro(iop_init)
   get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
   set(DEVEL_INCLUDE "${DEVEL_SPACE}/include")
   message(STATUS "DEVEL_INCLUDE: ${DEVEL_INCLUDE}")
+  set(DEVEL_LIB "${DEVEL_SPACE}/lib")
+  message(STATUS "DEVEL_LIB: ${DEVEL_LIB}")
   set(catkin_INCLUDE_DIRS "${DEVEL_INCLUDE};${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include;${catkin_INCLUDE_DIRS}")
   message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
   set(IOP_INIT_OK 1)
@@ -152,7 +154,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.headers"
-    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAR} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
+    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${DEVEL_LIB}/iop_codegenerator.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}

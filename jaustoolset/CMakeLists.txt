@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jaustoolset)
 
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS roscpp cmake_modules)
+find_package(TinyXML2 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -10,6 +11,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CFG_EXTRAS jts_cfg.cmake
+    DEPENDS TinyXML2
 )
 
 ###################################
@@ -17,6 +19,7 @@ catkin_package(
 ###################################
 include_directories(
     ${catkin_INCLUDE_DIRS}
+    ${TinyXML2_INCLUDE_DIRS}
     include
 )
 add_library(${PROJECT_NAME}
@@ -37,20 +40,20 @@ add_library(${PROJECT_NAME}
     src/Transport/JuniorMgr.cpp
     src/Transport/OS.cpp
     src/Transport/XmlConfig.cpp
-    src/Transport/tinyxml2.cpp
     src/jFixedLengthString.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
                       ${catkin_LIBRARIES}
                       ${RT_LIBRARY}
+                      ${TinyXML2_LIBRARIES}
 )
 
 ###################################
 ## build JTSNodeManager          ##
 ###################################
 
-add_executable(JTSNodeManager 
+add_executable(JTSNodeManager
     src/rte/jts_node_manager.cpp
     src/rte/JSerial.cpp
     src/rte/JTCPTransport.cpp
@@ -62,6 +65,7 @@ target_link_libraries(JTSNodeManager
                       ${PROJECT_NAME}
                       ${catkin_LIBRARIES}
                       ${RT_LIBRARY}
+                      ${TinyXML2_LIBRARIES}
 )
 
 ###################################
@@ -256,6 +260,7 @@ add_jar(iop_codegenerator ${JAVA_SOURCE_FILES}
 ## install iop_codegenerator.jar ##
 ###################################
 install_jar(iop_codegenerator ${CATKIN_PACKAGE_LIB_DESTINATION})
+
 
 ###############################################################
 ## install resources and specific libs for iop_codegenerator ##
