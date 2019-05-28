@@ -124,7 +124,6 @@ ConfigData::ConfigError XmlConfig::lookupValue(T& value,
 		// Loop through the index values to find the requested element number
 		while (ele != NULL && index > 0 && !element_found)
 		{
-			printf("next, get %s", element.c_str());
 			ele = ele->NextSiblingElement(element.c_str());
 			if (ele != NULL)
 			{
@@ -147,7 +146,12 @@ ConfigData::ConfigError XmlConfig::lookupValue(T& value,
 		JrWarn_ << "Failed to find configuration attribute: " << attribute  << ", use default value: " << value << "\n";
 		return ValueNotFound;
 	}
-
+	std::stringstream sstream( attr_value );
+	sstream >> value;
+	if ( sstream.fail() ) {
+		JrWarn_ << "Failed to read configuration attribute: " << attribute  << ", use default value: '" << value << "'\n";
+		return ValueNotFound;
+	}
 	// Success!
 	JrInfo_ << "Found config value: " << attribute << " = " << value << std::endl;
 	return Ok;
@@ -157,17 +161,14 @@ ConfigData::ConfigError XmlConfig::lookupValue(T& value,
 StringList XmlConfig::getAttributes(std::string element)
 {
 	StringList ret;
-
 	// Get the first occurrence of the requested element
 	XMLElement* ele = doc.FirstChildElement("JrXmlConfig");
 	if (ele != NULL)
 	{
 		ele = ele->FirstChildElement(element.c_str());
 	}
-
 	if (ele == NULL)
 		return ret;
-
 	// Walk through the attributes, returning a string for each
 	for (const XMLAttribute* att = ele->FirstAttribute(); att != NULL; att = att->Next())
 	{
