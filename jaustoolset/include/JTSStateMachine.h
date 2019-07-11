@@ -41,6 +41,7 @@ namespace JTS
 {
 
 typedef enum { OnEnter, OnExit } StateChangeType;
+#define JTS_PRIORITY
 namespace Priority {
     typedef enum { Low=3, Standard=6, High=9, Critical=12} Priority;
 }

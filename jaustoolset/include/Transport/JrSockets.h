@@ -77,6 +77,7 @@ protected:
     bool                     _is_connected;
 	SocketId                 _connected_dest;
     ConnectionList<SocketId> _map;
+    std::string              _sock_path;
     std::string              _socket_name;
 	enum SocketWaitType      _type;
 

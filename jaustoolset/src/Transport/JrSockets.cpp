@@ -49,6 +49,7 @@ JrSocket::JrSocket(std::string name):
      sock()
 {
     my_name = "JSocket";
+    _sock_path = SOCK_PATH;
 }
 
 
@@ -59,7 +60,7 @@ JrSocket::~JrSocket()
 #ifdef WINDOWS
         CloseHandle(sock);
 #else
-        std::stringstream s; s << SOCK_PATH; s << _socket_name;
+        std::stringstream s; s << _sock_path; s << _socket_name;
         close(sock);
         unlink(s.str().c_str());
 #endif
@@ -97,7 +98,7 @@ void JrSocket::setWaitType( enum SocketWaitType type )
 #ifdef WINDOWS
 SocketId JrSocket::OpenMailslot(std::string name)
 {
-    std::stringstream s; s << SOCK_PATH; s << name;
+    std::stringstream s; s << _sock_path; s << name;
     return CreateFile(s.str().c_str(),
          GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
          NULL, OPEN_EXISTING, 0, NULL);
@@ -120,7 +121,7 @@ void JrSocket::openResponseChannel(Message* msg)
 #else
     // For Unix, we just use the ID as the name of the socket.
     // The AddressMap class will prevent duplicates.
-    std::stringstream s; s << SOCK_PATH; s << msg->getSourceId().val;
+    std::stringstream s; s << _sock_path; s << msg->getSourceId().val;
     _map.addElement(msg->getSourceId(), s.str(), AS5669);
 #endif
 }
@@ -305,7 +306,7 @@ Transport::TransportError JrSocket::initialize(ConfigData& config)
 	// Set-up is considerably different for UNIX sockets and
 	// Windows named pipes.
 #ifdef WINDOWS
-	std::stringstream s; s << SOCK_PATH; s << _socket_name;
+	std::stringstream s; s << _sock_path; s << _socket_name;
 	DWORD timeout = (_type == POLL) ? 0 : MAILSLOT_WAIT_FOREVER;
 	sock = CreateMailslot(s.str().c_str(), 0, timeout, NULL);
 	if (sock == INVALID_HANDLE_VALUE)
@@ -321,10 +322,11 @@ Transport::TransportError JrSocket::initialize(ConfigData& config)
 		return InitFailed;
 
 	// Bind to the given filename
+    config.getValue(_sock_path, "SockPath", "API_Configuration");
 	struct sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
 	std::stringstream s;
-	s << SOCK_PATH;
+	s << _sock_path;
 	s << _socket_name;
 	memset(addr.sun_path, 0, sizeof(addr.sun_path));
 	memcpy(addr.sun_path, s.str().c_str(), s.str().length());
@@ -373,7 +375,7 @@ Transport::TransportError JrSocket::setDestination(std::string destination)
     _connected_dest = OpenMailslot(destination);
     if (_connected_dest == INVALID_HANDLE_VALUE) return Failed;
 #else
-    std::stringstream name; name << SOCK_PATH; name << destination;
+    std::stringstream name; name << _sock_path; name << destination;
     _connected_dest = name.str();
 #endif
 
