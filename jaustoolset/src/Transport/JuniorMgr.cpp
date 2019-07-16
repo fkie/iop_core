@@ -72,6 +72,21 @@ JuniorMgr::~JuniorMgr()
 #endif
         delete(_transport);
     }
+    // clear priority queue
+    _lock_queue_send.lock();
+    Message* value = NULL;
+    for (int j = JrMaxPriority; j >= 0; j--)
+    {
+        while (!_buffers_send[j].empty())
+        {
+            // Found a non-empty buffer.  Pop the message out and delete data.
+            value = _buffers_send[j].front();
+            _buffers_send[j].pop_front();
+            delete value;
+        }
+    }
+    _lock_queue_send.unlock();
+
     _lock_socket.unlock();
 }
 
@@ -85,8 +100,8 @@ void JuniorMgr::stop()
 void JuniorMgr::run()
 {
 	while (isRunning) {
-		Message* value = NULL;
 		_lock_queue_send.lock();
+		Message* value = NULL;
 		// Check each priority based send buffer (highest first) looking for a message to send.
 		for (int j = JrMaxPriority; j >= 0; j--)
 		{
@@ -98,12 +113,11 @@ void JuniorMgr::run()
 				break;
 			}
 		}
-		_lock_queue_send.unlock();
 		if (value != NULL && _transport != NULL) {
-			sendOrBroadcast(*value);
-			delete value;
-			value = NULL;
+			_lock_queue_send.unlock();
+			sendOrBroadcast(value);
 		} else {
+			_lock_queue_send.unlock();
 			_signal_queue_send.wait();
 		}
 	}
@@ -129,12 +143,12 @@ void JuniorMgr::sendAckMsg( Message* incoming )
     _lock_socket.unlock();
 }
 
-bool JuniorMgr::appendSendMessage(Message& msg)
+bool JuniorMgr::appendSendMessage(Message* msg)
 {
 	_lock_queue_send.lock();
-	if (_buffers_send[minint(msg.getPriority(), JrMaxPriority)].size() < _maxMsgHistory)
+	if (_buffers_send[minint(msg->getPriority(), JrMaxPriority)].size() < _maxMsgHistory)
 	{
-		_buffers_send[minint(msg.getPriority(), JrMaxPriority)].push_back(&msg);
+		_buffers_send[minint(msg->getPriority(), JrMaxPriority)].push_back(msg);
 		_lock_queue_send.unlock();
 		_signal_queue_send.signal();
 	} else {
@@ -144,7 +158,7 @@ bool JuniorMgr::appendSendMessage(Message& msg)
 	return true;
 }
 
-void JuniorMgr::sendOrBroadcast(Message& msg)
+void JuniorMgr::sendOrBroadcast(Message* msg)
 {
 	// Normally, the Manager forward messages directly to the JuniorRTE
 	// for intelligent distribution.  When building for a single application,
@@ -152,7 +166,8 @@ void JuniorMgr::sendOrBroadcast(Message& msg)
 	// must therefore be pulled into the Manager.
 	_lock_socket.lock();
 #ifndef SINGLE_LIB_ONLY
-	_transport->sendMsg(msg);
+	_transport->sendMsg(*msg);
+	delete msg;
 #else
 	bool matchFound = false;
     if (!msg.getDestinationId().containsWildcards())
@@ -447,9 +462,10 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
         }
 
         // Send the message to the RTE for distribution
-        if (appendSendMessage(*msg)) {
+        if (appendSendMessage(msg)) {
             bytes_sent += payload_size;
         } else {
+            delete msg;
             return Timeout;
         }
 

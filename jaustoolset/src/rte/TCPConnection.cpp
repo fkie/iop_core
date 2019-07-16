@@ -82,7 +82,7 @@ Transport::TransportError JTCPConnection::sendMsg(Message& msg)
     }
     else
     {
-        JrDebug << "Sent " << payload.getArchiveLength() << "bytes on TCP connection\n";
+        JrDebug << "Sent " << payload.getArchiveLength() << "bytes on TCP connection on port " << _address.port << "\n";
     }
 
     return result;

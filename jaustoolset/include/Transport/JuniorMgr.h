@@ -64,8 +64,8 @@ private:
     // Define a couple of private helper functions
     unsigned int umin(unsigned int x, unsigned int y);
     void sendAckMsg(Message* source);
-	void sendOrBroadcast(Message& msg);
-	bool appendSendMessage(Message& msg);
+	void sendOrBroadcast(Message* msg);
+	bool appendSendMessage(Message* msg);
     bool addMsgToBuffer(Message* msg);
     void checkLargeMsgBuffer();
     bool isDuplicateMsg(Message* msg);
