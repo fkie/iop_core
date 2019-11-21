@@ -92,8 +92,7 @@ Now we create a minimal configuration for a component running on OCU. You have t
           ]
         </rosparam>
         <rosparam subst_value="true">
-            EventsClient:
-                use_queries: false
+            use_queries: false
             DiscoveryClient:
                 register_own_services: false
                 enable_ros_interface: true
