@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sstream>
+#include <sys/stat.h>
 
 using namespace DeVivo::Junior;
 
@@ -353,6 +354,7 @@ Transport::TransportError JrSocket::initialize(ConfigData& config)
 			return InitFailed;
 		}
 	}
+	chmod(addr.sun_path, 0777);
 	// Read the configuration file for buffer size info
 	socklen_t buffer_size = 10000;
 	config.getValue(buffer_size, "MaxBufferSize", "UDP_Configuration");
