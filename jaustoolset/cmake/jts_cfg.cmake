@@ -14,9 +14,6 @@ if ( jaustoolset_INCLUDE_DIRS )
     endif()
 endif()
 
-get_filename_component(JTS_LIB_DIR "${jaustoolset_LIBRARIES}" PATH)
-set(jaustoolset_JAR ${JTS_LIB_DIR}/iop_codegenerator.jar)
-
 set(jaustoolset_INCLUDE_JARS_LT11
     ${jaustoolset_WORKING_DIR}/libs_external/jargs-1.0/jargs.jar:${jaustoolset_WORKING_DIR}/libs_external/runtime/commons-lang-2.5.jar:${jaustoolset_WORKING_DIR}/libs_external/smc/Smc.jar
 )
