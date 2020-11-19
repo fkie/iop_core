@@ -47,12 +47,9 @@ cache:
 language: generic
 matrix:
   include:
-  - name: "Bionic melodic"
-    dist: bionic
-    env: ROS_DISTRO=melodic PY_LIB=2.7 PY_PRFX=python
-  - name: "Focal noetic"
-    dist: focal
-    env: ROS_DISTRO=noetic PY_LIB=3 PY_PRFX=python3
+  - name: "Xenial kinetic"
+    dist: xenial
+    env: ROS_DISTRO=kinetic PY_LIB=2.7 PY_PRFX=python
 
 # Configuration variables. All variables are global now, but this can be used to
 # trigger a build matrix for different ROS distributions if desired.
