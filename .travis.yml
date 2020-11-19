@@ -47,6 +47,9 @@ cache:
 language: generic
 matrix:
   include:
+  - name: "Xenial kinetic"
+    dist: xenial
+    env: ROS_DISTRO=kinetic PY_LIB=2.7 PY_PRFX=python
   - name: "Bionic melodic"
     dist: bionic
     env: ROS_DISTRO=melodic PY_LIB=2.7 PY_PRFX=python
