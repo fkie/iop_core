@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # ROS/IOP Bridge
 # Copyright (c) 2017 Fraunhofer
 #
@@ -30,31 +28,31 @@ destdir = argv[2]
 error_msgs = []
 #TODO: Added a proper merge function to print all errors
 for hfile in argv[3:]:
-    print "JAUS: Merge %s" % hfile
+    print("JAUS: Merge %s" % hfile)
     srcfile = os.path.join(srcdir, hfile)
     dstfile = os.path.join(destdir, hfile)
     genfile = "%s.gen"%srcfile
     try:
         copy2 (dstfile, genfile)
     except Exception as e:
-        print "JAUS: can't copy generated %s to %s because of error: %s" % (hfile, dstfile, e)
+        print("JAUS: can't copy generated %s to %s because of error: %s" % (hfile, dstfile, e))
         genfile = "%s.gen"%dstfile
         copy2 (dstfile, genfile)
-        print "JAUS:   you find this file in: %s.gen"%dstfile
+        print("JAUS:   you find this file in: %s.gen"%dstfile)
     if os.path.isfile(dstfile):
       if dstfile.endswith('.h') and not os.path.isfile("%s.old"%dstfile) and not os.path.dirname(dstfile).endswith('include'):
         raise Exception("%s was not updated by code generator. Is the path correct?"%dstfile)
-      a = file(genfile, 'rt').readlines()
-      b = file("%s"%srcfile, 'rt').readlines()
+      a = open(genfile, 'rt').readlines()
+      b = open("%s"%srcfile, 'rt').readlines()
       differ = difflib.Differ()
       diffsrcfile = "%s.diff"%srcfile
       try:
-        fdiff = file(diffsrcfile, 'w')
+        fdiff = open(diffsrcfile, 'w')
       except Exception as e:
-        print "JAUS: can't create diff %s because of error: %s" % (diffsrcfile, e)
+        print("JAUS: can't create diff %s because of error: %s" % (diffsrcfile, e))
         diffsrcfile = "%s.diff"%dstfile
-        fdiff = file(diffsrcfile, 'w')
-        print "JAUS:   you find this file in: %s"%diffsrcfile
+        fdiff = open(diffsrcfile, 'w')
+        print("JAUS:   you find this file in: %s"%diffsrcfile)
       if fdiff is not None:
         fdiff.writelines(difflib.unified_diff(a, b, fromfile=genfile, tofile=diffsrcfile))
         fdiff.close()
@@ -103,9 +101,9 @@ for hfile in argv[3:]:
           try:
               copy2 (srcfile, dstfile)
           except Exception as e:
-              print "JAUS: can't copy %s to %s because of error: %s" % (srcfile, dstfile, e)
+              print("JAUS: can't copy %s to %s because of error: %s" % (srcfile, dstfile, e))
 #              copy2 (dstfile, "%s.gen"%dstfile)
-#              print "JAUS:   you find this file in: %s.gen"%dstfile
+#              print("JAUS:   you find this file in: %s.gen"%dstfile)
 #        file(dstfile, 'w').writelines(result)
 if error_msgs:
   raise Exception("%s"%'\n'.join(error_msgs))

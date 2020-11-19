@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # ROS/IOP Bridge
 # Copyright (c) 2017 Fraunhofer
 #
@@ -34,7 +32,7 @@ for path, dirs, files in os.walk(source_dir):
         fshort = fpath[len(source_dir)+1:]
         if fshort in ignores:
             continue
-        print "JAUS: Packaging %s" % fshort
+        print("JAUS: Packaging %s" % fshort)
         inf = open(fpath, "r")
         content = inf.read()
         inf.close()

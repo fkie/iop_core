@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # ROS/IOP Bridge
 # Copyright (c) 2017 Fraunhofer
 #
@@ -21,6 +19,7 @@
 # :author: Alexander Tiderko
 
 from sys import argv
+from sys import version_info
 import os
 from lxml import etree
 
@@ -48,7 +47,7 @@ class RefDissolver(object):
       messageset_path = os.path.join(messageset_path, 'MessageSet')
     if os.path.exists(messageset_path):
       if messageset_path not in self.included_message_sets:
-        print "JAUS: Include MessageSets from %s" % messageset_path
+        print("JAUS: Include MessageSets from %s" % messageset_path)
         delayed_files = []
         for messagefile in os.listdir(messageset_path):
           msfile = os.path.join(messageset_path, messagefile)
@@ -58,16 +57,16 @@ class RefDissolver(object):
           else:
             delayed_files.append(msfile)
         for msfile in delayed_files:
-          print "JAUS:   Include (second try) MessageSet file %s" % msfile
+          print("JAUS:   Include (second try) MessageSet file %s" % msfile)
           message_def_tree = self._replace_constants(msfile)
           if message_def_tree is not None:
             self.mset_root.append(message_def_tree)
         self.included_message_sets.append(messageset_path)
     else:
-        print "JAUS: MessageSet '%s' not exists, ignore!" % messageset_path
+        print("JAUS: MessageSet '%s' not exists, ignore!" % messageset_path)
 
   def _replace_constants(self, msg_file):
-    print "JAUS:   Include MessageSet file %s" % msg_file
+    print("JAUS:   Include MessageSet file %s" % msg_file)
     message_def_tree = etree.parse(msg_file).getroot()
     # the defined consts are in the separate file, only add to the knonwn list
     if message_def_tree.tag == '{urn:jaus:jsidl:1.0}declared_const_set':
@@ -81,29 +80,37 @@ class RefDissolver(object):
             try:
               message_def_tree.remove(const_set_element)
               string_el = etree.tostring(message_def_tree)
+              if version_info[0] > 2:
+                string_el = string_el.decode()
               for const_name, const_value in self.const_types[const_id].items():
                 string_el = string_el.replace(const_name, const_value)
               message_def_tree = etree.fromstring(string_el)
             except Exception as e:
-              print e
+              print(e)
 #              declared_const_set_ref
     const_ref_elements = message_def_tree.findall("./{urn:jaus:jsidl:1.0}declared_const_set_ref")
     if const_ref_elements is not None:
       for const_ref_element in const_ref_elements:
         ref_id = const_ref_element.attrib['id']
         if ref_id not in self.const_types:
-          print "JAUS:       reference for constants not found: %s [%s]", ref_id, const_ref_element.attrib['name']
+          print("JAUS:       reference for constants not found: %s [%s]", ref_id, const_ref_element.attrib['name'])
           return None
         else:
           # replace referenced constants
           try:
             string_el = etree.tostring(message_def_tree)
+            if version_info[0] > 2:
+              string_el = string_el.decode()
             for const_name, const_value in self.const_types[ref_id].items():
-              print "JAUS:       search and replace constant '%s.%s' : '%s'"%(const_ref_element.attrib['name'], const_name, const_value)
+              print("JAUS:       search and replace constant '%s.%s' : '%s'"%(const_ref_element.attrib['name'], const_name, const_value))
+              print("const_name", type(const_name))
+              print("string_el", type(string_el))
+              print("const_value", type(const_value))
               string_el = string_el.replace("%s.%s"%(const_ref_element.attrib['name'], const_name), const_value)
             message_def_tree = etree.fromstring(string_el)
           except Exception as e:
-            print e
+            import traceback
+            print(traceback.format_exc())
     return message_def_tree
 
   def _extract_const_set(self, message_def_tree):
@@ -111,11 +118,11 @@ class RefDissolver(object):
       const_id = message_def_tree.attrib['id']
       self.const_types[const_id] = {}
       for child in list(message_def_tree):
-        print "JAUS:       constant found:", child.tag, child.attrib['name'], child.attrib['const_value']
+        print("JAUS:       constant found:", child.tag, child.attrib['name'], child.attrib['const_value'])
         self.const_types[const_id][child.attrib['name']] = child.attrib['const_value']
       return const_id
     except Exception as e:
-      print e
+      print(e)
     return None
 
   def _filter_by_id(self, declared_type_set_list, ref_id, ref_version):
@@ -191,7 +198,7 @@ class RefDissolver(object):
         self.deref_children(child, service_def_root)
       else:
         if 'declared_type_ref' in child.attrib:
-          print "JAUS:   disolve <%s>'%s' as %s"%(child.tag, child.attrib['declared_type_ref'], child.attrib['name'])
+          print("JAUS:   disolve <%s>'%s' as %s"%(child.tag, child.attrib['declared_type_ref'], child.attrib['name']))
           replace[(child, i)] = self._deref_type(child, service_def_root)
     for (remove, pos), add in replace.items():
       root.remove(remove)
@@ -223,7 +230,7 @@ class ServiceSet(object):
     Adds a service_def and dissolves all tags with 'declared_type_ref'
     attribute. The RefDissolver-class used for this purpose.
     '''
-    print "JAUS: Including %s" % srcfile
+    print("JAUS: Including %s" % srcfile)
     service_tree = etree.parse(service_def_file)
     # in case it is not done before
     self.ref_dissolver.add_message_set(service_def_file)

@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # ROS/IOP Bridge
 # Copyright (c) 2017 Fraunhofer
 #
@@ -26,7 +24,7 @@ from shutil import copy2
 
 destdir = argv[1]
 for srcfile in argv[2:]:
-    print "JAUS: Overriding %s" % srcfile
+    print("JAUS: Overriding %s" % srcfile)
     dstfile = os.path.join(destdir, srcfile)
     dstdir, dstname = os.path.split(dstfile)
     if not os.path.isdir(dstdir): os.makedirs(dstdir)
