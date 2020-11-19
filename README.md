@@ -32,14 +32,6 @@ For easier download of bridge packages install **[wstool](http://wiki.ros.org/ws
 sudo apt-get install python-wstool -y
 ```
 
-You need also some other dependencies while you build the complete bridge:
-
-```console
-sudo apt install python-lxml ros-kinetic-geodesy ros-kinetic-gps-common ros-kinetic-geographic-msgs ros-kinetic-moveit-msgs ros-kinetic-moveit-planners
-```
-
->For other ROS version replace kinetic by your ROS version
-
 ----
 
 ## Download the ROS/IOP-Bridge packages
@@ -57,6 +49,14 @@ wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_core/master/i
 wstool update -t src/iop
 ```
 
+## Install dependencies
+
+Go to the root folder of your ROS workspace and type:
+
+```console
+rosdep install --from-paths src --ignore-src
+```
+
 ## Build the sources
 
 Go to the root folder of your ROS workspace and type:
@@ -64,9 +64,6 @@ Go to the root folder of your ROS workspace and type:
 ```console
 catkin build
 ```
-
->In case of "permission denied" errors you have to mark the \*.py files in *fkie\_iop\_builder/cmake/* as runnable
->You can also use `catkin build` instead of `catkin_make`, if you have [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/) installed.  
 
 >If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/GUI/templates/Common/SConstruct*
 
