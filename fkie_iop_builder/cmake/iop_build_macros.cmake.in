@@ -56,10 +56,12 @@ macro(iop_init)
   file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
   # we need the devel include path to avoid set the CPATH environment variable
   set(DEVEL_SPACE ${CATKIN_DEVEL_PREFIX})
-  if (NOT EXISTS "${DEVEL_SPACE}/lib/iop_codegenerator.jar")
+  message(STATUS "CATKIN_DEVEL_PREFIX: ${CATKIN_DEVEL_PREFIX}")
+  if ("${DEVEL_SPACE}/lib/iop_codegenerator.jar" MATCHES "/.private/*")
     # if run with "catkin build" it build in .private location -> move up
     get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
     get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
+    message(STATUS "DEVEL_SPACE (removed private space): ${DEVEL_SPACE}")
   endif()
   set(DEVEL_INCLUDE "${DEVEL_SPACE}/include")
   message(STATUS "DEVEL_INCLUDE: ${DEVEL_INCLUDE}")
