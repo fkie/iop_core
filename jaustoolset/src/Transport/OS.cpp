@@ -150,10 +150,13 @@ std::list<unsigned int> DeVivo::Junior::JrGetIPAddresses()
     next = ifap;
     do
     {
-        if ( (next->ifa_addr->sa_family == AF_INET)  &&
-             ((((sockaddr_in*) next->ifa_addr)->sin_addr.s_addr) !=
-                        inet_addr("127.0.0.1")))
-            addresses.push_back(((sockaddr_in*) next->ifa_addr)->sin_addr.s_addr);
+        if (next->ifa_addr != NULL) {
+            if ( (next->ifa_addr->sa_family == AF_INET)  &&
+                ((((sockaddr_in*) next->ifa_addr)->sin_addr.s_addr) !=
+                            inet_addr("127.0.0.1"))) {
+                addresses.push_back(((sockaddr_in*) next->ifa_addr)->sin_addr.s_addr);
+            }
+        }
         next = next->ifa_next;
     } while (next != NULL);
 
