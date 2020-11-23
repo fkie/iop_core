@@ -17,12 +17,7 @@ install(
 )
 
 install(
-    PROGRAMS
-        cmake/chmerge.py
-        cmake/cpp.py
-        cmake/cpy.py
-        cmake/mss.py
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake
+  DIRECTORY cmake DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 install(

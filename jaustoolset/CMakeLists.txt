@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(jaustoolset)
 
-find_package(catkin REQUIRED COMPONENTS roscpp cmake_modules)
+find_package(catkin REQUIRED COMPONENTS cmake_modules roscpp)
 find_package(TinyXML2 REQUIRED)
 
 ###################################
@@ -12,6 +12,7 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CFG_EXTRAS jts_cfg.cmake
     DEPENDS TinyXML2
+    CATKIN_DEPENDS roscpp
 )
 
 ###################################
@@ -54,9 +55,9 @@ target_link_libraries(${PROJECT_NAME}
 ###################################
 
 add_executable(JTSNodeManager
-    src/rte/jts_node_manager.cpp
     src/rte/JSerial.cpp
     src/rte/JTCPTransport.cpp
+    src/rte/jts_node_manager.cpp
     src/rte/JUDPTransportLB.cpp
     src/rte/JuniorRTE.cpp
     src/rte/TCPConnection.cpp
@@ -238,11 +239,11 @@ set(JAVA_SOURCE_FILES
 # some variables like INCLUDE_LOCAL_JARS
 include(cmake/jts_cfg.cmake)
 
-if (${Java_VERSION_MAJOR} MATCHES "^(9|10)$")
+if ("${Java_VERSION_MAJOR}" MATCHES "^(9|10)$")
     # the module JAXB marked as deprecated since java 9
     set(CMAKE_JAVA_COMPILE_FLAGS --add-modules java.xml.bind)
     set(INCLUDE_LOCAL_JARS ${INCLUDE_LOCAL_JARS_LT11})
-elseif (${Java_VERSION_MAJOR} MATCHES "^(6|7|8)$")
+elseif ("${Java_VERSION_MAJOR}" MATCHES "^(6|7|8)$")
     set(INCLUDE_LOCAL_JARS ${INCLUDE_LOCAL_JARS_LT11})
 else ()
     # the module JAXB removed from JDK since java 11
@@ -289,7 +290,7 @@ install(
   DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
 )
 
-install(TARGETS ${PROJECT_NAME} JTSNodeManager
+install(TARGETS JTSNodeManager ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}

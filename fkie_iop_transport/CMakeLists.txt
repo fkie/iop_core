@@ -14,7 +14,9 @@ iop_export_service(urn_jaus_jss_core_Transport)
 ###################################
 catkin_package(
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS fkie_iop_component
+    CATKIN_DEPENDS
+        fkie_iop_component
+        roscpp
 )
 
 ###########

@@ -26,6 +26,7 @@ catkin_package(
           fkie_iop_discovery
           fkie_iop_management
           fkie_iop_msgs
+          roscpp
 )
 
 include_directories(include

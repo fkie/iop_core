@@ -21,6 +21,7 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
         fkie_iop_management
+        roscpp
 )
 
 ###########
@@ -64,8 +65,8 @@ include_directories(${catkin_INCLUDE_DIRS}
 add_library(${PROJECT_NAME}
             src/InternalElement.cpp
             src/InternalElementList.cpp
-            src/ListManagerPlugin.cpp
             src/ListManagerClientPlugin.cpp
+            src/ListManagerPlugin.cpp
             ${cppfiles}
 )
 

@@ -17,7 +17,7 @@ iop_export_service(urn_jaus_jss_core_Events
 catkin_package(
     INCLUDE_DIRS include/public
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS fkie_iop_transport
+    CATKIN_DEPENDS fkie_iop_transport roscpp
 )
 
 ###########
@@ -45,8 +45,8 @@ include_directories(${catkin_INCLUDE_DIRS}
                     )
 
 add_library(${PROJECT_NAME}
-            src/EventsConfig.cpp
             src/EventsClientPlugin.cpp
+            src/EventsConfig.cpp
             src/EventsPlugin.cpp
             src/InternalEvent.cpp
             src/InternalEventClient.cpp
