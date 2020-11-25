@@ -17,6 +17,7 @@ This repository lets your ROS software communicate with IOP services. You can fi
 | [iop_jaus_ugv_clients](https://github.com/fkie/iop_jaus_ugv_clients) | [![Build Status](https://travis-ci.org/fkie/iop_jaus_ugv_clients.svg?branch=master)](https://travis-ci.org/fkie/iop_jaus_ugv_clients) |
 | [iop_examples](https://github.com/fkie/iop_examples) | [![Build Status](https://travis-ci.org/fkie/iop_examples.svg?branch=master)](https://travis-ci.org/fkie/iop_examples) |
 | [iop_node_manager](https://github.com/fkie/iop_node_manager) | [![Build Status](https://travis-ci.org/fkie/iop_node_manager.svg?branch=master)](https://travis-ci.org/fkie/iop_node_manager) |
+| [iop_wireshark_plugin](https://github.com/fkie/iop_wireshark_plugin) | [![Build Status](https://travis-ci.org/fkie/iop_wireshark_plugin.svg?branch=master)](https://travis-ci.org/fkie/iop_wireshark_plugin) |
 
 
 # Installation of the ROS/IOP Bridge
