@@ -7,10 +7,10 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: melodic}
           - {ROS_DISTRO: noetic}
     env:
       CATKIN_LINT: 'true'
+      UPSTREAM_WORKSPACE: 'https://github.com/fkie/iop_msgs'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
