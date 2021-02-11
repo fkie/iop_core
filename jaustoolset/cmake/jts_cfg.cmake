@@ -1,20 +1,5 @@
 include(CMakeParseArguments)
 
-# if ( jaustoolset_INCLUDE_DIRS )
-#     if ( NOT EXISTS ${CMAKE_INSTALL_PREFIX} )
-#         # working directory in develspace
-#         list(GET jaustoolset_INCLUDE_DIRS 0 FIRST_INCLUDE)
-#         get_filename_component(jaustoolset_WORKING_DIR ${FIRST_INCLUDE} PATH)
-#     else()
-#         # working directory in installspace
-#         #get_working_dirs(jaustoolset_WORKING_DIRS)
-#         list(GET jaustoolset_INCLUDE_DIRS 0 FIRST_INCLUDE)
-#         get_filename_component(jaustoolset_INSTALL_PATH ${FIRST_INCLUDE} PATH)
-#         set(jaustoolset_WORKING_DIR ${jaustoolset_INSTALL_PATH}/share/jaustoolset)
-#     endif()
-# endif()
-
-set(jaustoolset_JAVA_LIB_PATH ${CMAKE_INSTALL_PREFIX}/lib/jaustoolset)
 set(jaustoolset_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/jaustoolset)
 
 get_cmake_property(_variableNames VARIABLES)
