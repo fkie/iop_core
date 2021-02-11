@@ -20,16 +20,18 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-#pragma once
+#include "fkie_iop_component/time.hpp"
 
-#include <chrono>
+using namespace iop;
 
-namespace iop {
+int64_t now_secs()
+{
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count();
+}
 
-/** Returns count of seconds from std::chrono::steady_clock::now() **/
-int64_t now_secs();
-
-/** Returns count of milliseconds from std::chrono::steady_clock::now() **/
-int64_t now_millis();
-
+int64_t now_millis()
+{
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
 }

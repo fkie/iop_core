@@ -1,6 +1,12 @@
 include(CMakeParseArguments)
 
-set(jaustoolset_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/jaustoolset)
+if (NOT "${jaustoolset_DIR}" STREQUAL "")
+    # will set if build jaustoolset package
+    get_filename_component(jaustoolset_SHARE_PATH ${jaustoolset_DIR} DIRECTORY)
+else ()
+    # for all other packages
+    set(jaustoolset_SHARE_PATH ${CMAKE_INSTALL_PREFIX}/share/jaustoolset)
+endif()
 
 get_cmake_property(_variableNames VARIABLES)
 list (SORT _variableNames)

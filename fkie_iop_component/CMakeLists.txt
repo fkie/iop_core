@@ -49,6 +49,7 @@ add_executable(iop_component
                src/iop_config.cpp
                src/main.cpp
                src/ros_node.cpp
+               src/time.cpp
                src/timer.cpp
 )
 ament_target_dependencies(iop_component ${dependencies})
@@ -58,6 +59,7 @@ add_library(${PROJECT_NAME} SHARED
             src/iop_component.cpp
             src/iop_config.cpp
             src/ros_node.cpp
+            src/time.cpp
             src/timer.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})

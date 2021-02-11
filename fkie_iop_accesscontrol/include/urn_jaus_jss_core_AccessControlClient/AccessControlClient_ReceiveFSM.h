@@ -42,8 +42,8 @@ along with this program; or you can read the full license at
 #include <functional>
 #include <fkie_iop_msgs/msg/jaus_address.hpp>
 #include <std_msgs/msg/u_int8.hpp>
-#include <fkie_iop_accesscontrol/RemoteComponent.h>
-#include <fkie_iop_accesscontrol/RemoteComponentList.h>
+#include "fkie_iop_accesscontrol/RemoteComponent.h"
+#include "fkie_iop_accesscontrol/RemoteComponentList.h"
 #include <fkie_iop_component/timer.hpp>
 #include "AccessControlClient_ReceiveFSM_sm.h"
 
