@@ -335,7 +335,7 @@ public class ServiceDefGenerator
                     templateDir = new File("plugins/org.jts.eclipse.data_1.0/templates/service");
                 }else
                 {
-                    templateDir = new File("templates/service");
+                    templateDir = new File(PathExtender.extend("templates/service"));
                 }
                 boolean validFile = false;
 
@@ -673,7 +673,7 @@ public class ServiceDefGenerator
                         templateDir = new File("plugins/org.jts.eclipse.data_1.0/templates/service");
                     }else
                     {
-                        templateDir = new File("templates/service");
+                        templateDir = new File(PathExtender.extend("templates/service"));
                     }
                     boolean validFile = false;
 
@@ -916,7 +916,7 @@ public class ServiceDefGenerator
                         templateDir = new File("plugins/org.jts.eclipse.data_1.0/templates/service");
                     }else
                     {
-                        templateDir = new File("templates/service");
+                        templateDir = new File(PathExtender.extend("templates/service"));
                     }
                     boolean validFile = false;
 

@@ -169,7 +169,7 @@ public class ComponentGenerator
             }
             else
             {
-                templateDir =  new File("templates/component");
+                templateDir =  new File(PathExtender.extend("templates/component"));
             }
             boolean validFile = false;
 		
@@ -354,7 +354,7 @@ public class ComponentGenerator
             }
             else
             {
-                templateDir =  new File("templates/component");
+                templateDir =  new File(PathExtender.extend("templates/component"));
             }
                         boolean validFile = false;
 
@@ -522,7 +522,7 @@ public class ComponentGenerator
             }
             else
             {
-                templateDir =  new File("templates/component");
+                templateDir =  new File(PathExtender.extend("templates/component"));
             }
                         boolean validFile = false;
 

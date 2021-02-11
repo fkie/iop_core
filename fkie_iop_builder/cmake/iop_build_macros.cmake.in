@@ -151,14 +151,14 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.headers"
-    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAVA_LIB_PATH}/iop_codegenerator.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
+    COMMAND "${Java_JAVA_EXECUTABLE}" -Djts.path=${jaustoolset_SHARE_PATH} ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAVA_LIB_PATH}/iop_codegenerator.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
     COMMAND find ${CMAKE_INSTALL_PREFIX}/include -name "*.old" -type f -delete
     # COMMAND cp -r -v -t ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME} ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
-    WORKING_DIRECTORY "${jaustoolset_SHARE_PATH}"
+    # WORKING_DIRECTORY "${jaustoolset_SHARE_PATH}"
     DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
   )
 

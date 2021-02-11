@@ -160,6 +160,7 @@ set(JAVA_SOURCE_FILES
     src/org/jts/codegenerator/support/IVisibility.java
     src/org/jts/codegenerator/support/MethodDeclaration.java
     src/org/jts/codegenerator/support/ParameterDeclaration.java
+    src/org/jts/codegenerator/support/PathExtender.java
     src/org/jts/codegenerator/support/Reference.java
     src/org/jts/codegenerator/support/ReferenceHolder.java
     src/org/jts/codegenerator/support/SconstructGenerator.java

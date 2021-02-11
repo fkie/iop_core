@@ -48,6 +48,7 @@ import org.jts.jsidl.binding.ServiceSet;
 import org.xml.sax.SAXParseException;
  import org.xml.sax.SAXException; 
 import jargs.gnu.CmdLineParser;
+import org.jts.codegenerator.support.PathExtender;
 
 
 /**
@@ -178,7 +179,7 @@ public class CodeGenerator extends Thread
           }
           else
           {
-            unmarshaller.setSchema(SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema").newSchema(new File("resources/schema/JSIDL_Plus/jsidl_plus.xsd")));
+            unmarshaller.setSchema(SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema").newSchema(new File(PathExtender.extend("resources/schema/JSIDL_Plus/jsidl_plus.xsd"))));
           }
           serviceSet = (ServiceSet)unmarshaller.unmarshal(new File(inputPathValue));
 	  } catch ( JAXBException jaxbe ) {

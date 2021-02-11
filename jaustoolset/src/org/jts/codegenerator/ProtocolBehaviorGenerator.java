@@ -434,7 +434,7 @@ public class ProtocolBehaviorGenerator {
             }
             else
             {
-                smcPath = (new File("libs_external/smc/Smc.jar")).getAbsolutePath();
+                smcPath = (new File(PathExtender.extend("libs_external/smc/Smc.jar"))).getAbsolutePath();
             }
             if (debug) {
                 System.out.printf("Didn't find smc.jar.  Assuming path=%s...\n", smcPath);
@@ -716,7 +716,7 @@ public class ProtocolBehaviorGenerator {
         }
         else
         {
-            templateDir =  new File("templates/statemachine");
+            templateDir =  new File(PathExtender.extend("templates/statemachine"));
         }
         boolean validFile = false;
 
@@ -986,7 +986,7 @@ public class ProtocolBehaviorGenerator {
         }
         else
         {
-            templateDir =  new File("templates/statemachine");
+            templateDir =  new File(PathExtender.extend("templates/statemachine"));
         }
         for (File template : templateDir.listFiles(new FileExtensionFilter("tpl"))) {
             String destFileName = tplHandler.adjustString(template.getName().substring(0, template.getName().length() - 4));
@@ -1237,7 +1237,7 @@ public class ProtocolBehaviorGenerator {
         }
         else
         {
-            templateDir =  new File("templates/statemachine");
+            templateDir =  new File(PathExtender.extend("templates/statemachine"));
         }
         boolean validFile = false;
 
