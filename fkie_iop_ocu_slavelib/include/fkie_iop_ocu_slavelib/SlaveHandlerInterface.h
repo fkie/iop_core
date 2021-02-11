@@ -53,8 +53,8 @@ namespace ocu
 	protected:
 		SlaveHandlerInterface() {}
 	};
-};
+}
 
-};
+}
 
 #endif

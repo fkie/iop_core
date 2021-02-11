@@ -36,7 +36,7 @@ const float EventsConfig::RATE_PRECISION = 0.1f;
 EventsConfig::EventsConfig()
 {
 	p_default_timeout = 1;
-	iop::Config cfg("~Events");
+	iop::Config cfg("Events");
 	cfg.param("events_timeout", p_default_timeout, p_default_timeout);
 }
 

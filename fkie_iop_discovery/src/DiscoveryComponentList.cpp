@@ -20,19 +20,22 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-#include <fkie_iop_discovery/DiscoveryComponentList.h>
 #include <algorithm>
-#include <ros/ros.h>
+#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/time.hpp>
+#include <fkie_iop_discovery/DiscoveryComponentList.h>
 
 
 using namespace iop;
 
 
-DiscoveryComponentList::DiscoveryComponentList(unsigned int timeout) {
+DiscoveryComponentList::DiscoveryComponentList(int64_t timeout)
+: logger(iop::RosNode::get_instance().get_logger().get_child("Discovery"))
+{
 	p_timeout = timeout;
 }
 
-void DiscoveryComponentList::set_timeout(unsigned int timeout)
+void DiscoveryComponentList::set_timeout(int64_t timeout)
 {
 	p_timeout = timeout;
 }
@@ -58,13 +61,13 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, JausAddres
 	std::vector<DiscoveryComponent>& components = p_get_components(discovery_service);
 	std::vector<DiscoveryComponent>::iterator it = std::find(components.begin(), components.end(), component);
 	if (it != components.end()) {
-		unsigned int now = ros::WallTime::now().sec;
+		int64_t now = now_secs();
 		if (it->address == discovery_service) {
 			it->ts_last_ident = now;
 			result = true;
 		} else {
 			if (p_expired(it->ts_last_ident, now)) {
-				ROS_DEBUG_NAMED("Discovery", "remove expired services of %s", it->address.str().c_str());
+				RCLCPP_DEBUG(logger, "remove expired services of %s", it->address.str().c_str());
 				components.erase(it);
 			} else {
 				it->ts_last_ident = now;
@@ -81,13 +84,13 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, unsigned s
 	std::vector<DiscoveryComponent>& components = p_get_components(discovery_service);
 	std::vector<DiscoveryComponent>::iterator it;
 	for (it = components.begin(); it != components.end(); it++) {
-		unsigned int now = ros::WallTime::now().sec;
+		int64_t now = now_secs();
 		if (it->address == discovery_service) {
 			it->ts_last_ident = now;
 			result = true;
 		} else if (it->address.getSubsystemID() == subsystem && (node == 255 || it->address.getNodeID() == node)) {
 			if (p_expired(it->ts_last_ident, now)) {
-				ROS_DEBUG_NAMED("Discovery", "remove expired services of %s", it->address.str().c_str());
+				RCLCPP_DEBUG(logger, "remove expired services of %s", it->address.str().c_str());
 				components.erase(it);
 				it = components.begin();
 			} else {
@@ -105,7 +108,7 @@ std::vector<DiscoveryComponent> DiscoveryComponentList::get_components(JausAddre
 	std::vector<JausAddress> to_remove;
 	std::vector<iop::DiscoveryComponent> result;
 	std::vector<iop::DiscoveryComponent>::iterator itcmp;
-	unsigned int now = ros::WallTime::now().sec;
+	int64_t now = now_secs();
 	for (itcmp = components.begin(); itcmp != components.end(); itcmp++) {
 		if (subsystem == 65535 || subsystem == itcmp->address.getSubsystemID()) {
 			if (node == 255 || node == itcmp->address.getNodeID()) {
@@ -165,11 +168,11 @@ std::vector<JausAddress> DiscoveryComponentList::get_discovery_services()
 	return result;
 }
 
-bool DiscoveryComponentList::p_expired(unsigned int ts, unsigned int now)
+bool DiscoveryComponentList::p_expired(int64_t ts, int64_t now)
 {
-	unsigned int mynow = now;
+	int64_t mynow = now;
 	if (mynow == 0) {
-		mynow = ros::WallTime::now().sec;
+		mynow = now_secs();
 	}
 	return (p_timeout != 0 && ts != 0 && ts < mynow - p_timeout);
 }

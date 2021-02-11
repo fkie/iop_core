@@ -18,11 +18,7 @@
 #include "urn_jaus_jss_core_AccessControlClient/AccessControlClient_ReceiveFSM.h"
 #include "urn_jaus_jss_core_ManagementClient/ManagementClient_ReceiveFSM.h"
 
-#include <ros/ros.h>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-
+#include <functional>
 #include "ListManagerClient_ReceiveFSM_sm.h"
 
 namespace urn_jaus_jss_core_ListManagerClient
@@ -56,7 +52,7 @@ public:
 	void clear();
 	template<class T>
 	void add_state_handler(void(T::*handler)(bool success, unsigned int count), T*obj) {
-		p_state_handler.push_back(boost::bind(handler, obj, _1, _2));
+		p_state_handler.push_back(std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	ListManagerClient_ReceiveFSMContext *context;
@@ -69,9 +65,10 @@ protected:
 	urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM;
 	urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM* pManagementClient_ReceiveFSM;
 
-	std::vector<boost::function<void (bool success, unsigned int count)> > p_state_handler;
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	rclcpp::Logger logger;
+	std::vector<std::function<void (bool success, unsigned int count)> > p_state_handler;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
 	JausAddress p_remote;
@@ -88,6 +85,6 @@ protected:
 
 };
 
-};
+}
 
 #endif // LISTMANAGERCLIENT_RECEIVEFSM_H

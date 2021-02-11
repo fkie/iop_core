@@ -38,6 +38,6 @@ protected:
 
 };
 
-};
+}
 
 #endif // TRANSPORTSERVICE_H

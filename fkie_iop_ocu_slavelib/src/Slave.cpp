@@ -20,12 +20,13 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <fkie_iop_ocu_slavelib/Slave.h>
 #include <fkie_iop_ocu_slavelib/common.h>
 #include <fkie_iop_component/iop_component.h>
-#include <fkie_iop_msgs/OcuCmdEntry.h>
+#include <fkie_iop_msgs/msg/ocu_cmd_entry.hpp>
 #include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/string.hpp>
 
 
 using namespace urn_jaus_jss_core_AccessControlClient;
@@ -37,6 +38,7 @@ Slave* Slave::global_ptr = 0;
 
 
 Slave::Slave(JausAddress own_address)
+: logger(iop::RosNode::get_instance().get_logger().get_child("Slave"))
 {
 	global_ptr = this;
 	p_subsystem_restricted = 65535;
@@ -55,6 +57,7 @@ Slave::Slave(JausAddress own_address)
 }
 
 Slave::Slave(const Slave& other)
+: logger(other.logger)
 {
 	p_subsystem_restricted = 65535;
 	p_controlled_component_nr = 1;
@@ -71,7 +74,6 @@ Slave::Slave(const Slave& other)
 
 Slave::~Slave(void)
 {
-	pFeedbackTimer.stop();
 	delete global_ptr;
 }
 
@@ -98,7 +100,7 @@ AccessControlClient_ReceiveFSM *Slave::pGetAccesscontrolClient()
 			p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 			p_accesscontrol_client->add_reply_handler(&Slave::pAccessControlClientReplyHandler, this);
 		} else {
-			ROS_WARN_ONCE_NAMED("Slave", "no AccessControlClient found! Please include its plugin first (in the list), if you needs one!");
+			RCLCPP_WARN_ONCE(logger, "no AccessControlClient found! Please include its plugin first (in the list), if you needs one!");
 		}
 	}
 	return p_accesscontrol_client;
@@ -113,7 +115,7 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 		if (management_srv != NULL) {
 			p_management_client = management_srv->pManagementClient_ReceiveFSM;
 		} else {
-			ROS_WARN_ONCE_NAMED("Slave", "no management service available! Please include its plugin first (in the list), if you needs one!");
+			RCLCPP_WARN_ONCE(logger, "no management service available! Please include its plugin first (in the list), if you needs one!");
 		}
 		// set callbacks
 		if (p_management_client != 0) {
@@ -141,14 +143,13 @@ void Slave::set_supported_handoff(bool supported)
 
 void Slave::pInitRos()
 {
-	ROS_INFO_ONCE_NAMED("Slave", "=== Initialize OCU Slave ===");
-	iop::Config cfg("~Slave");
+	RCLCPP_INFO_ONCE(logger, "=== Initialize OCU Slave ===");
+	iop::Config cfg("Slave");
 	std::string control_addr;
 	cfg.param("control_addr", control_addr, control_addr);
 	if (!control_addr.empty()) {
 		// try to get the address of the component specified for this slave to avoid discovering
-		std::vector<std::string> strs;
-		boost::split(strs, control_addr, boost::is_any_of(".:"));
+		auto strs = iop::split(control_addr, ".:");
 		if (strs.size() > 3) {
 			throw new std::string("Invalid control_addr parameter: "+ control_addr + "\n");
 		} else {
@@ -162,14 +163,14 @@ void Slave::pInitRos()
 				p_default_control_addr.setComponentID(atoi(strs[2].c_str()));
 			}
 		}
-		ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %s", control_addr.c_str(), p_default_control_addr.str().c_str());
+		RCLCPP_INFO_ONCE(logger, "	control_addr: %s, decoded to: %s", control_addr.c_str(), p_default_control_addr.str().c_str());
 	}
 	cfg.param("authority", p_default_authority, p_default_authority);
 	std::map<int, std::string> access_control_map;
 	access_control_map[10] = "ACCESS_CONTROL_RELEASE";
 	access_control_map[11] = "ACCESS_CONTROL_MONITOR";
 	access_control_map[12] = "ACCESS_CONTROL_REQUEST";
-	cfg.param("access_control", p_default_access_control, p_default_access_control, true, true, "", access_control_map);
+	cfg.param("access_control", p_default_access_control, p_default_access_control, true, "", access_control_map);
 	cfg.param("use_queries", p_use_queries, p_use_queries);
 	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
 	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);
@@ -180,16 +181,16 @@ void Slave::pInitRos()
 //	iop::Component &cmp = iop::Component::get_instance();
 //	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
-	p_pub_control_feedback = cfg.advertise<fkie_iop_msgs::OcuFeedback>("/ocu_feedback", 1, true);
-	p_sub_control = cfg.subscribe<fkie_iop_msgs::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
+	p_pub_control_feedback = cfg.create_publisher<fkie_iop_msgs::msg::OcuFeedback>("/ocu_feedback", 1);
+	p_sub_control = cfg.create_subscription<fkie_iop_msgs::msg::OcuCmd>("/ocu_cmd", 10, std::bind(&Slave::pRosControl, this, std::placeholders::_1));
 }
 
-void Slave::pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control)
+void Slave::pRosControl(const fkie_iop_msgs::msg::OcuCmd::SharedPtr control)
 {
 	// is the command for specific client?
 	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands;
 	for (unsigned int i = 0; i < control->cmds.size(); i++) {
-		fkie_iop_msgs::OcuCmdEntry cmd = control->cmds[i];
+		auto cmd = control->cmds[i];
 		JausAddress ocu_client_addr = address_from_msg(cmd.ocu_client);
 		JausAddress control_addr = address_from_msg(cmd.address);
 		// apply default control address
@@ -268,7 +269,7 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 			if (cmp->set_access_control(it->second.first) or cmp->set_authority(it->second.second)) {
 				switch (it->second.first) {
 				case Component::ACCESS_CONTROL_RELEASE:
-					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_RELEASE to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_RELEASE to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 					pApplyToService(addr, it->second.first);
 					release_access(addr);
 					if (cmp->get_state() == Component::ACCESS_STATE_MONITORING) {
@@ -276,18 +277,18 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 					}
 					break;
 				case Component::ACCESS_CONTROL_MONITOR:
-					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 					cmp->set_state(Component::ACCESS_STATE_MONITORING);
 					pApplyToService(addr, it->second.first);
 					break;
 				case Component::ACCESS_CONTROL_REQUEST:
-					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_REQUEST to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_REQUEST to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 					// send request access
 					if (pGetAccesscontrolClient() != 0) {
 						cmp->set_authority(it->second.second);
 						request_access(addr, it->second.second);
 					} else {
-						ROS_WARN_NAMED("Slave", "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
+						RCLCPP_WARN(logger, "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 						cmp->set_state(Component::ACCESS_STATE_MONITORING);
 						pApplyToService(addr, it->second.first);
 					}
@@ -305,7 +306,7 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 		if (it->has_component(address)) {
 			switch (control_state) {
 			case Component::ACCESS_CONTROL_RELEASE:
-				ROS_DEBUG_NAMED("Slave", "  inform %s about access_deactivated", it->get_uri().c_str());
+				RCLCPP_DEBUG(logger, "  inform %s about access_deactivated", it->get_uri().c_str());
 				it->handler().access_deactivated(it->get_uri(), address);
 				it->set_address(address);
 				it->handler().cancel_events(it->get_uri(), address, p_use_queries);
@@ -314,7 +315,7 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				}
 				break;
 			case Component::ACCESS_CONTROL_MONITOR:
-				ROS_DEBUG_NAMED("Slave", "  inform %s about enable_monitoring_only", it->get_uri().c_str());
+				RCLCPP_DEBUG(logger, "  inform %s about enable_monitoring_only", it->get_uri().c_str());
 				it->handler().enable_monitoring_only(it->get_uri(), address);
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
@@ -323,7 +324,7 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				}
 				break;
 			case Component::ACCESS_CONTROL_REQUEST:
-				ROS_DEBUG_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
+				RCLCPP_DEBUG(logger, "  inform %s about control_allowed", it->get_uri().c_str());
 				it->handler().control_allowed(it->get_uri(), address, authority);
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
@@ -369,8 +370,8 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 
 void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char code)
 {
-	ROS_DEBUG_NAMED("Slave", "access control status of %s changed to %d", address.str().c_str(), code);
-	fkie_iop_msgs::OcuFeedback msg_feedback;
+	RCLCPP_DEBUG(logger, "access control status of %s changed to %d", address.str().c_str(), code);
+	auto msg_feedback = fkie_iop_msgs::msg::OcuFeedback();
 	Component* cmp = pGetComponent(address);
 	unsigned char authority = 205;
 	if (cmp != NULL) {
@@ -433,9 +434,9 @@ Component* Slave::pGetComponent(JausAddress &address)
 
 void Slave::pSendFeedback()
 {
-	fkie_iop_msgs::OcuFeedback msg_feedback;
+	auto msg_feedback = fkie_iop_msgs::msg::OcuFeedback();
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-		fkie_iop_msgs::OcuServiceInfo service_info;
+		auto service_info = fkie_iop_msgs::msg::OcuServiceInfo();
 		service_info.uri = it->get_uri();
 		service_info.addr_control = address_to_msg(it->get_address());
 		Component* cmp = pGetComponent(it->get_address());
@@ -449,19 +450,19 @@ void Slave::pSendFeedback()
 	msg_feedback.subsystem_restricted = p_subsystem_restricted;
 	msg_feedback.only_monitor = p_only_monitor;
 	msg_feedback.handoff_supported = p_handoff_supported;
-	p_pub_control_feedback.publish(msg_feedback);
+	p_pub_control_feedback->publish(msg_feedback);
 }
 
 void Slave::pManagementStatusHandler(JausAddress &address, unsigned char code)
 {
-	ROS_INFO_NAMED("Slave", "management status of %s changed to %d", address.str().c_str(), code);
+	RCLCPP_INFO(logger, "management status of %s changed to %d", address.str().c_str(), code);
 }
 
 void Slave::pDiscovered(const std::string &uri, JausAddress &address)
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		if (it->add_discovered(address, uri)) {
-			ROS_INFO_NAMED("Slave", "Discovered '%s' at address: %s", uri.c_str(), address.str().c_str());
+			RCLCPP_INFO(logger, "Discovered '%s' at address: %s", uri.c_str(), address.str().c_str());
 			//test for current control state, do we need to send access control request
 //			pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
 		}

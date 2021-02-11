@@ -20,36 +20,22 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
+#pragma once
 
-#ifndef EVENTSCONFIG_H
-#define EVENTSCONFIG_H
+#include <chrono>
 
-#include <ros/ros.h>
-#include <string>
+namespace iop {
 
-namespace iop
+static int64_t now_secs()
 {
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count();
+}
 
-class EventsConfig {
-public:
-#if __GNUC__ > 5
-	static constexpr float MINIMUM_RATE = 0.1f;
-	static constexpr float MAXIMUM_RATE = 25.0f;
-	static constexpr float RATE_PRECISION = 0.1f;
-#else
-	static const float MINIMUM_RATE;
-	static const float MAXIMUM_RATE;
-	static const float RATE_PRECISION;
-#endif
-	EventsConfig();
-	EventsConfig(EventsConfig const& from);
-	const EventsConfig& operator=(const EventsConfig& from);
-	int get_timeout();
+static int64_t now_millis()
+{
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
+}
 
-protected:
-	int p_default_timeout;
-};
-
-};
-
-#endif
+}

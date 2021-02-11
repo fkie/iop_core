@@ -24,7 +24,7 @@ along with this program; or you can read the full license at
 #define OCU_COMPONENT_H_
 
 #include <Transport/JausAddress.h>
-#include <fkie_iop_msgs/JausAddress.h>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
 
 namespace iop
 {
@@ -65,8 +65,8 @@ protected:
 	unsigned char p_authority;
 };
 
-};
+}
 
-};
+}
 
 #endif

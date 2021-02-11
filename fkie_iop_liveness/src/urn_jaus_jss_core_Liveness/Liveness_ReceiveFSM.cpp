@@ -22,8 +22,7 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_Liveness/Liveness_ReceiveFSM.h"
-
-#include <ros/console.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 
 using namespace JTS;
@@ -67,10 +66,9 @@ void Liveness_ReceiveFSM::setupNotifications()
 
 void Liveness_ReceiveFSM::sendReportHeartbeatPulseAction(QueryHeartbeatPulse msg, Receive::Body::ReceiveRec transportData)
 {
-	/// Insert User Code HERE
-  /// Insert User Code HERE
+    /// Insert User Code HERE
     JausAddress sender = transportData.getAddress();
-    ROS_DEBUG_NAMED("Liveness", "send ReportHeartbeatPulse to %s", sender.str().c_str());
+    RCLCPP_DEBUG(iop::RosNode::get_instance().get_logger().get_child("Liveness"), "send ReportHeartbeatPulse to %s", sender.str().c_str());
     ReportHeartbeatPulse response;
     sendJausMessage(response, sender);
 }
@@ -79,4 +77,4 @@ void Liveness_ReceiveFSM::sendReportHeartbeatPulseAction(QueryHeartbeatPulse msg
 
 
 
-};
+}

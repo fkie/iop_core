@@ -30,9 +30,9 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Events/InternalEvents/InternalEventsSet.h"
 #include "InternalEvent.h"
 
-#include <boost/thread/recursive_mutex.hpp>
-#include <ros/ros.h>
 #include <string>
+
+#include <fkie_iop_component/timer.hpp>
 
 #include "EventsConfig.h"
 
@@ -63,14 +63,14 @@ public:
 	void send_report(jUnsignedByte event_id, JTS::Message &report, unsigned short id=0);
 
 	/** ========= methods to get events ======= **/
-	void get_events_by_query(jUnsignedShortInteger query_msg_id, std::vector<boost::shared_ptr<iop::InternalEvent> >& result);
-	void get_events_by_type(jUnsignedByte event_type, std::vector<boost::shared_ptr<iop::InternalEvent> >& result);
-	void get_events_by_id(jUnsignedByte event_id, std::vector<boost::shared_ptr<iop::InternalEvent> >& result);
-	void get_events_all(std::vector<boost::shared_ptr<iop::InternalEvent> > &result);
+	void get_events_by_query(jUnsignedShortInteger query_msg_id, std::vector<std::shared_ptr<iop::InternalEvent> >& result);
+	void get_events_by_type(jUnsignedByte event_type, std::vector<std::shared_ptr<iop::InternalEvent> >& result);
+	void get_events_by_id(jUnsignedByte event_id, std::vector<std::shared_ptr<iop::InternalEvent> >& result);
+	void get_events_all(std::vector<std::shared_ptr<iop::InternalEvent> > &result);
 
 	/** ========= methods to manage events ======= **/
-	boost::shared_ptr<iop::InternalEvent> create_event(urn_jaus_jss_core_Events::CreateEvent msg, JausAddress requestor);
-	boost::shared_ptr<iop::InternalEvent> update_event(urn_jaus_jss_core_Events::UpdateEvent msg, JausAddress requestor);
+	std::shared_ptr<iop::InternalEvent> create_event(urn_jaus_jss_core_Events::CreateEvent msg, JausAddress requestor);
+	std::shared_ptr<iop::InternalEvent> update_event(urn_jaus_jss_core_Events::UpdateEvent msg, JausAddress requestor);
 	bool cancel_event(urn_jaus_jss_core_Events::CancelEvent msg, JausAddress requestor);
 
 	/** ========= helper methods ======= **/
@@ -94,21 +94,21 @@ protected:
 		bool operator!=(RegisteredReports &value);
 		bool supports_rate(double rate);
 	};
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
-	ros::NodeHandle p_nh;
-	ros::Timer p_timeout_timer;
+	rclcpp::Logger events_logger;
+	iop::Timer p_timer;
 	EventsConfig p_config;
 	JTS::StateMachine *jrHandler;
 	std::vector<RegisteredReports> p_registered_reports;
-	std::map<jUnsignedByte, boost::shared_ptr<iop::InternalEvent> > p_events;  //event id, current active events
+	std::map<jUnsignedByte, std::shared_ptr<iop::InternalEvent> > p_events;  //event id, current active events
 
-	boost::shared_ptr<iop::InternalEvent> p_update_event(jUnsignedByte event_id, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, jUnsignedShortInteger query_msg_id, JausAddress requestor, jUnsignedByte request_id, jUnsignedByte event_type, double event_rate);
-	void p_timeout(const ros::TimerEvent& event);
+	std::shared_ptr<iop::InternalEvent> p_update_event(jUnsignedByte event_id, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, jUnsignedShortInteger query_msg_id, JausAddress requestor, jUnsignedByte request_id, jUnsignedByte event_type, double event_rate);
+	void p_timeout();
 };
 
-};
+}
 
 #endif

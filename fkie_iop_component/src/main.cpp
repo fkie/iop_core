@@ -23,31 +23,32 @@ along with this program; or you can read the full license at
 
 #include <iostream>
 #include <signal.h>
+#include <rclcpp/rclcpp.hpp>
 #include "Transport/OS.h"
+#include "fkie_iop_component/ros_node.hpp"
 #include "fkie_iop_component/iop_component.h"
 
-#include <fkie_iop_builder/ros_init.h>
 
-int main(int argc, char *argv[])
+int main(int /* argc */, char* /*argv*/ [] )
 {
-	// Instantiate the component and start it.
-	try
-	{
-		iop::Component* cmpt = iop::ros_init<iop::Component>(argc, argv, "iop_component_default", 126, 0x40, 81);
+    // Instantiate the component and start it.
+//     try
+//     {
+        auto rosnode = std::make_shared<iop::RosNode>("iop_component_default", "");
+        rosnode->init_component(126, 0x40, 81);
 
-		// Wait until signaled to exit
-		//    exit_signal.wait();
-		ros::spin();
-		// Shutdown the component and threads
-		cmpt->shutdown_component();
+        // Wait until signaled to exit
+        //    exit_signal.wait();
+        rclcpp::spin(rosnode);
+        //ros::spin();
+        // Shutdown the component and threads
+        rosnode->get_component()->shutdown_component();
+        rclcpp::shutdown();
 
-		// Give a little time for proper shutdown
-		DeVivo::Junior::JrSleep(100);
-
-		// Free the component
-		delete cmpt;
-	} catch (std::runtime_error &e) {
-		ROS_ERROR("Failed to start IOP component: %s", e.what());
-		exit(1);
-	}
+        // Give a little time for proper shutdown
+        DeVivo::Junior::JrSleep(100);
+//     } catch (std::runtime_error &e) {
+//         RCLCPP_ERROR("Failed to start IOP component: %s", e.what());
+//         exit(1);
+//     }
 }

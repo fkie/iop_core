@@ -25,75 +25,83 @@ along with this program; or you can read the full license at
 #define ROSINIT_H
 
 #include <stdio.h>
-#include <ros/ros.h>
-#include <ros/console.h>
+#include "rclcpp/node.hpp"
 
-static ros::NodeHandle *nh;
-static ros::NodeHandle *pnh;
 
 namespace iop {
 
-template <class T>
-T *ros_init(int argc, char *argv[], const std::string& ros_node_name, int subsystem, int node, int component){
-    ros::init(argc, argv, ros_node_name);
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
-       ros::console::notifyLoggerLevelsChanged();
-    }
-    // Get the parameter for component identification
-    int id_subsystem = subsystem;
-    int id_node = node;
-    int id_component = component;
-    bool search_for_id_params = true;
-    nh = new ros::NodeHandle();
-    pnh = new ros::NodeHandle("~");
-    std::string iop_address;
-    float iop_address_float;
-    int iop_address_int;
-    if (pnh->getParam("iop_address", iop_address)) {
-      int p1, p2, p3;
-      int scan_result = std::sscanf(iop_address.c_str(), "%d.%d.%d", &p1, &p2, &p3);
-      if (scan_result == 2) {
-        ROS_INFO("found ~iop_address: %s", iop_address.c_str());
-        id_subsystem = p1;
-        id_node = p2;
-        search_for_id_params = false;
-      } else if (scan_result == 3) {
-        ROS_INFO("found ~iop_address: %s", iop_address.c_str());
-        id_subsystem = p1;
-        id_node = p2;
-        id_component = p3;
-        search_for_id_params = false;
-      } else {
-        ROS_WARN("invalid format in ~iop_address[str]: %s, should be subsystem.node.component or subsystem.node", iop_address.c_str());
+
+class ComponentNode: public rclcpp::Node
+{
+  public:
+      ComponentNode(const std::string &node_name, const std::string &namespace_, int subsystem, int node, int component): 
+          Node(node_name, namespace_,
+              rclcpp::NodeOptions()
+                  .allow_undeclared_parameters(true)
+                  .automatically_declare_parameters_from_overrides(true))
+      {
+          id_subsystem = subsystem;
+          id_node = node;
+          id_component = component;
+          this->declare_parameter<std::string>("iop_address", "");
       }
-    } else if (pnh->getParam("iop_address", iop_address_float)) {
-      throw std::runtime_error("found ~iop_address, but with invalid type: float");
-    } else if (pnh->getParam("iop_address", iop_address_int)) {
-      throw std::runtime_error("found ~iop_address, but with invalid type: int");
-    } else {
-      ROS_INFO("~iop_address[str] not found, search for id_subsystem, id_node and id_component...");
-    }
-    // if no ~iop_address was found or it was invalid, we search for id_.. parameter
-    if (search_for_id_params) {
-      if (pnh->getParam("id_subsystem", id_subsystem)) {
-        ROS_INFO("found ~id_subsystem: %d", id_subsystem);
-      } else if (nh->getParam("id_subsystem", id_subsystem)) {
-        ROS_INFO("found id_subsystem: %d", id_subsystem);
+
+      template <class T>
+      T *init_component(int subsystem, int node, int component) {
+          rclcpp::Parameter addr_param = this->get_parameter("iop_address");
+          if (addr_param.get_type() == rclcpp::ParameterType::PARAMETER_STRING) {
+              std::string addr_str = addr_param.as_string();
+              if (!addr_str.empty()) {
+                  int p1, p2, p3;
+                  int scan_result = std::sscanf(addr_str.c_str(), "%d.%d.%d", &p1, &p2, &p3);
+                  if (scan_result == 2) {
+                      RCLCPP_INFO("found iop_address: %s", addr_str.c_str());
+                      id_subsystem = p1;
+                      id_node = p2;
+                      search_for_id_params = false;
+                  } else if (scan_result == 3) {
+                      RCLCPP_INFO("found iop_address: %s", addr_str.c_str());
+                      id_subsystem = p1;
+                      id_node = p2;
+                      id_component = p3;
+                      search_for_id_params = false;
+                  } else {
+                      RCLCPP_WARN("invalid format in iop_address[str]: %s, should be subsystem.node.component or subsystem.node", addr_str.c_str());
+                  }
+              } else {
+                  throw std::runtime_error("iop_address is empty");
+              }
+          } else {
+              throw std::runtime_error("iop_address[str] has invalid type %s", addr_param.get_type_name().c_str());
+          }
+          // if no ~iop_address was found or it was invalid, we search for id_.. parameter
+          // if (search_for_id_params) {
+          //   if (pnh->getParam("id_subsystem", id_subsystem)) {
+          //     ROS_INFO("found ~id_subsystem: %d", id_subsystem);
+          //   } else if (nh->getParam("id_subsystem", id_subsystem)) {
+          //     ROS_INFO("found id_subsystem: %d", id_subsystem);
+          //   }
+          //   if (pnh->getParam("id_node", id_node)) {
+          //     ROS_INFO("found ~id_node: %d", id_node);
+          //   } else if (nh->getParam("id_node", id_node)) {
+          //     ROS_INFO("found id_node: %d", id_node);
+          //   }
+          //   if (pnh->getParam("id_component", id_component)) {
+          //     ROS_INFO("found ~id_component: %d", id_component);
+          //   } else if (nh->getParam("id_component", id_component)) {
+          //     ROS_INFO("found id_component: %d", id_component);
+          //   }
+          // }
+          RCLCPP_INFO("JAUS address of the component: %d.%d.%d", id_subsystem, id_node, id_component);
+          return new T(id_subsystem, id_node, id_component);
       }
-      if (pnh->getParam("id_node", id_node)) {
-        ROS_INFO("found ~id_node: %d", id_node);
-      } else if (nh->getParam("id_node", id_node)) {
-        ROS_INFO("found id_node: %d", id_node);
-      }
-      if (pnh->getParam("id_component", id_component)) {
-        ROS_INFO("found ~id_component: %d", id_component);
-      } else if (nh->getParam("id_component", id_component)) {
-        ROS_INFO("found id_component: %d", id_component);
-      }
-    }
-    ROS_INFO("JAUS address of the component: %d.%d.%d", id_subsystem, id_node, id_component);
-    return new T(id_subsystem, id_node, id_component);
+
+
+    private:
+        int id_subsystem = 0;
+        int id_node = 0;
+        int id_component = 0;
+        bool search_for_id_params = true;
 }
 
-};
 #endif // ROSINIT_H

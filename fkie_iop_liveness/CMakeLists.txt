@@ -1,28 +1,31 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(fkie_iop_liveness)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-                    fkie_iop_events
-                    roscpp)
-iop_init(COMPONENT_ID 0)
-iop_export_service(urn_jaus_jss_core_Liveness)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS
-        fkie_iop_events
-        roscpp
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-ignored-qualifiers)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(fkie_iop_events REQUIRED)
+
+
+###############
+## setup IOP ##
+###############
+iop_init()
+iop_export_service(
+  urn_jaus_jss_core_Liveness
 )
-
-###########
-## Build ##
-###########
 iop_code_generator(
   IDLS
     urn.jaus.jss.core-v1.1/Events.xml
@@ -38,32 +41,48 @@ iop_code_generator(
   GENERATED_SOURCES cppfiles
 )
 
-include_directories(${catkin_INCLUDE_DIRS})
+###########
+## Build ##
+###########
+set(dependencies
+  fkie_iop_events
+)
 
-add_library(${PROJECT_NAME}
+include_directories(
+  ${IOP_COMPONENT_INCLUDE_DIRS}
+)
+
+
+add_library(${PROJECT_NAME} SHARED
             src/LivenessPlugin.cpp
             ${cppfiles}
 )
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-)
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
+#############
+## Install ##
+#############
 install(
-  DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS}
+  DESTINATION include/${PROJECT_NAME}
   PATTERN "*.old" EXCLUDE
   PATTERN "*.gen" EXCLUDE
 )
 
 install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
-## Mark other files for installation (e.g. launch and bag files, etc.)
 install(
    FILES ./plugin_iop.xml
-   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories(${IOP_COMPONENT_INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+
+ament_package()

@@ -1,68 +1,97 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(fkie_iop_component)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 # add_definitions(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS
-  diagnostic_msgs
-  fkie_iop_builder
-  pluginlib
-  roscpp
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-ignored-qualifiers)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(fkie_iop_builder REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+
+set(dependencies
+    diagnostic_msgs
+    fkie_iop_builder
+    pluginlib
+    rclcpp
 )
 
 iop_init_paths()
 
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS diagnostic_msgs fkie_iop_builder pluginlib roscpp
+include_directories(
+    ${diagnostic_msgs_INCLUDE_DIRS}
+    ${fkie_iop_builder_INCLUDE_DIRS}
+    ${jaustoolset_INCLUDE_DIRS}
+    ${rclcpp_INCLUDE_DIRS}
+    ${pluginlib_INCLUDE_DIRS}
+    include
 )
 
 
-include_directories(${catkin_INCLUDE_DIRS}
-                    include
-)
-
+# create component executable
 add_executable(iop_component
                src/iop_component.cpp
+               src/iop_config.cpp
                src/main.cpp
+               src/ros_node.cpp
+               src/timer.cpp
 )
-# Specify libraries to link a library or executable target against
-target_link_libraries(iop_component
-                      ${catkin_LIBRARIES}
-)
+ament_target_dependencies(iop_component ${dependencies})
 
-add_library(${PROJECT_NAME}
+# create shared library
+add_library(${PROJECT_NAME} SHARED
             src/iop_component.cpp
+            src/iop_config.cpp
+            src/ros_node.cpp
+            src/timer.cpp
 )
-
-target_link_libraries(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-)
-
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 # Mark headers for installation
 install(
-  DIRECTORY include/${PROJECT_NAME} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-  PATTERN "*.old" EXCLUDE
-  PATTERN "*.gen" EXCLUDE
+    DIRECTORY include/${PROJECT_NAME}/
+    DESTINATION include/${PROJECT_NAME}
+    PATTERN "*.old" EXCLUDE
+    PATTERN "*.gen" EXCLUDE
 )
 
 install(
-  FILES include/JConstants.h DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  FILES include/JConstants.h
+  DESTINATION include/${PROJECT_NAME}
 )
 
 # Mark executables and/or libraries for installation
-install(TARGETS iop_component
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(
+    TARGETS iop_component
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
 )
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(
+    TARGETS ${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
 )
 
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+
+ament_package()

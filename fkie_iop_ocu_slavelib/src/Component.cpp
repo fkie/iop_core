@@ -22,7 +22,6 @@ along with this program; or you can read the full license at
 
 #include <algorithm>    // std::find
 
-#include <boost/algorithm/string.hpp>
 #include <fkie_iop_ocu_slavelib/common.h>
 #include <fkie_iop_ocu_slavelib/Component.h>
 

@@ -23,8 +23,7 @@ along with this program; or you can read the full license at
 #include "fkie_iop_events/InternalEvent.h"
 #include "urn_jaus_jss_core_Events/Events_ReceiveFSM.h"
 
-#include <ros/console.h>
-
+#include <fkie_iop_component/ros_node.hpp>
 
 using namespace JTS;
 
@@ -32,7 +31,7 @@ namespace urn_jaus_jss_core_Events
 {
 
 Events_ReceiveFSM::Events_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
-: p_event_list(this)
+: p_event_list(this), events_logger(iop::RosNode::get_instance().get_logger().get_child("Events"))
 {
 
 	/*
@@ -54,7 +53,7 @@ void Events_ReceiveFSM::setupNotifications()
 	pTransport_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_Events_ReceiveFSM_Receiving_Ready", "Transport_ReceiveFSM");
 	registerNotification("Receiving_Ready", pTransport_ReceiveFSM->getHandler(), "InternalStateChange_To_Transport_ReceiveFSM_Receiving", "Events_ReceiveFSM");
 	registerNotification("Receiving", pTransport_ReceiveFSM->getHandler(), "InternalStateChange_To_Transport_ReceiveFSM_Receiving", "Events_ReceiveFSM");
-	ROS_DEBUG_NAMED("Events", "Events service created");
+	RCLCPP_DEBUG(events_logger, "Events service created");
 }
 
 void Events_ReceiveFSM::cancelEventAction(CancelEvent msg, Receive::Body::ReceiveRec transportData)
@@ -63,7 +62,7 @@ void Events_ReceiveFSM::cancelEventAction(CancelEvent msg, Receive::Body::Receiv
 	jUnsignedByte request_id = msg.getBody()->getCancelEventRec()->getRequestID();
 	jUnsignedByte event_id = msg.getBody()->getCancelEventRec()->getEventID();
 	if (p_event_list.cancel_event(msg, requestor)) {
-		ROS_DEBUG_NAMED("Events", "cancelEventAction, send ConfirmEvent for event id: %d", (int)event_id);
+		RCLCPP_DEBUG(events_logger, "cancelEventAction, send ConfirmEvent for event id: %d", (int)event_id);
 		ConfirmEventRequest response;
 		response.getBody()->getConfirmEventRequestRec()->setEventID(event_id);
 		response.getBody()->getConfirmEventRequestRec()->setRequestID(request_id);
@@ -75,7 +74,7 @@ void Events_ReceiveFSM::cancelEventAction(CancelEvent msg, Receive::Body::Receiv
 		rvent_rec->setRequestID(request_id);
 		rvent_rec->setResponseCode(6);
 	//	rvent_rec->setErrorMessage("error, invalid event ID for cancel event");
-		ROS_DEBUG_NAMED("Events", "cancelEventAction send RejectEventRequest for event id %d with request id %d to %s",
+		RCLCPP_DEBUG(events_logger, "cancelEventAction send RejectEventRequest for event id %d with request id %d to %s",
 				(int)event_id, (int)request_id, requestor.str().c_str());
 		sendJausMessage( revent, requestor );
 	}
@@ -90,8 +89,8 @@ void Events_ReceiveFSM::createCommandEventAction(CreateCommandEvent msg, Receive
 	rvent_rec->setRequestID(request_id);
 	rvent_rec->setResponseCode(6);
 	rvent_rec->setErrorMessage("command events are not implemented in FKIE ROS/IOP Bridge");
-	ROS_WARN_NAMED("Events", "Create Command Event not implemented!");
-	ROS_DEBUG_NAMED("Events", "createCommandEventAction send RejectEventRequest for request id %d to %s",
+	RCLCPP_WARN(events_logger, "Create Command Event not implemented!");
+	RCLCPP_DEBUG(events_logger, "createCommandEventAction send RejectEventRequest for request id %d to %s",
 			(int)request_id, requestor.str().c_str());
 	sendJausMessage( revent, requestor );
 }
@@ -99,14 +98,14 @@ void Events_ReceiveFSM::createCommandEventAction(CreateCommandEvent msg, Receive
 void Events_ReceiveFSM::createEventAction(CreateEvent msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress requestor = transportData.getAddress();
-	boost::shared_ptr<iop::InternalEvent> event = p_event_list.create_event(msg, requestor);
+	std::shared_ptr<iop::InternalEvent> event = p_event_list.create_event(msg, requestor);
 	if (event->is_valid()) {
 		// send confirm message
 		ConfirmEventRequest response;
 		response.getBody()->getConfirmEventRequestRec()->setRequestID(event->get_request_id());
 		response.getBody()->getConfirmEventRequestRec()->setEventID(event->get_event_id());
 		response.getBody()->getConfirmEventRequestRec()->setConfirmedPeriodicRate(event->get_event_rate());
-		ROS_DEBUG_NAMED("Events", "send confirm create event to %s, request id: %d, query msg id: %#x",
+		RCLCPP_DEBUG(events_logger, "send confirm create event to %s, request id: %d, query msg id: %#x",
 				requestor.str().c_str(), event->get_request_id(), event->get_query_msg_id());
 		sendJausMessage( response, requestor );
 		event->send_last_report();
@@ -120,7 +119,7 @@ void Events_ReceiveFSM::createEventAction(CreateEvent msg, Receive::Body::Receiv
 		if (!rmsg.empty()) {
 			rvent_rec->setErrorMessage(rmsg);
 		}
-		ROS_DEBUG_NAMED("Events", "send REJECT create event to %s, CreateEvent: %d, rcode: %d, msg: %s",
+		RCLCPP_DEBUG(events_logger, "send REJECT create event to %s, CreateEvent: %d, rcode: %d, msg: %s",
 				requestor.str().c_str(), event->get_request_id(), event->get_error_code(), rmsg.c_str());
 		sendJausMessage( revent, requestor );
 	}
@@ -131,7 +130,7 @@ void Events_ReceiveFSM::sendReportEventTimeoutAction(QueryEventTimeout msg, Rece
 	JausAddress requestor = transportData.getAddress();
 	ReportEventTimeout response;
 	jUnsignedByte timeout = p_event_list.get_config().get_timeout();
-	ROS_DEBUG_NAMED("Events", "send EventTimeout to %s, timeout: %d", requestor.str().c_str(), timeout);
+	RCLCPP_DEBUG(events_logger, "send EventTimeout to %s, timeout: %d", requestor.str().c_str(), timeout);
 	response.getBody()->getReportTimoutRec()->setTimeout(timeout);
 	sendJausMessage( response, requestor );
 }
@@ -143,7 +142,7 @@ void Events_ReceiveFSM::sendReportEventsAction(QueryEvents msg, Receive::Body::R
 	try {
 		QueryEvents::Body::QueryEventsVar *evrec = msg.getBody()->getQueryEventsVar();
 		jUnsignedByte filter = evrec->getFieldValue();
-		std::vector<boost::shared_ptr<iop::InternalEvent> > events;
+		std::vector<std::shared_ptr<iop::InternalEvent> > events;
 		// add filter support specified in QueryEvents message
 		switch(filter) {
 			case 0:
@@ -161,16 +160,16 @@ void Events_ReceiveFSM::sendReportEventsAction(QueryEvents msg, Receive::Body::R
 		}
 		for (unsigned int i = 0; i < events.size(); i++) {
 			ReportEvents::Body::EventList::ReportEventRec event;
-			boost::shared_ptr<iop::InternalEvent> &ievent = events[i];
+			std::shared_ptr<iop::InternalEvent> &ievent = events[i];
 			event.setEventID(ievent->get_event_id());
 			event.setEventType(ievent->get_event_type());
 			event.getQueryMessage()->set(ievent->get_query_msg().getLength(), ievent->get_query_msg().getData());
 			response.getBody()->getEventList()->addElement(event);
 		}
 	} catch (std::exception &e) {
-		ROS_WARN_NAMED("Events", "ERR %s", e.what());
+		RCLCPP_WARN(events_logger, "ERR %s", e.what());
 	}
-	ROS_DEBUG_NAMED("Events", "sendReportEventsAction to %s, event count: %d",
+	RCLCPP_DEBUG(events_logger, "sendReportEventsAction to %s, event count: %d",
 			requestor.str().c_str(), response.getBody()->getEventList()->getNumberOfElements());
 	sendJausMessage( response, requestor );
 }
@@ -178,7 +177,7 @@ void Events_ReceiveFSM::sendReportEventsAction(QueryEvents msg, Receive::Body::R
 void Events_ReceiveFSM::updateEventAction(UpdateEvent msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress requestor = transportData.getAddress();
-	boost::shared_ptr<iop::InternalEvent> event = p_event_list.update_event(msg, requestor);
+	std::shared_ptr<iop::InternalEvent> event = p_event_list.update_event(msg, requestor);
 	int event_id = (int)msg.getBody()->getUpdateEventRec()->getEventID();
 	if (event->is_valid()) {
 		// send confirm message
@@ -186,7 +185,7 @@ void Events_ReceiveFSM::updateEventAction(UpdateEvent msg, Receive::Body::Receiv
 		response.getBody()->getConfirmEventRequestRec()->setRequestID(event->get_request_id());
 		response.getBody()->getConfirmEventRequestRec()->setEventID(event->get_event_id());
 		response.getBody()->getConfirmEventRequestRec()->setConfirmedPeriodicRate(event->get_event_rate());
-		ROS_DEBUG_NAMED("Events", "send confirm update event %d to %s, request id: %d, query msg id: %#x",
+		RCLCPP_DEBUG(events_logger, "send confirm update event %d to %s, request id: %d, query msg id: %#x",
 				event_id, requestor.str().c_str(), event->get_request_id(), event->get_query_msg_id());
 		sendJausMessage( response, requestor );
 	} else {
@@ -199,11 +198,11 @@ void Events_ReceiveFSM::updateEventAction(UpdateEvent msg, Receive::Body::Receiv
 		if (!rmsg.empty()) {
 			rvent_rec->setErrorMessage(rmsg);
 		}
-		ROS_DEBUG_NAMED("Events", "send REJECT update event %d to %s, UpdateEvent: %d, rcode: %d, msg: %s",
+		RCLCPP_DEBUG(events_logger, "send REJECT update event %d to %s, UpdateEvent: %d, rcode: %d, msg: %s",
 				event_id, requestor.str().c_str(), event->get_request_id(), event->get_error_code(), rmsg.c_str());
 		sendJausMessage( revent, requestor );
 	}
 }
 
 
-};
+}

@@ -1,57 +1,78 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(fkie_iop_ocu_slavelib)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-                    fkie_iop_accesscontrol
-                    fkie_iop_discovery
-                    fkie_iop_management
-                    fkie_iop_msgs
-                    roscpp)
-find_package(Boost REQUIRED COMPONENTS system)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
 
-iop_init(COMPONENT_ID 0)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-###################################
-## catkin specific configuration ##
-###################################
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-ignored-qualifiers)
+endif()
 
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS
-          fkie_iop_accesscontrol
-          fkie_iop_discovery
-          fkie_iop_management
-          fkie_iop_msgs
-          roscpp
+find_package(ament_cmake REQUIRED)
+find_package(fkie_iop_discovery REQUIRED)
+find_package(fkie_iop_management REQUIRED)
+find_package(fkie_iop_msgs REQUIRED)
+
+###############
+## setup IOP ##
+###############
+iop_init()
+
+###########
+## Build ##
+###########
+set(dependencies
+  fkie_iop_discovery
+  fkie_iop_management
+  fkie_iop_msgs
 )
 
-include_directories(include
-                    ${catkin_INCLUDE_DIRS}
-                    ${Boost_INCLUDE_DIRS}
+include_directories(
+  include
+  ${IOP_COMPONENT_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
             src/Component.cpp
             src/ServiceInfo.cpp
             src/Slave.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-                      ${Boost_LIBRARIES}
-)
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#############
+## Install ##
+#############
+
+install(
+  DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS}
+  DESTINATION include/${PROJECT_NAME}
+  PATTERN "*.old" EXCLUDE
+  PATTERN "*.gen" EXCLUDE
 )
 
 install(
-  DIRECTORY include/${PROJECT_NAME} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  PATTERN "*.old" EXCLUDE
+  PATTERN "*.gen" EXCLUDE
 )
 
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+
+ament_package()

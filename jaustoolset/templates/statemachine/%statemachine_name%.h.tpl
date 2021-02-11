@@ -43,6 +43,6 @@ protected:
     
 };
 
-};
+}
 
 #endif // %statemachine_name_allcaps%_H

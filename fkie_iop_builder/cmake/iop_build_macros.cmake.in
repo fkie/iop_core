@@ -37,7 +37,7 @@ macro(iop_init_paths)
   if ("${PROJECT_NAME}" STREQUAL "")
     message(FATAL_ERROR "You must call project() first")
   endif()
-  message(STATUS "JTS path is ${jaustoolset_WORKING_DIR}")
+  message(STATUS "JTS path is ${jaustoolset_SHARE_PATH}")
 endmacro()
 
 macro(iop_init)
@@ -55,20 +55,12 @@ macro(iop_init)
   message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
   file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
   # we need the devel include path to avoid set the CPATH environment variable
-  set(DEVEL_SPACE ${CATKIN_DEVEL_PREFIX})
-  message(STATUS "CATKIN_DEVEL_PREFIX: ${CATKIN_DEVEL_PREFIX}")
-  if ("${DEVEL_SPACE}/lib/iop_codegenerator.jar" MATCHES "/.private/*")
-    # if run with "catkin build" it build in .private location -> move up
-    get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
-    get_filename_component(DEVEL_SPACE "${DEVEL_SPACE}" PATH)
-    message(STATUS "DEVEL_SPACE (removed private space): ${DEVEL_SPACE}")
-  endif()
+  set(DEVEL_SPACE ${CMAKE_INSTALL_PREFIX})
   set(DEVEL_INCLUDE "${DEVEL_SPACE}/include")
   message(STATUS "DEVEL_INCLUDE: ${DEVEL_INCLUDE}")
   set(DEVEL_LIB "${DEVEL_SPACE}/lib")
   message(STATUS "DEVEL_LIB: ${DEVEL_LIB}")
-  set(catkin_INCLUDE_DIRS "${DEVEL_INCLUDE};${IOP_COMPONENT_DIR};${IOP_COMPONENT_DIR}/include;${catkin_INCLUDE_DIRS}")
-  message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
+  set(IOP_COMPONENT_INCLUDE_DIRS ${IOP_COMPONENT_DIR} ${IOP_COMPONENT_DIR}/include)
   set(IOP_INIT_OK 1)
   find_program(IOP_DIFF diff)
   find_package(Java)
@@ -91,11 +83,13 @@ macro(iop_init)
     # use own libraries
     set(jaustoolset_INCLUDE_JARS ${jaustoolset_INCLUDE_JARS_S11})
   endif()
+  message(STATUS "jaustoolset_INCLUDE_JARS: ${jaustoolset_INCLUDE_JARS}")
 endmacro()
 
 macro(iop_export_service)
   foreach(service ${ARGN})
       file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include/${service}")
+      list(APPEND "IOP_COMPONENT_INCLUDE_DIRS" "${IOP_COMPONENT_DIR}/include/${service}")
       list(APPEND "IOP_INSTALL_INCLUDE_DIRS" "${IOP_COMPONENT_DIR}/include/${service}")
   endforeach()
   message(STATUS "export IOP_INSTALL_INCLUDE_DIRS: ${IOP_INSTALL_INCLUDE_DIRS}")
@@ -122,7 +116,7 @@ macro(iop_code_generator)
   if(NOT "${IOP_INIT_OK}" EQUAL 1)
     message(FATAL_ERROR "You must call iop_init() first")
   endif()
-  list(APPEND "IOP_INCLUDE_DIRS" "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}")
+  list(APPEND "IOP_INCLUDE_DIRS" "${CMAKE_INSTALL_PREFIX}/include")
   message(STATUS "new IOP_INCLUDE_DIRS ${IOP_INCLUDE_DIRS}")
   cmake_parse_arguments(iop_arg "" "GENERATED_SOURCES;COMPONENT_ID" "IDLS;OWN_IDLS;OVERRIDES;EXTERN_SERVICES" ${ARGN})
   _iop_filter_list(iop_arg_OVERRIDE_SOURCES "cpp" ${iop_arg_OVERRIDES})
@@ -142,7 +136,7 @@ macro(iop_code_generator)
     OUTPUT "jaus.xml"
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" "${IOP_COMPONENT_ID}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/jaus/"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/include"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     DEPENDS ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
   )
@@ -157,14 +151,14 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.headers"
-    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${DEVEL_LIB}/iop_codegenerator.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
+    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_JAVA_LIB_PATH}/iop_codegenerator.jar org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
-    COMMAND find ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION} -name "*.old" -type f -delete
-    COMMAND cp -r -v -t ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION} ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
-    WORKING_DIRECTORY "${jaustoolset_WORKING_DIR}"
+    COMMAND find ${CMAKE_INSTALL_PREFIX}/include -name "*.old" -type f -delete
+    # COMMAND cp -r -v -t ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME} ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
+    WORKING_DIRECTORY "${jaustoolset_SHARE_PATH}"
     DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
   )
 

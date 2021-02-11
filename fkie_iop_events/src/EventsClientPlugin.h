@@ -46,6 +46,6 @@ protected:
 
 };
 
-};
+}
 
 #endif

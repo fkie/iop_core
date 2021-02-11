@@ -23,6 +23,7 @@ along with this program; or you can read the full license at
 
 #include "urn_jaus_jss_core_ListManager/ListManager_ReceiveFSM.h"
 #include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 
 
@@ -34,6 +35,7 @@ namespace urn_jaus_jss_core_ListManager
 
 
 ListManager_ReceiveFSM::ListManager_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Management::Management_ReceiveFSM* pManagement_ReceiveFSM)
+: logger(iop::RosNode::get_instance().get_logger().get_child("ListManager"))
 {
 
 	/*
@@ -83,7 +85,7 @@ void ListManager_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pManagement_ReceiveFSM->getHandler(), "InternalStateChange_To_Management_ReceiveFSM_Receiving_Ready", "ListManager_ReceiveFSM");
 	registerNotification("Receiving", pManagement_ReceiveFSM->getHandler(), "InternalStateChange_To_Management_ReceiveFSM_Receiving", "ListManager_ReceiveFSM");
 
-	iop::Config cfg("~ListManager");
+	iop::Config cfg("ListManager");
 }
 
 void ListManager_ReceiveFSM::deleteElementAction(DeleteElement msg)
@@ -95,7 +97,7 @@ void ListManager_ReceiveFSM::sendConfirmElementRequestAction(DeleteElement msg, 
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getDeleteElementSeq()->getRequestIDRec()->getRequestID();
-	ROS_DEBUG_NAMED("ListManager", "delete for request id %d from %s successful", (int)request_id, sender.str().c_str());
+	RCLCPP_DEBUG(logger, "delete for request id %d from %s successful", (int)request_id, sender.str().c_str());
 	ConfirmElementRequest reply;
 	reply.getBody()->getRequestIDRec()->setRequestID(request_id);
 	sendJausMessage(reply, sender);
@@ -105,7 +107,7 @@ void ListManager_ReceiveFSM::sendRejectElementRequestAction(DeleteElement msg, R
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getDeleteElementSeq()->getRequestIDRec()->getRequestID();
-	ROS_DEBUG_NAMED("ListManager", "delete element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
+	RCLCPP_DEBUG(logger, "delete element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
 	RejectElementRequest reject;
 	reject.getBody()->getRejectElementRec()->setRequestID(request_id);
 	reject.getBody()->getRejectElementRec()->setResponseCode(p_list.get_error_code());
@@ -116,7 +118,7 @@ void ListManager_ReceiveFSM::sendReportElementAction(QueryElement msg, Receive::
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedShortInteger element_uid = msg.getBody()->getQueryElementRec()->getElementUID();
-	ROS_DEBUG_NAMED("ListManager", "send element with uid %d to %s", element_uid, sender.str().c_str());
+	RCLCPP_DEBUG(logger, "send element with uid %d to %s", element_uid, sender.str().c_str());
 	ReportElement reply = p_list.get_element(element_uid).get_report();
 	sendJausMessage(reply, sender);
 }
@@ -133,7 +135,7 @@ void ListManager_ReceiveFSM::sendReportElementListAction(QueryElementList msg, R
 {
 	JausAddress sender = transportData.getAddress();
 	ReportElementList reply = p_list.get_element_list();
-	ROS_DEBUG_NAMED("ListManager", "send element list with %d elements to %s", reply.getBody()->getElementList()->getNumberOfElements(), sender.str().c_str());
+	RCLCPP_DEBUG(logger, "send element list with %d elements to %s", reply.getBody()->getElementList()->getNumberOfElements(), sender.str().c_str());
 	sendJausMessage(reply, sender);
 }
 
@@ -150,12 +152,12 @@ void ListManager_ReceiveFSM::setElementAction(SetElement msg, Receive::Body::Rec
 		}
 	}
 	if (success) {
-		ROS_DEBUG_NAMED("ListManager", "set element for request id %d from %s successful", (int)request_id, sender.str().c_str());
+		RCLCPP_DEBUG(logger, "set element for request id %d from %s successful", (int)request_id, sender.str().c_str());
 		ConfirmElementRequest reply;
 		reply.getBody()->getRequestIDRec()->setRequestID(request_id);
 		sendJausMessage(reply, sender);
 	} else {
-		ROS_DEBUG_NAMED("ListManager", "set element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
+		RCLCPP_DEBUG(logger, "set element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
 		RejectElementRequest reject;
 		reject.getBody()->getRejectElementRec()->setRequestID(request_id);
 		reject.getBody()->getRejectElementRec()->setResponseCode(p_list.get_error_code());
@@ -188,4 +190,4 @@ iop::InternalElementList& ListManager_ReceiveFSM::list_manager()
 	return p_list;
 }
 
-};
+}

@@ -35,6 +35,6 @@ protected:
 
 };
 
-};
+}
 
 #endif // %service_name_allcaps%_H

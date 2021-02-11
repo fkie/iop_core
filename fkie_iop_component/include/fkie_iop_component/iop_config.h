@@ -26,322 +26,132 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <map>
-#include <ros/ros.h>
+#include <stdio.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/service.hpp>
+#include <rclcpp/publisher_options.hpp>
+#include "fkie_iop_component/ros_node.hpp"
+
 
 namespace iop
 {
-	class Config
-	{
-	public:
+//     static void tokenize(std::string const &str, const char delim, std::vector<std::string> &out)
+//     {
+//         size_t start;
+//         size_t end = 0;
+        
+//         while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
+//                 end = str.find(delim, start);
+//                 out.push_back(str.substr(start, end - start));
+//         }
+//     }
 
-		Config(std::string ns="~")
-		{
-			p_ns = ns;
-			p_pnh = ros::NodeHandle("~");
-			p_snh = ros::NodeHandle(ns);
-		}
 
-		template<typename T>
-		void param(std::string param_name, T &param_val, T default_val,
-				bool from_private=true, bool from_ns=true,
-				std::string unit="",
-				std::map<int, std::string> type_map = std::map<int, std::string>())
-		{
-			std::string got_from;
-			if (p_snh.hasParam(param_name)) {
-				p_snh.param(param_name, param_val, default_val);
-				got_from = p_ns;
-			} else if (from_private && p_pnh.getNamespace().compare(p_snh.getNamespace()) != 0 && p_pnh.hasParam(param_name)) {
-				p_pnh.param(param_name, param_val, default_val);
-				got_from = "~";
-			} else if (from_ns && p_nh.hasParam(param_name)) {
-				p_nh.param(param_name, param_val, default_val);
-				got_from = p_nh.getNamespace();
-			} else {
-				p_snh.param(param_name, param_val, default_val);
-				got_from = "default";
-			}
-			ROS_INFO_STREAM("ROS param[" << p_ns << "]: " << param_name << " = " << tostr(param_val, unit, type_map) << " [ns: " << got_from << "]");
-		}
+    class Config
+    {
+      public:
 
-		template <class M>
-		ros::Publisher advertise(const std::string& topic, uint32_t queue_size, bool latch = false)
-		{
-			std::string name = get_topic_name(topic, "topic_pub_");
-			ros::Publisher result = p_nh.advertise<M>(name, queue_size, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name()  << " ");
-			return result;
-		}
+        Config(std::string ns="~");
 
-		template <class M>
-		ros::Publisher advertise(const std::string& topic, uint32_t queue_size,
-			const ros::SubscriberStatusCallback& connect_cb,
-			const ros::SubscriberStatusCallback& disconnect_cb = ros::SubscriberStatusCallback(),
-			const ros::VoidConstPtr& tracked_object = ros::VoidConstPtr(),
-			bool latch = false)
-		{
-			std::string name = get_topic_name(topic, "topic_pub_");
-			ros::Publisher result = p_pnh.advertise<M>(name, queue_size, connect_cb, disconnect_cb, tracked_object, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
-			return result;
-		}
+        /** Wrapper for get parameter with default options **/
+        template<typename T>
+        void param(std::string param_name, T& param_val, T default_val,
+                bool from_private=true,
+                std::string unit="",
+                std::map<int, std::string> type_map = std::map<int, std::string>()
+        );
 
-		template <class M>
-		ros::Publisher advertise_p(const std::string& topic, uint32_t queue_size, bool latch = false)
-		{
-			std::string name = get_topic_name(topic, "topic_pub_");
-			ros::Publisher result = p_pnh.advertise<M>(name, queue_size, latch);
-			ROS_INFO_STREAM("ROS publisher[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
-			return result;
-		}
+        /** Wrapper for create_publisher **/
+        template<
+        typename MessageT,
+        typename AllocatorT = std::allocator<void>,
+        typename PublisherT = rclcpp::Publisher<MessageT, AllocatorT>>
+        std::shared_ptr<PublisherT> create_publisher(
+                const std::string& topic_name,
+                const rclcpp::QoS& qos,
+                const rclcpp::PublisherOptionsWithAllocator<AllocatorT>& options = rclcpp::PublisherOptionsWithAllocator<AllocatorT>()
+        );
 
-		template<class T, class MReq, class MRes>
-		ros::ServiceServer advertiseService(const std::string& service, bool(T::*srv_func)(MReq &, MRes &), T *obj)
-		{
-			std::string name = get_topic_name(service, "topic_svr_");
-			ros::ServiceServer result = p_pnh.advertiseService(name, srv_func, obj);
-			ROS_INFO_STREAM("ROS service[" << p_ns << "]: " << service << " <" << typeid(MReq).name() << "> - <" << typeid(MRes).name() << "");
-			return result;
-		}
+        /** Wrapper for create_subscription **/
+        template<
+                typename MessageT,
+                typename CallbackT,
+                typename AllocatorT = std::allocator<void>,
+                typename CallbackMessageT =
+                        typename rclcpp::subscription_traits::has_message_type<CallbackT>::type,
+                typename SubscriptionT = rclcpp::Subscription<CallbackMessageT, AllocatorT>,
+                typename MessageMemoryStrategyT = rclcpp::message_memory_strategy::MessageMemoryStrategy<
+                        CallbackMessageT,
+                        AllocatorT
+                >
+        >
+        std::shared_ptr<SubscriptionT> create_subscription(
+                const std::string& topic_name,
+                const rclcpp::QoS& qos,
+                CallbackT&& callback,
+                const rclcpp::SubscriptionOptionsWithAllocator<AllocatorT>& options = rclcpp::SubscriptionOptionsWithAllocator<AllocatorT>(),
+                typename MessageMemoryStrategyT::SharedPtr msg_mem_strat = ( MessageMemoryStrategyT::create_default() )
+        );
+        // {
+        //         std::string name = get_topic_name(topic_name, "topic_sub_");
+        //         auto result = p_rosnode->create_subscription(name, qos, std::forward<CallbackT>(callback), options, msg_mem_strat);
+        //         RCLCPP_INFO(p_rosnode->get_logger(), "ROS subscriber[%s]: %s <%s>", p_ns.c_str(), result.get_topic_name(), typeid(MessageT).name());
+        //         return result;
+        // }
 
-		template<class M, class T>
-		ros::Subscriber subscribe(const std::string& topic, uint32_t queue_size,
-				void(T::*fp)(const boost::shared_ptr<M const>&), T* obj,
-				const ros::TransportHints& transport_hints = ros::TransportHints())
-		{
-			std::string name = get_topic_name(topic, "topic_sub_");
-			ros::Subscriber result = p_nh.subscribe(name, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
-			return result;
-		}
+        // template<
+        //         typename MessageT,
+        //         typename CallbackT,
+        //         typename AllocatorT = std::allocator<void>,
+        //         typename CallbackMessageT =
+        //                 typename rclcpp::subscription_traits::has_message_type<CallbackT>::type,
+        //         typename SubscriptionT = rclcpp::Subscription<CallbackMessageT, AllocatorT>,
+        //         typename MessageMemoryStrategyT = rclcpp::message_memory_strategy::MessageMemoryStrategy<
+        //                 CallbackMessageT,
+        //                 AllocatorT
+        //         >
+        // >
+        // std::shared_ptr<SubscriptionT> create_subscription(
+        //         const std::string & topic_name,
+        //         const rclcpp::QoS & qos,
+        //         CallbackT && callback,
+        //         const rclcpp::SubscriptionOptionsWithAllocator<AllocatorT> & options = rclcpp::SubscriptionOptionsWithAllocator<AllocatorT>(),
+        //         typename MessageMemoryStrategyT::SharedPtr msg_mem_strat = (MessageMemoryStrategyT::create_default())
+        // )
+        // {
+        //         std::string name = get_topic_name(topic_name, "topic_sub_");
+        //         auto result = p_rosnode->create_subscription(name, qos, callback, options, msg_mem_strat);
+        //         RCLCPP_INFO(p_rosnode->get_logger(), "ROS subscriber[%s]: %s <%s>", p_ns.c_str(), result.get_topic_name(), typeid(MessageT).name());
+        //         return result;
+        // }
+        /** Wrapper for create_service **/
+        template<typename ServiceT, typename CallbackT>
+        typename rclcpp::Service<ServiceT>::SharedPtr
+        create_service(
+                const std::string& service_name,
+                CallbackT&& callback,
+                const rmw_qos_profile_t& qos_profile = rmw_qos_profile_services_default,
+                rclcpp::CallbackGroup::SharedPtr group = nullptr 
+        );
 
-		template<class M, class T>
-		ros::Subscriber subscribe(const std::string& topic, uint32_t queue_size, void(T::*fp)(M), T* obj,
-				const ros::TransportHints& transport_hints = ros::TransportHints())
-		{
-			std::string name = get_topic_name(topic, "topic_sub_");
-			ros::Subscriber result = p_nh.subscribe(name, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
-			return result;
-		}
+        std::string tostr(char& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(unsigned char& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(int& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(double& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(float& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(bool& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(std::string& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(std::vector<int>& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(std::vector<double>& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(std::vector<float>& param_val, std::string unit, std::map<int, std::string>& type_map);
+        std::string tostr(std::vector<std::string>& param_val, std::string unit, std::map<int, std::string>& type_map);
 
-		template<class M, class T>
-		ros::Subscriber subscribe_p(const std::string& topic, uint32_t queue_size,
-				void(T::*fp)(const boost::shared_ptr<M const>&), T* obj,
-				const ros::TransportHints& transport_hints = ros::TransportHints())
-		{
-			std::string name = get_topic_name(topic, "topic_sub_");
-			ros::Subscriber result = p_pnh.subscribe(name, queue_size, fp, obj, transport_hints);
-			ROS_INFO_STREAM("ROS subscriber[" << p_ns << "]: " << result.getTopic() << " <" << typeid(M).name() << " ");
-			return result;
-		}
+      protected:
+        std::string p_ns;
+        iop::RosNode* p_rosnode;
 
-		std::string tostr(char& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			typename std::map<int, std::string>::const_iterator it = type_map.find((int)param_val);
-			if (it != type_map.end()) {
-				if (!unit.empty()) {
-					result << (int)param_val << " " << unit << " (" << it->second << ") ";
-				} else {
-					result << (int)param_val << " (" << it->second << ") ";
-				}
-			} else {
-				result << (int)param_val;
-				if (!unit.empty()) {
-					result << " " << unit;
-				}
-			}
-			return result.str();
-		}
-
-		std::string tostr(unsigned char& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			typename std::map<int, std::string>::const_iterator it = type_map.find((int)param_val);
-			if (it != type_map.end()) {
-				if (!unit.empty()) {
-					result << (int)param_val << " " << unit << " (" << it->second << ") ";
-				} else {
-					result << (int)param_val << " (" << it->second << ") ";
-				}
-			} else {
-				result << (int)param_val;
-				if (!unit.empty()) {
-					result << " " << unit;
-				}
-			}
-			return result.str();
-		}
-
-		std::string tostr(int& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			typename std::map<int, std::string>::const_iterator it = type_map.find(param_val);
-			if (it != type_map.end()) {
-				if (!unit.empty()) {
-					result << param_val << " " << unit << " (" << it->second << ") ";
-				} else {
-					result << param_val << " (" << it->second << ") ";
-				}
-			} else {
-				result << param_val;
-				if (!unit.empty()) {
-					result << " " << unit;
-				}
-			}
-			return result.str();
-		}
-
-		std::string tostr(double& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << param_val;
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(float& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << param_val;
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(bool& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << param_val;
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(std::string& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			if (!unit.empty()) {
-				return param_val + " " + unit;
-			}
-			return param_val;
-		}
-
-		std::string tostr(std::vector<int>& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << "[";
-			int i = 0;
-			for (std::vector<int>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
-				if (i > 0) {
-					result << ", ";
-				}
-				i++;
-				result << *it;
-				typename std::map<int, std::string>::const_iterator itt = type_map.find(*it);
-				if (itt != type_map.end()) {
-					result << " (" << itt->second << ") ";
-				}
-			}
-			result << "]";
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(std::vector<double>& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << "[";
-			int i = 0;
-			for (std::vector<double>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
-				if (i > 0) {
-					result << ", ";
-				}
-				i++;
-				result << *it;
-			}
-			result << "]";
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(std::vector<float>& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << "[";
-			int i = 0;
-			for (std::vector<float>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
-				if (i > 0) {
-					result << ", ";
-				}
-				i++;
-				result << *it;
-			}
-			result << "]";
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(std::vector<std::string>& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << "[";
-			int i = 0;
-			for (std::vector<std::string>::iterator it = param_val.begin(); it != param_val.end(); ++it) {
-				if (i > 0) {
-					result << ", ";
-				}
-				i++;
-				result << *it;
-			}
-			result << "]";
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-		std::string tostr(XmlRpc::XmlRpcValue& param_val, std::string unit, std::map<int, std::string>& type_map)
-		{
-			std::ostringstream result;
-			result << param_val;
-			if (!unit.empty()) {
-				result << " " << unit;
-			}
-			return result.str();
-		}
-
-	protected:
-		std::string p_ns;
-		ros::NodeHandle p_nh;
-		ros::NodeHandle p_pnh;
-		ros::NodeHandle p_snh;
-
-		std::string get_topic_name(std::string name, std::string prefix)
-		{
-			std::string result;
-			std::string param_name = prefix;
-                        if (name[0] == '/') {
-				param_name += name.substr(1);
-			} else {
-				param_name += name;
-                        }
-			std::replace(param_name.begin(), param_name.end(), '/', '_');
-			// only from private namespace
-			param(param_name, result, name, true, false);
-			return result;
-		}
-	};
-};
+        std::string get_topic_name(std::string name, std::string prefix);
+    };
+}
 
 #endif

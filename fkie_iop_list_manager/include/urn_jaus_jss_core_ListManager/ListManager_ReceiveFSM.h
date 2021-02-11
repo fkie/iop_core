@@ -39,7 +39,6 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_AccessControl/AccessControl_ReceiveFSM.h"
 #include "urn_jaus_jss_core_Management/Management_ReceiveFSM.h"
 
-#include <ros/ros.h>
 #include <fkie_iop_list_manager/InternalElementList.h>
 
 #include "ListManager_ReceiveFSM_sm.h"
@@ -83,9 +82,10 @@ protected:
 	urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM;
 	urn_jaus_jss_core_Management::Management_ReceiveFSM* pManagement_ReceiveFSM;
 
+	rclcpp::Logger logger;
 	iop::InternalElementList p_list;
 };
 
-};
+}
 
 #endif // LISTMANAGER_RECEIVEFSM_H

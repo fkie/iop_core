@@ -23,19 +23,17 @@ along with this program; or you can read the full license at
 #ifndef OCU_SLAVE_H
 #define OCU_SLAVE_H
 
+#include <rclcpp/rclcpp.hpp>
 #include "Transport/JausAddress.h"
-#include <ros/ros.h>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <urn_jaus_jss_core_AccessControlClient/AccessControlClientService.h>
 #include <urn_jaus_jss_core_DiscoveryClient/DiscoveryClientService.h>
 #include <urn_jaus_jss_core_ManagementClient/ManagementClientService.h>
-#include <fkie_iop_msgs/JausAddress.h>
-#include <fkie_iop_msgs/OcuCmd.h>
-#include <fkie_iop_msgs/OcuFeedback.h>
-#include <fkie_iop_ocu_slavelib/Component.h>
-#include <fkie_iop_ocu_slavelib/ServiceInfo.h>
-#include <fkie_iop_ocu_slavelib/SlaveHandlerInterface.h>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
+#include <fkie_iop_msgs/msg/ocu_cmd.hpp>
+#include <fkie_iop_msgs/msg/ocu_feedback.hpp>
+#include "Component.h"
+#include "ServiceInfo.h"
+#include "SlaveHandlerInterface.h"
 
 namespace iop {
 
@@ -68,6 +66,7 @@ namespace ocu {
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *p_discovery_client;
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
+		rclcpp::Logger logger;
 		int p_subsystem_restricted;
 		int p_controlled_component_nr;
 		bool p_only_monitor;
@@ -80,12 +79,11 @@ namespace ocu {
 		int p_default_access_control;
 		std::vector<ServiceInfo> p_services;
 		std::vector<Component> p_components;
-		ros::Publisher p_pub_control_feedback;
-		ros::Subscriber p_sub_control;
-		ros::Timer pFeedbackTimer;
+		rclcpp::Publisher<fkie_iop_msgs::msg::OcuFeedback>::SharedPtr p_pub_control_feedback;
+		rclcpp::Subscription<fkie_iop_msgs::msg::OcuCmd>::SharedPtr p_sub_control;
 
 		void pInitRos();
-		void pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control);
+		void pRosControl(const fkie_iop_msgs::msg::OcuCmd::SharedPtr control);
 
 		void pAccessControlClientReplyHandler(JausAddress &address, unsigned char code);
 		void pManagementStatusHandler(JausAddress &address, unsigned char code);
@@ -106,8 +104,8 @@ namespace ocu {
 		Slave(const Slave& other);
 	};
 
-};
+}
 
-};
+}
 
 #endif

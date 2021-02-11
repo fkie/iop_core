@@ -21,18 +21,18 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 
-#include <ros/ros.h>
-#include <ros/console.h>
-
 #include <fkie_iop_events/InternalEvent.h>
 #include <fkie_iop_events/InternalEventList.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 using namespace iop;
 
 InternalEvent::InternalEvent(InternalEventList* event_list)
+: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+  p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
 	p_event_list = event_list;
-	p_last_update = ros::Time(0);
+	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
 	p_request_id = 255;
 	p_event_id = 255;
@@ -49,9 +49,11 @@ InternalEvent::InternalEvent(InternalEventList* event_list)
 
 InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate)
 // : InternalEvent(event_list)  warning: delegating constructors only available with -std=c++11 or -std=gnu++11
+: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+  p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
 	p_event_list = event_list;
-	p_last_update = ros::Time(0);
+	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
 	p_request_id = 255;
 	p_event_id = 255;
@@ -69,14 +71,17 @@ InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte reques
 	p_event_type = event_type;
 	p_event_rate = event_rate;
 	p_last_report = NULL;
+	p_timer.set_rate(event_rate);
 	p_is_event_supported(query_msg_id, event_type, event_rate);
 }
 
 InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor)
 //: InternalEvent(event_list, request_id, query_msg_id) warning: delegating constructors only available with -std=c++11 or -std=gnu++11
+: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+  p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
 	p_event_list = event_list;
-	p_last_update = ros::Time(0);
+	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
 	p_request_id = 255;
 	p_event_id = 255;
@@ -94,10 +99,11 @@ InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte event_
 	p_event_type = event_type;
 	p_event_rate = event_rate;
 	p_last_report = NULL;
+	p_timer.set_rate(event_rate);
 
 	if (p_is_event_supported(query_msg_id, event_type, event_rate)) {
 		p_request_id = request_id;
-		p_last_update = ros::Time::now();
+		p_last_update = std::chrono::steady_clock::now();
 		p_event_id = event_id;
 		p_query_msg = query_msg;
 		p_query_msg_id = query_msg_id;
@@ -135,7 +141,7 @@ void InternalEvent::new_report_available(JTS::Message *report, bool send_if_poss
 				p_last_report = report;
 			}
 		} else {
-			if (p_timeout_timer.isValid()) {
+			if (p_timer.is_running()) {
 				// do nothing, the report will be send on next timer call
 			} else {
 				// report is available and we have periodic event -> create timer
@@ -150,7 +156,7 @@ void InternalEvent::new_report_available(JTS::Message *report, bool send_if_poss
 void InternalEvent::send_last_report(){
 	if (p_last_report != NULL) {
 		if (p_event_type == 1) {
-			ROS_DEBUG_NAMED("Events", "  send available report: %#x", p_last_report->getID());
+			RCLCPP_DEBUG(events_logger, "  send available report: %#x", p_last_report->getID());
 			p_send_as_event(*p_last_report, requestor);
 			p_last_report = NULL;
 		}
@@ -171,21 +177,22 @@ void InternalEvent::send_report(JTS::Message &report, unsigned short id)
 		if (p_can_send(id)) {
 			p_send_as_event(report, requestor);
 			// save the last send timestamp for a given ID
-			p_last_send[id] = ros::Time::now();
+			p_last_send[id] = std::chrono::steady_clock::now();
 		}
 	}
 }
 
-void InternalEvent::update(jUnsignedByte event_id, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, jUnsignedShortInteger query_msg_id, JausAddress requestor, jUnsignedByte request_id, jUnsignedByte event_type, double event_rate)
+void InternalEvent::update(jUnsignedByte event_id, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, jUnsignedShortInteger query_msg_id, JausAddress /* requestor */, jUnsignedByte request_id, jUnsignedByte event_type, double event_rate)
 {
 	if (p_event_id == event_id) {
-		p_last_update = ros::Time::now();
+		p_last_update = std::chrono::steady_clock::now();
 		p_request_id = request_id;
 		p_query_msg = query_msg;
 		p_query_msg_id = query_msg_id;
 		if (!p_initialized) {
 			p_event_type = event_type;
 			p_event_rate = event_rate;
+			p_timer.set_rate(event_rate);
 			if (event_type == 0) {
 				p_timer_start();
 			}
@@ -194,6 +201,7 @@ void InternalEvent::update(jUnsignedByte event_id, urn_jaus_jss_core_Events::Cre
 			if (p_event_type != event_type) {
 				p_event_type = event_type;
 				p_event_rate = event_rate;
+				p_timer.set_rate(event_rate);
 				if (event_type == 0) {
 					p_timer_start();
 				} else if (event_type == 1) {
@@ -201,7 +209,7 @@ void InternalEvent::update(jUnsignedByte event_id, urn_jaus_jss_core_Events::Cre
 				}
 			} else if (p_event_type == 0 && p_event_rate != event_rate) {
 				p_event_rate = event_rate;
-				p_timer_stop();
+				p_timer.set_rate(event_rate);
 				p_timer_start();
 			}
 		}
@@ -235,11 +243,11 @@ bool InternalEvent::p_is_event_supported(jUnsignedShortInteger query_msg_id, jUn
 
 void InternalEvent::p_send_as_event(JTS::Message &report, JausAddress &address)
 {
-	jUnsignedInteger len = report.getSize();
+	const jUnsignedInteger len = report.getSize();
 	if (len > 65536) {
-		ROS_WARN_NAMED("Events", "large message detected, size: %d", len);
+		RCLCPP_WARN(events_logger, "large message detected, size: %d", len);
 	}
-	unsigned char bytes[len];
+	unsigned char* bytes = new unsigned char[len];
 	report.encode(bytes);
 	urn_jaus_jss_core_Events::Event event;
 	event.getBody()->getEventRec()->setSequenceNumber(seq_nr);
@@ -247,23 +255,24 @@ void InternalEvent::p_send_as_event(JTS::Message &report, JausAddress &address)
 	event.getBody()->getEventRec()->getReportMessage()->set(len, bytes);
 	seq_nr++;
 	p_event_list->get_jr_handler()->sendJausMessage(event, address);
+	delete[] bytes;
 }
 
-void InternalEvent::timeout(const ros::TimerEvent& event)
+void InternalEvent::timeout()
 {
 	JTS::Message* report = p_event_list->get_report(p_query_msg_id);
 	if (report != NULL) {
 		p_send_as_event(*report, requestor);
 		// save the last send timestamp for a given ID
-		p_last_send[255] = ros::Time::now();
+		p_last_send[255] = std::chrono::steady_clock::now();
 	}
 }
 
 void InternalEvent::p_timer_stop()
 {
-	if (p_timeout_timer.isValid()) {
-		ROS_DEBUG_NAMED("Events", "stop event timer for report %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
-		p_timeout_timer.stop();
+	if (p_timer.is_running()) {
+		RCLCPP_DEBUG(events_logger, "stop event timer for report %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
+		p_timer.stop();
 	}
 }
 
@@ -271,19 +280,20 @@ void InternalEvent::p_timer_start()
 {
 	if (p_event_list->get_report(p_query_msg_id) != NULL) {
 		if (p_event_rate > 0) {
-			ROS_DEBUG_NAMED("Events", "start event timer for %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
-			p_timeout_timer = p_nh.createTimer(ros::Duration(1.0 / p_event_rate), &InternalEvent::timeout, this);
+			RCLCPP_DEBUG(events_logger, "start event timer for %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
+			p_timer.start();
 		}
 	}
 }
 
 bool InternalEvent::p_can_send(unsigned short id)
 {
-	std::map<jUnsignedShortInteger, ros::Time>::iterator res = p_last_send.find(id);
+	std::map<jUnsignedShortInteger, ChronoSysTP>::iterator res = p_last_send.find(id);
 	if (res != p_last_send.end()) {
-		ros::Duration last = ros::Time::now() - res->second;
-		ros::Duration interval = ros::Duration(1.0 / p_event_rate) - ros::Duration(iop::EventsConfig::RATE_PRECISION);
-		return (last >= interval);
+		auto last = std::chrono::steady_clock::now() - res->second;
+		int64_t msecs = std::chrono::duration_cast<std::chrono::milliseconds>(last).count();
+		int64_t interval_ms = (int64_t)(1000.0 / p_event_rate - iop::EventsConfig::RATE_PRECISION);
+		return (msecs >= interval_ms);
 	}
 	return true;
 }

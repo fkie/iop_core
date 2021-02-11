@@ -21,15 +21,16 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 #include <algorithm>
-#include <ros/ros.h>
-#include <ros/console.h>
-
+#include <chrono>
+#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/time.hpp>
 #include <fkie_iop_accesscontrol/RemoteComponent.h>
 
 using namespace iop;
 
 
-RemoteComponent::RemoteComponent(JausAddress address, jUnsignedByte authority, int timeout)
+RemoteComponent::RemoteComponent(JausAddress address, jUnsignedByte authority, int64_t timeout)
+: logger(iop::RosNode::get_instance().get_logger().get_child("AccessControlClient"))
 {
 	p_address = address;
 	p_timeout = timeout;
@@ -54,15 +55,15 @@ bool RemoteComponent::operator!=(RemoteComponent &value)
 	return !(*this == value);
 }
 
-void RemoteComponent::set_timeout(int timeout)
+void RemoteComponent::set_timeout(int64_t timeout)
 {
-	ROS_DEBUG_NAMED("AccessControlClient", "set new timeout %d for %s", timeout, p_address.str().c_str());
+	RCLCPP_DEBUG(logger, "set new timeout %d for %s", timeout, p_address.str().c_str());
 	p_timeout = timeout;
 }
 
-void RemoteComponent::set_ack(unsigned long secs)
+void RemoteComponent::set_ack(int64_t secs)
 {
-	ROS_DEBUG_NAMED("AccessControlClient", "set new ack %lu for %s", secs, p_address.str().c_str());
+	RCLCPP_DEBUG(logger, "set new ack %lu for %s", secs, p_address.str().c_str());
 	p_last_ack = secs;
 	p_has_access = true;
 	p_insauth = false;
@@ -70,26 +71,26 @@ void RemoteComponent::set_ack(unsigned long secs)
 
 void RemoteComponent::set_insufficient_authority()
 {
-	ROS_DEBUG_NAMED("AccessControlClient", "set insufficient authority to true for %s", p_address.str().c_str());
+	RCLCPP_DEBUG(logger, "set insufficient authority to true for %s", p_address.str().c_str());
 	p_insauth = true;
 }
 
 bool RemoteComponent::timeouted()
 {
-	if (!p_insauth && p_last_ack < p_last_request && p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
-		ROS_DEBUG_NAMED("AccessControlClient", "timeouted, last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
+	if (!p_insauth && p_last_ack < p_last_request && p_last_request - p_last_ack > p_timeout * 2) {
+		RCLCPP_DEBUG(logger, "timeouted, last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
 		return true;
 	}
 	return false;
 }
 
-bool RemoteComponent::time_to_send_request(unsigned long deadtime)
+bool RemoteComponent::time_to_send_request(int64_t deadtime)
 {
-	double now = ros::WallTime::now().toSec();
-	if (p_last_request + (unsigned long)p_timeout < (unsigned long)now + deadtime) {
-		p_last_request = now;
+	int64_t secs = now_secs();
+	if (p_last_request + p_timeout < secs + deadtime) {
+		p_last_request = secs;
 		if (p_last_ack == 0) {
-			p_last_ack = now;
+			p_last_ack = secs;
 		}
 		return true;
 	}

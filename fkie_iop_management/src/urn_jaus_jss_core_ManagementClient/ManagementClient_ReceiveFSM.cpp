@@ -22,11 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_ManagementClient/ManagementClient_ReceiveFSM.h"
-#include <fkie_iop_component/iop_component.h>
+#include <fkie_iop_component/iop_config.h>
 
-
-#include <ros/ros.h>
-#include <ros/console.h>
 
 using namespace JTS;
 
@@ -42,6 +39,8 @@ unsigned char ManagementClient_ReceiveFSM::MANAGEMENT_STATE_EMERGENCY = 5;
 unsigned char ManagementClient_ReceiveFSM::MANAGEMENT_STATE_UNKNOWN   = 255;
 
 ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM)
+: logger(iop::RosNode::get_instance().get_logger().get_child("ManagementClient")),
+  p_query_timer(std::chrono::seconds(10), std::bind(&ManagementClient_ReceiveFSM::pQueryCallback, this), false)
 {
 
 	/*
@@ -73,13 +72,13 @@ void ManagementClient_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pAccessControlClient_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving_Ready", "ManagementClient_ReceiveFSM");
 	registerNotification("Receiving", pAccessControlClient_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving", "ManagementClient_ReceiveFSM");
 
-	iop::Config cfg("~ManagementClient");
-	cfg.param("hz", p_hz, p_hz, false, false);
-	cfg.param("by_query", by_query, by_query, true, true);
-	p_pub_status = cfg.advertise<std_msgs::String>("mgmt_status", 5, true);
-	p_pub_status_emergency = cfg.advertise<std_msgs::Bool>("mgmt_emergency", 5, true);
-	p_sub_cmd_emergency = cfg.subscribe<std_msgs::Bool>("cmd_mgmt_emergency", 5, &ManagementClient_ReceiveFSM::pRosEmergency, this);
-	p_sub_cmd_ready = cfg.subscribe<std_msgs::Bool>("cmd_mgmt_reset", 5, &ManagementClient_ReceiveFSM::pRosReady, this);
+	iop::Config cfg("ManagementClient");
+	cfg.param("hz", p_hz, p_hz, false);
+	cfg.param("by_query", by_query, by_query, true);
+	p_pub_status = cfg.create_publisher<std_msgs::msg::String>("mgmt_status", 5);
+	p_pub_status_emergency = cfg.create_publisher<std_msgs::msg::Bool>("mgmt_emergency", 5);
+	p_sub_cmd_emergency = cfg.create_subscription<std_msgs::msg::Bool>("cmd_mgmt_emergency", 5, std::bind(&ManagementClient_ReceiveFSM::pRosEmergency, this, std::placeholders::_1));
+	p_sub_cmd_ready = cfg.create_subscription<std_msgs::msg::Bool>("cmd_mgmt_reset", 5, std::bind(&ManagementClient_ReceiveFSM::pRosReady, this, std::placeholders::_1));
 }
 
 void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::Body::ReceiveRec transportData)
@@ -88,21 +87,21 @@ void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::
 	jUnsignedByte new_state = msg.getBody()->getReportStatusRec()->getStatus();
 	if (p_status != new_state) {
 		p_status = new_state;
-		ROS_DEBUG_NAMED("ManagementClient", "new management status: %d (%s)", p_status, p_status_to_str(p_status).c_str());
-		std_msgs::String ros_msg;
+		RCLCPP_DEBUG(logger, "new management status: %d (%s)", p_status, p_status_to_str(p_status).c_str());
+		auto ros_msg = std_msgs::msg::String();
 		ros_msg.data = p_status_to_str(p_status);
-		p_pub_status.publish(ros_msg);
-		std_msgs::Bool ros_msg_emergency;
+		p_pub_status->publish(ros_msg);
+		auto ros_msg_emergency = std_msgs::msg::Bool();
 		ros_msg_emergency.data = p_status == 5;  // emergency state
-		p_pub_status_emergency.publish(ros_msg_emergency);
+		p_pub_status_emergency->publish(ros_msg_emergency);
 		//    p_on_status_query = false;
 		//    if (p_do_resume and p_status != 3) {
-		//      ROS_DEBUG_NAMED("ManagementClient", "  Resume!\n");
+		//      RCLCPP_DEBUG(logger, "  Resume!\n");
 		//      p_do_resume = false;
 		//      queryStatus(sender);
 		//    }
-		if (!p_class_interface_callback.empty() && p_current_client == sender) {
-			ROS_DEBUG_NAMED("ManagementClient", "  forward management state to handler");
+		if (p_class_interface_callback != nullptr && p_current_client == sender) {
+			RCLCPP_DEBUG(logger, "  forward management state to handler");
 			p_class_interface_callback(sender, p_status);
 		}
 		if (p_status == 2 && p_current_client == sender) {
@@ -139,25 +138,26 @@ void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 			if (by_query) {
 				p_query_timer.stop();
 			} else {
-				ROS_INFO_NAMED("ManagementClient", "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
+				RCLCPP_INFO(logger, "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
 				pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
 			}
 			p_status = 255;
-			std_msgs::String ros_msg;
+			auto ros_msg = std_msgs::msg::String();
 			ros_msg.data = p_status_to_str(p_status);
-			p_pub_status.publish(ros_msg);
+			p_pub_status->publish(ros_msg);
 		}
 		p_current_client = client;
 		if (p_current_client.get() != 0) {
 			if (by_query) {
 				if (p_hz > 0) {
-					ROS_INFO_NAMED("ManagementClient", "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
-					p_query_timer = p_nh.createTimer(ros::Duration(1.0 / p_hz), &ManagementClient_ReceiveFSM::pQueryCallback, this);
+					RCLCPP_INFO(logger, "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
+					p_query_timer.set_rate(p_hz);
+					p_query_timer.start();
 				} else {
-					ROS_WARN_NAMED("ManagementClient", "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
+					RCLCPP_WARN(logger, "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
 				}
 			} else {
-				ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
+				RCLCPP_INFO(logger, "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
 				pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
 			}
 		}
@@ -167,13 +167,13 @@ void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 void ManagementClient_ReceiveFSM::delete_emergency_client()
 {
 	if (p_current_emergency_address.get() != 0) {
-		ROS_DEBUG_NAMED("ManagementClient", "delete emergency client %s", p_current_client.str().c_str());
+		RCLCPP_DEBUG(logger, "delete emergency client %s", p_current_client.str().c_str());
 		p_current_emergency_address = JausAddress();
 		pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_emergency_address);
 	}
 }
 
-void ManagementClient_ReceiveFSM::pQueryCallback(const ros::TimerEvent& event)
+void ManagementClient_ReceiveFSM::pQueryCallback()
 {
 	if (p_current_client.get() != 0) {
 		sendJausMessage(p_query_status, p_current_client);
@@ -203,12 +203,12 @@ std::string ManagementClient_ReceiveFSM::p_status_to_str(unsigned char status) {
 	}
 }
 
-void ManagementClient_ReceiveFSM::pRosEmergency(const std_msgs::Bool::ConstPtr& state)
+void ManagementClient_ReceiveFSM::pRosEmergency(const std_msgs::msg::Bool::SharedPtr state)
 {
 	if (state->data) {
 		if (p_current_client.get() != 0) {
 			if (p_current_emergency_address.get() != 0 && p_current_emergency_address != p_current_client) {
-				ROS_WARN_NAMED("ManagementClient", "Something goes wrong: this client is in emergency state for %s, but controls now %s. Please release control first, clear emergency and then take control other %s to clear emergency state.",
+				RCLCPP_WARN(logger, "Something goes wrong: this client is in emergency state for %s, but controls now %s. Please release control first, clear emergency and then take control other %s to clear emergency state.",
 						p_current_emergency_address.str().c_str(), p_current_client.str().c_str(), p_current_emergency_address.str().c_str());
 			} else {
 				p_current_emergency_address = p_current_client;
@@ -222,16 +222,16 @@ void ManagementClient_ReceiveFSM::pRosEmergency(const std_msgs::Bool::ConstPtr& 
 		ClearEmergency request;
 		request.getBody()->getClearEmergencyRec()->setEmergencyCode(1);
 		if (p_current_client.get() != 0) {
-			ROS_INFO_NAMED("ManagementClient", "send clear emergency to current client %s", p_current_client.str().c_str());
+			RCLCPP_INFO(logger, "send clear emergency to current client %s", p_current_client.str().c_str());
 			sendJausMessage(request, p_current_client);
 		} else if (p_current_emergency_address.get() != 0) {
-			ROS_INFO_NAMED("ManagementClient", "send clear emergency to stored address %s", p_current_emergency_address.str().c_str());
+			RCLCPP_INFO(logger, "send clear emergency to stored address %s", p_current_emergency_address.str().c_str());
 			sendJausMessage(request, p_current_emergency_address);
 		}
 	}
 }
 
-void ManagementClient_ReceiveFSM::pRosReady(const std_msgs::Bool::ConstPtr& state)
+void ManagementClient_ReceiveFSM::pRosReady(const std_msgs::msg::Bool::SharedPtr state)
 {
 	if (p_current_client.get() != 0) {
 		if (state->data && p_status != MANAGEMENT_STATE_READY) {
@@ -244,4 +244,4 @@ void ManagementClient_ReceiveFSM::pRosReady(const std_msgs::Bool::ConstPtr& stat
 	}
 }
 
-};
+}

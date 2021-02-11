@@ -40,6 +40,8 @@ along with this program; or you can read the full license at
 #include <fkie_iop_discovery/DiscoveryComponentList.h>
 #include <fkie_iop_discovery/DiscoveryServiceDef.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 #include "Discovery_ReceiveFSM_sm.h"
 
 
@@ -87,6 +89,7 @@ protected:
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
 
+	rclcpp::Logger logger;
 	/** Variables used for registration by system **/
 	std::vector<JausAddress> p_subsystems;
 	iop::DiscoveryComponentList p_component_list;
@@ -99,8 +102,8 @@ protected:
 	int system_type;
 	std::string name_subsystem;
 	std::string name_node;
-	int p_timeout_lost;
-	// In case the component with discvery service was restarted we have to ensure other components reregsiter their services
+	int64_t p_timeout_lost;
+	// In case the component with discvery service was restarted we have to ensure other components re-regsiter their services
 	std::map<JausAddress, unsigned long> p_respond_ident;
 
 	bool isComponentRequested(QueryServices &msg, unsigned int nodeid, unsigned int compid);
@@ -114,6 +117,6 @@ protected:
 	bool p_should_send_services(JausAddress address);
 };
 
-};
+}
 
 #endif // DISCOVERY_RECEIVEFSM_H

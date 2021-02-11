@@ -24,8 +24,8 @@ along with this program; or you can read the full license at
 #define OCU_CONTROL_SERVICE_INFO_H_
 
 #include <Transport/JausAddress.h>
-#include <fkie_iop_msgs/JausAddress.h>
-#include <fkie_iop_msgs/OcuServiceInfo.h>
+// #include <fkie_iop_msgs/msg/jaus_address.hpp>
+// #include <fkie_iop_msgs/msg/ocu_service_info.hpp>
 #include <fkie_iop_ocu_slavelib/SlaveHandlerInterface.h>
 
 namespace iop
@@ -63,8 +63,8 @@ namespace ocu
 		jUnsignedByte p_minor_version;
 		std::vector<JausAddress> p_discovered_addresses;
 	};
-};
+}
 
-};
+}
 
 #endif

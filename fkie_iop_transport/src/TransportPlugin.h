@@ -47,6 +47,6 @@ protected:
 
 };
 
-};
+}
 
 #endif // TRANSPORTSERVICEPLUGIN_H

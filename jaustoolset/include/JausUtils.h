@@ -73,7 +73,7 @@ T correctEndianness(T hVal)
         jVal = hVal;
     }
     return jVal;
-};
+}
 
 
 /// Needed by Component Message
@@ -87,9 +87,9 @@ T getValueFromBits(T data, int start, int length)
 		b_value[i] = b_data[start+i];
 	}
 	return (T)b_value.to_ulong();
-};
+}
 	
-};
+}
 
 #endif	// JAUS_UTILS_H
 

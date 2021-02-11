@@ -42,7 +42,7 @@ using namespace DeVivo::Junior;
 
 // Define a signal handler, so we can clean-up properly
 static int exit_flag = 0;
-static void handle_exit_signal( int signum )
+static void handle_exit_signal( int /* signum */ )
 {
     exit_flag = 1;
 }

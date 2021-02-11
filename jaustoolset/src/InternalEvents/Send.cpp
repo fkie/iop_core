@@ -249,7 +249,7 @@ int Send::Body::SendRec::DestinationID::setSubsystemID(jUnsignedInteger value)
  *
  * @return
  */
-const unsigned int Send::Body::SendRec::DestinationID::getSize()
+unsigned int Send::Body::SendRec::DestinationID::getSize()
 {
 	unsigned int size = 0;
 
@@ -443,7 +443,7 @@ int Send::Body::SendRec::SourceID::setSubsystemID(jUnsignedInteger value)
  *
  * @return
  */
-const unsigned int Send::Body::SendRec::SourceID::getSize()
+unsigned int Send::Body::SendRec::SourceID::getSize()
 {
 	unsigned int size = 0;
 
@@ -565,7 +565,7 @@ int Send::Body::SendRec::setPriority(jUnsignedByte value)
 	return 1;
 }
 
-const jUnsignedInteger Send::Body::SendRec::MessagePayload::getLength() const
+jUnsignedInteger Send::Body::SendRec::MessagePayload::getLength() const
 {
 	return m_Length;
 }
@@ -599,7 +599,7 @@ int Send::Body::SendRec::MessagePayload::set(const jUnsignedInteger &length, con
  *
  * @return
  */
-const unsigned int Send::Body::SendRec::MessagePayload::getSize()
+unsigned int Send::Body::SendRec::MessagePayload::getSize()
 {
 	unsigned int size = 0;
 
@@ -768,7 +768,7 @@ int Send::Body::SendRec::setMessagePayload(const MessagePayload &value)
  *
  * @return
  */
-const unsigned int Send::Body::SendRec::getSize()
+unsigned int Send::Body::SendRec::getSize()
 {
 	unsigned int size = 0;
 
@@ -986,7 +986,7 @@ int Send::Body::setSendRec(const SendRec &value)
  *
  * @return
  */
-const unsigned int Send::Body::getSize()
+unsigned int Send::Body::getSize()
 {
 	unsigned int size = 0;
 

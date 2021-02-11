@@ -21,7 +21,7 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 #include "DiscoveryClientPlugin.h"
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <fkie_iop_component/iop_component.h>
 #include "urn_jaus_jss_core_Discovery/DiscoveryService.h"
 

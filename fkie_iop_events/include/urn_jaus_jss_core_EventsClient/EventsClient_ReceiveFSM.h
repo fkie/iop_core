@@ -24,6 +24,9 @@ along with this program; or you can read the full license at
 #ifndef EVENTSCLIENT_RECEIVEFSM_H
 #define EVENTSCLIENT_RECEIVEFSM_H
 
+#include <mutex>
+#include <rclcpp/rclcpp.hpp>
+
 #include "JausUtils.h"
 #include "InternalEvents/InternalEventHandler.h"
 #include "Transport/JausTransport.h"
@@ -36,10 +39,6 @@ along with this program; or you can read the full license at
 
 #include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <ros/ros.h>
 #include <fkie_iop_events/InternalEventClient.h>
 #include <fkie_iop_events/EventHandlerInterface.h>
 #include "EventsClient_ReceiveFSM_sm.h"
@@ -51,7 +50,7 @@ class DllExport EventsClient_ReceiveFSM : public JTS::StateMachine
 {
 public:
 	EventsClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
-	virtual ~EventsClient_ReceiveFSM();
+	~EventsClient_ReceiveFSM();
 
 	/// Handle notifications on parent state changes
 	virtual void setupNotifications();
@@ -83,7 +82,7 @@ public:
 	void cancel_event(iop::EventHandlerInterface &handler, JausAddress address, JTS::Message &query_msg);
 	/** You can register a handler to be informed about the creation/cancelation status of your events. To register the handler you
 	 * have to define a function in your class:
-	 * void my_handler(JausAddress &addr, jUnsignedShortInteger query_msg_id, bool accepted, jByte event_id, jUnsignedByte reject_code) {}
+	 * void my_handler(JausAddress &addr, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code) {}
 	 * and then register:
 	 * pEventsClientService->set_events_reply_handler(&MyClass::my_handler, this);
 	 *
@@ -95,8 +94,8 @@ public:
 	 * 5: Message not supported
 	 * 6: Invalid event ID for update event request */
 	template<class T>
-	void set_events_reply_handler(void(T::*handler)(JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jByte event_id, jUnsignedByte reject_code), T*obj) {
-		p_class_events_reply_callback = boost::bind(handler, obj, _1, _2, _3, _4, _5);
+	void set_events_reply_handler(void(T::*handler)(JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code), T*obj) {
+		p_class_events_reply_callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	}
 
 protected:
@@ -104,15 +103,16 @@ protected:
     /// References to parent FSMs
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	std::vector<iop::InternalEventClient *> p_events;
+	rclcpp::Logger events_logger;
 	jUnsignedByte p_request_id_idx;
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
-	boost::function<void (JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jByte event_id, jUnsignedByte reject_code)> p_class_events_reply_callback;
+	std::function<void (JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code)> p_class_events_reply_callback;
 
 	iop::InternalEventClient* p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id);
 };
 
-};
+}
 
 #endif // EVENTSCLIENT_RECEIVEFSM_H

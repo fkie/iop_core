@@ -21,9 +21,6 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 
-#include <ros/ros.h>
-#include <ros/console.h>
-
 #include <fkie_iop_list_manager/InternalElement.h>
 
 using namespace iop;

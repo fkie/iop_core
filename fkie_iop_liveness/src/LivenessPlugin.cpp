@@ -21,7 +21,7 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 #include "LivenessPlugin.h"
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_Transport;

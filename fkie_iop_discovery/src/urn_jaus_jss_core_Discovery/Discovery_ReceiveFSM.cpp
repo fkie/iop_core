@@ -22,11 +22,10 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h"
-#include <ros/ros.h>
-#include <ros/console.h>
 #include <string.h>
 #include <algorithm>
 #include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 
 using namespace JTS;
@@ -35,6 +34,7 @@ namespace urn_jaus_jss_core_Discovery
 {
 
 Discovery_ReceiveFSM::Discovery_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM)
+: logger(iop::RosNode::get_instance().get_logger().get_child("Discovery"))
 {
 
 	/*
@@ -61,9 +61,9 @@ void Discovery_ReceiveFSM::registerService(int minver, int maxver, std::string s
 {
 	bool result = p_component_list.add_service(p_own_address, address, serviceuri, maxver, minver);
 	if (result) {
-		ROS_INFO_NAMED("Discovery", "registered own service '%s' [%s]", serviceuri.c_str(), address.str().c_str());
+		RCLCPP_INFO(logger, "registered own service '%s' [%s]", serviceuri.c_str(), address.str().c_str());
 	} else {
-		ROS_WARN_NAMED("Discovery", "own service '%s' [%s] already exists, ignore", serviceuri.c_str(), address.str().c_str());
+		RCLCPP_WARN(logger, "own service '%s' [%s] already exists, ignore", serviceuri.c_str(), address.str().c_str());
 	}
 }
 
@@ -87,9 +87,9 @@ void Discovery_ReceiveFSM::setupNotifications()
 	pEvents_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_Discovery_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
 	registerNotification("Receiving_Ready", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving_Ready", "Discovery_ReceiveFSM");
 	registerNotification("Receiving", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving", "Discovery_ReceiveFSM");
-	iop::Config cfg("~Discovery");
-	cfg.param("system_id", system_id, system_id, true, true, "", system_id_map());
-	cfg.param("system_type", system_type, system_type, true, true, "", system_type_map());
+	iop::Config cfg("Discovery");
+	cfg.param("system_id", system_id, system_id, true, "", system_id_map());
+	cfg.param("system_type", system_type, system_type, true, "", system_type_map());
 	cfg.param("name_subsystem", name_subsystem, name_subsystem);
 	cfg.param("name_node", name_node, name_node);
 	cfg.param("timeout_lost", p_timeout_lost, p_timeout_lost);
@@ -123,14 +123,14 @@ void Discovery_ReceiveFSM::publishServicesAction(RegisterServices msg, Receive::
 {
 	JausAddress sender = transportData.getAddress();
 	RegisterServices::RegisterServicesBody::ServiceList *services = msg.getRegisterServicesBody()->getServiceList();
-	ROS_DEBUG_NAMED("Discovery", "Register %u new services...", services->getNumberOfElements());
+	RCLCPP_DEBUG(logger, "Register %u new services...", services->getNumberOfElements());
 	for (unsigned int i = 0; i < services->getNumberOfElements(); i++) {
 		RegisterServices::RegisterServicesBody::ServiceList::ServiceRec *service = msg.getRegisterServicesBody()->getServiceList()->getElement(i);
 		bool result = p_component_list.add_service(p_own_address, sender, service->getURI(), service->getMajorVersionNumber(), service->getMinorVersionNumber());
 		if (result) {
-			ROS_INFO_NAMED("Discovery", "registered '%s' [%s]", service->getURI().c_str(), sender.str().c_str());
+			RCLCPP_INFO(logger, "registered '%s' [%s]", service->getURI().c_str(), sender.str().c_str());
 		} else {
-			ROS_WARN_NAMED("Discovery", "service '%s' [%s] already exists, ignore", service->getURI().c_str(), sender.str().c_str());
+			RCLCPP_WARN(logger, "service '%s' [%s] already exists, ignore", service->getURI().c_str(), sender.str().c_str());
 		}
 	}
 	p_component_list.update_ts(p_own_address, sender);
@@ -143,7 +143,7 @@ void Discovery_ReceiveFSM::sendReportConfigurationAction(QueryConfiguration msg,
 	// Extract the sender information
 	JausAddress sender = transportData.getAddress();
 	int query_type = msg.getBody()->getQueryConfigurationRec()->getQueryType();
-	ROS_DEBUG_NAMED("Discovery", "sendReportConfiguration for query_type: %d, sender: %s", query_type, sender.str().c_str());
+	RCLCPP_DEBUG(logger, "sendReportConfiguration for query_type: %d, sender: %s", query_type, sender.str().c_str());
 
 	ReportConfiguration report_msg;
 	int cnt_nodes = 0;
@@ -188,7 +188,7 @@ void Discovery_ReceiveFSM::sendReportConfigurationAction(QueryConfiguration msg,
 			cnt_cmps++;
 		}
 	}
-	ROS_DEBUG_NAMED("Discovery", "	report configuration with %d nodes and %d components", cnt_nodes, cnt_cmps);
+	RCLCPP_DEBUG(logger, "	report configuration with %d nodes and %d components", cnt_nodes, cnt_cmps);
 	sendJausMessage( report_msg, sender);
 }
 
@@ -200,7 +200,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 		ReportIdentification report_msg;
 		std::string name = "InvalidName";
 		if (query_type == TYPE_COMPONENT) {
-			name = ros::this_node::getName();
+			name = iop::RosNode::get_instance().get_name();
 			std::size_t pos = name.find_last_of("/");
 			if (pos != std::string::npos) {
 				name.replace(0, pos+1, "");
@@ -215,7 +215,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 			name = name_subsystem;
 			// HACK to avoid long wait times after restart only the component with discovery service
 			if (system_id == TYPE_SUBSYSTEM && p_should_send_services(sender)) {
-				ROS_WARN_NAMED("Discovery", "component restart was detected, send service list to %s on query_type: %d", sender.str().c_str(), query_type);
+				RCLCPP_WARN(logger, "component restart was detected, send service list to %s on query_type: %d", sender.str().c_str(), query_type);
 				QueryServiceList req_srvl_msg;
 				QueryServiceList::Body::SubsystemList *sslist = req_srvl_msg.getBody()->getSubsystemList();
 				QueryServiceList::Body::SubsystemList::SubsystemSeq ssr;
@@ -236,7 +236,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 		} else if (query_type == TYPE_SYSTEM) {
 			name = "System";
 		}
-		ROS_DEBUG_NAMED("Discovery", "sendReportIdentification to %s: query_type: %d, system_type: %d, name: %s",
+		RCLCPP_DEBUG(logger, "sendReportIdentification to %s: query_type: %d, system_type: %d, name: %s",
 				sender.str().c_str(),query_type, system_type, name.c_str());
 		report_msg.getBody()->getReportIdentificationRec()->setQueryType(query_type);
 		report_msg.getBody()->getReportIdentificationRec()->setType(system_type);
@@ -244,7 +244,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 		sendJausMessage(report_msg, sender);
 		p_component_list.update_ts(p_own_address, sender);
 	} else {
-		ROS_WARN_ONCE_NAMED("Discovery", "sendReportIdentification own system_id_type: %d>%d (query_type), do not response", system_id, query_type);
+		RCLCPP_WARN_ONCE(logger, "sendReportIdentification own system_id_type: %d>%d (query_type), do not response", system_id, query_type);
 	}
 }
 
@@ -253,7 +253,7 @@ void Discovery_ReceiveFSM::sendReportServiceListAction(QueryServiceList msg, Rec
 	JausAddress sender = transportData.getAddress();
 	p_respond_ident[sender] = 0;
 	if (system_id == TYPE_SUBSYSTEM) {
-		ROS_DEBUG_NAMED("Discovery", "sendReportServiceList to %s", sender.str().c_str());
+		RCLCPP_DEBUG(logger, "sendReportServiceList to %s", sender.str().c_str());
 		ReportServiceList report_msg;
 		int cnt_services = 0;
 		std::vector<iop::DiscoveryComponent> components = p_component_list.get_components(p_own_address);
@@ -278,10 +278,10 @@ void Discovery_ReceiveFSM::sendReportServiceListAction(QueryServiceList msg, Rec
 				}
 			}
 		}
-		ROS_DEBUG_NAMED("Discovery", "	report services with %d services", cnt_services);
+		RCLCPP_DEBUG(logger, "	report services with %d services", cnt_services);
 		sendJausMessage( report_msg, sender );
 	} else {
-		ROS_WARN_ONCE_NAMED("Discovery", "ignore QueryServiceList from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
+		RCLCPP_WARN_ONCE(logger, "ignore QueryServiceList from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
 	}
 }
 
@@ -376,7 +376,7 @@ void Discovery_ReceiveFSM::sendReportServicesAction(QueryServices msg, Receive::
 	JausAddress sender = transportData.getAddress();
 	p_respond_ident[sender] = 0;
 	if (system_id == TYPE_SUBSYSTEM) {
-		ROS_DEBUG_NAMED("Discovery", "sendReportServices to %s", sender.str().c_str());
+		RCLCPP_DEBUG(logger, "sendReportServices to %s", sender.str().c_str());
 		ReportServices report_msg;
 		int cnt_nodes = 0;
 		int cnt_cmps = 0;
@@ -432,10 +432,10 @@ void Discovery_ReceiveFSM::sendReportServicesAction(QueryServices msg, Receive::
 				}
 			}
 		}
-		ROS_DEBUG_NAMED("Discovery", "	report services with %d nodes, %d components and %d services", cnt_nodes, cnt_cmps, cnt_srvs);
+		RCLCPP_DEBUG(logger, "	report services with %d nodes, %d components and %d services", cnt_nodes, cnt_cmps, cnt_srvs);
 		sendJausMessage( report_msg, sender );
 	} else {
-		ROS_WARN_NAMED("Discovery", "ignore QueryServices from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
+		RCLCPP_WARN(logger, "ignore QueryServices from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
 	}
 }
 
@@ -472,7 +472,7 @@ void Discovery_ReceiveFSM::sendReportSubsystemListAction(QuerySubsystemList msg,
 {
 	JausAddress sender = transportData.getAddress();
 	if (system_id == TYPE_SYSTEM) {
-		ROS_DEBUG_NAMED("Discovery", "sendReportSubsystemList to %s, known subsystems: %lu", sender.str().c_str(), p_subsystems.size());
+		RCLCPP_DEBUG(logger, "sendReportSubsystemList to %s, known subsystems: %lu", sender.str().c_str(), p_subsystems.size());
 		ReportSubsystemList report_msg;
 		// add only the discovery services of a subsystems
 		for (int i=0; i < p_subsystems.size(); i++) {
@@ -484,7 +484,7 @@ void Discovery_ReceiveFSM::sendReportSubsystemListAction(QuerySubsystemList msg,
 		}
 		sendJausMessage( report_msg, sender );
 	} else {
-		ROS_WARN_NAMED("Discovery", "ignore QuerySubsystemList from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
+		RCLCPP_WARN(logger, "ignore QuerySubsystemList from %s, since own system_id is not SYSTEM(1)", sender.str().c_str());
 	}
 }
 
@@ -509,4 +509,4 @@ bool Discovery_ReceiveFSM::p_should_send_services(JausAddress address)
 }
 
 
-};
+}

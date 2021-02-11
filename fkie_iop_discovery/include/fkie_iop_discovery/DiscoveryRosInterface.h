@@ -24,16 +24,17 @@ along with this program; or you can read the full license at
 #ifndef DISCOVERY_ROS_INTERFACE_H
 #define DISCOVERY_ROS_INTERFACE_H
 
-#include <ros/ros.h>
-#include <fkie_iop_msgs/Identification.h>
-#include <fkie_iop_msgs/Component.h>
-#include <fkie_iop_msgs/QueryIdentification.h>
-#include <fkie_iop_msgs/JausAddress.h>
-#include <fkie_iop_msgs/Node.h>
-#include <fkie_iop_msgs/Service.h>
-#include <fkie_iop_msgs/Subsystem.h>
-#include <fkie_iop_msgs/System.h>
-#include <std_srvs/Empty.h>
+#include <rclcpp/rclcpp.hpp>
+
+#include <fkie_iop_msgs/msg/identification.hpp>
+#include <fkie_iop_msgs/msg/component.hpp>
+#include <fkie_iop_msgs/srv/query_identification.hpp>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
+#include <fkie_iop_msgs/msg/node.hpp>
+#include <fkie_iop_msgs/msg/service.hpp>
+#include <fkie_iop_msgs/msg/subsystem.hpp>
+#include <fkie_iop_msgs/msg/system.hpp>
+#include <std_srvs/srv/empty.hpp>
 
 #include <fkie_iop_discovery/DiscoveryComponent.h>
 #include "urn_jaus_jss_core_DiscoveryClient/Messages/MessageSet.h"
@@ -57,36 +58,37 @@ public:
 	void update_services(JausAddress discovery_addr, urn_jaus_jss_core_DiscoveryClient::ReportServiceList msg);
 	void update_services(JausAddress discovery_addr, urn_jaus_jss_core_DiscoveryClient::ReportServices msg);
 //	bool add_service(std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
-	void set_discovery_timeout(int timeout);
+	void set_discovery_timeout(int64_t timeout);
 	bool enabled();
 
 protected:
+	rclcpp::Logger logger;
 	JTS::StateMachine* p_jaus_router;
 	/** Parameter and functions for ROS interface to publish the IOP system.*/
 	bool p_enable_ros_interface;
-	int p_force_component_update_after;
-	int p_timeout_discover_service;
-	ros::Publisher p_pub_identification;
-	ros::Publisher p_pub_system;
-	ros::ServiceServer p_srv_query_ident;
-	ros::ServiceServer p_srv_update_system;
+	int64_t p_force_component_update_after;
+	int64_t p_timeout_discover_service;
+	rclcpp::Publisher<fkie_iop_msgs::msg::Identification>::SharedPtr p_pub_identification;
+	rclcpp::Publisher<fkie_iop_msgs::msg::System>::SharedPtr p_pub_system;
+	rclcpp::Service<fkie_iop_msgs::srv::QueryIdentification>::SharedPtr p_srv_query_ident;
+	rclcpp::Service<std_srvs::srv::Empty>::SharedPtr p_srv_update_system;
 
 	iop::DiscoveryComponentList p_components;
-	std::map<JausAddress, fkie_iop_msgs::Identification> p_subsystem_idents;
-	std::map<JausAddress, fkie_iop_msgs::Identification> p_node_idents;
-	std::map<JausAddress, unsigned int> p_discovery_srvs_stamps;  // subsystem ID, seconds of last update
+	std::map<JausAddress, fkie_iop_msgs::msg::Identification> p_subsystem_idents;
+	std::map<JausAddress, fkie_iop_msgs::msg::Identification> p_node_idents;
+	std::map<JausAddress, int64_t> p_discovery_srvs_stamps;  // subsystem ID, seconds of last update
 
-	bool pQueryIdentificationSrv(fkie_iop_msgs::QueryIdentification::Request  &req, fkie_iop_msgs::QueryIdentification::Response &res);
-	bool pUpdateSystemSrv(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+	void pQueryIdentificationSrv(const fkie_iop_msgs::srv::QueryIdentification::Request::SharedPtr req, fkie_iop_msgs::srv::QueryIdentification::Response::SharedPtr res);
+	void pUpdateSystemSrv(const std_srvs::srv::Empty::Request::SharedPtr req, std_srvs::srv::Empty::Response::SharedPtr res);
 	void p_publish_subsystem();
 	void p_query_identification(int query_type, jUnsignedShortInteger subsystem, jUnsignedByte node, jUnsignedByte component);
-	bool p_equal2ident(fkie_iop_msgs::Identification& ros_ident, JausAddress& addr);
+	bool p_equal2ident(fkie_iop_msgs::msg::Identification& ros_ident, JausAddress& addr);
 
-	fkie_iop_msgs::Node& p_get_node(fkie_iop_msgs::Subsystem& ros_subsystem, JausAddress& addr);
+	fkie_iop_msgs::msg::Node& p_get_node(fkie_iop_msgs::msg::Subsystem& ros_subsystem, JausAddress& addr);
 	JausAddress p_get_node_addr(JausAddress& addr);
-	fkie_iop_msgs::JausAddress p_convert(JausAddress& addr);
+	fkie_iop_msgs::msg::JausAddress p_convert(JausAddress& addr);
 };
 
-};
+}
 
 #endif

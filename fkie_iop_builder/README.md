@@ -8,16 +8,13 @@ The `fkie_iop_builder` package is the base of the ROS/IOP-Bridge. It uses the JA
 To generate sources from JSIDL files the `fkie_iop_builder` extends `CMakeLists.txt` by three scripts: `iop_init`, `iop_export_service` and `iop_code_generator`. Each ROS/IOP plugin should include at least `iop_init` and `iop_code_generator` in `CMakeLists.txt` to build a plugin.
 
 
-
 ### `iop_init` Parameter description
 ```makefile
-iop_init(COMPONENT_ID 0)
+iop_init()
 ```
 
-####  : COMPONENT_ID
+####  : COMPONENT_ID is set to 0 by default
 This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `fkie_iop_primitive_driver` it is `build/iop/urn.jaus.jss.mobility/fkie_iop_primitive_driver/jaus/Fkie_iop_primitive_driver_0`
-> after we use only a part of JTS-sources you can set it to `0` the only effect is the generated path name in the build folder.
-
 
 
 ### `iop_export_service` Parameter description
@@ -26,21 +23,32 @@ iop_export_service(urn_jaus_jss_core_Events urn_jaus_jss_core_EventsClient)
 ```
 There are a lot of services with parent functionality which is inherited by other services. These are e.g. `Transport`, `Events` and more services. In this case we need to export the header files and libraries so that they can be used by other plugins. The `iop_export_service` creates a list of all header files from specified services. The services are specified as a list of names. The name is defined by auto-generated folder name for JAUS service located in `build`-folder. An example from Events service:
 
-The header fiels are stored in `${IOP_INSTALL_INCLUDE_DIRS}` variable. We can use it to install theses files like:
+The header fiels are stored in `${IOP_INSTALL_INCLUDE_DIRS}` variable. We can use it to install theses files and our `includes` like:
 ```makefile
 install(
-  DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS}
+  DESTINATION include/${PROJECT_NAME}
+  PATTERN "*.old" EXCLUDE
+  PATTERN "*.gen" EXCLUDE
+)
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
   PATTERN "*.old" EXCLUDE
   PATTERN "*.gen" EXCLUDE
 )
 ```
-The library is exported by `catkin_package`, e.g. from Events service:
+
+The library is exported by `ament`, e.g. from Events service:
 ```makefile
-catkin_package(
-    INCLUDE_DIRS include/public
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS fkie_iop_transport
+set(dependencies
+  fkie_iop_transport
 )
+ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(${dependencies})
+
+ament_package()
 ```
 
 
@@ -86,7 +94,7 @@ Specify a list of JSIDL files with IOP/JAUS services. This path is relative to o
 Here are specified all source-code files which are auto-generated and changed by the plugin. Copy the files you will change from auto-generated location in `build` folder to the own plugin and specify these here.
 >New source-code file which are not generated, you have to specify in `add_library` (a default ROS parameter). See for example the CMakeLists.txt of `fkie_iop_discovery`.
 
->Do not put own non-generated *include* files in the top level of the `include`-folder of your plugin. Please create `public` or `private` subfolder. See for example the `fkie_iop_discovery` package.
+>Do not put own non-generated *include* files in the top level of the `include`-folder of your plugin. Please create `${PROJECT_NAME}` subfolder. See for example the `fkie_iop_discovery` package.
 
 
 #### : EXTERN_SERVICES
@@ -98,6 +106,6 @@ A list of IOP/JAUS services for which a library is available and will be used in
 #### : GENERATED_SOURCES
 Since the auto-generated source-code files are also compiled, this is the return of `iop_code_generator`. The list of returned files can now be used by name *cppfiles* in `add_library`, e.g.
 ```makefile
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
             ${cppfiles})
 ```

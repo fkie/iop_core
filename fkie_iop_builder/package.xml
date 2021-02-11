@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>fkie_iop_builder</name>
-  <version>1.1.0</version>
+  <version>2.1.0</version>
   <description>JAUS build helper. It generates CPP sources from JSIDL files.
   An installed JausToolSet is required. This is done by scripts in jaustoolset.
   If some error occurs regarding missing "pthread" and "timer" the libpthread and
@@ -14,9 +14,16 @@
   <author>Alexander Tiderko</author>
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
   <license>GPLv2</license>
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
   <depend>jaustoolset</depend>
-  <depend condition="$ROS_PYTHON_VERSION == 2">python-lxml</depend>
-  <depend condition="$ROS_PYTHON_VERSION == 3">python3-lxml</depend>
+  <depend>python3-lxml</depend>
+  <depend>rclcpp</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
 

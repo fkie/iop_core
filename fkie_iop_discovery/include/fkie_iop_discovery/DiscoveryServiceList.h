@@ -20,33 +20,30 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-#ifndef IOP_LIST_MANAGER_LISTENER_INTERFACE_H_
-#define IOP_LIST_MANAGER_LISTENER_INTERFACE_H_
 
-#include "Transport/JausAddress.h"
-#include "urn_jaus_jss_core_ListManager/Messages/MessageSet.h"
-#include <fkie_iop_list_manager/InternalElement.h>
+#ifndef DISCOVERY_SERVICE_LIST_H
+#define DISCOVERY_SERVICE_LIST_H
+
+#include "DiscoveryServiceDef.h"
+#include "Transport/JausTransport.h"
 
 namespace iop
 {
-	class ListManagerListenerInterface
-	{
-		/**
-		 * The interface is used by list manager service to inform services about changes.
-		 */
-	public:
-		// ____________________________
-		// === must be overridden =====
-		// ============================
-		virtual void execute_list(std::vector<iop::InternalElement> elements, double speed = std::numeric_limits<double>::quiet_NaN()) = 0;
-		virtual void stop_execution() = 0;
 
-		virtual ~ListManagerListenerInterface(){}
+class DiscoveryServiceList {
+public:
+	DiscoveryServiceList();
 
-	protected:
-		ListManagerListenerInterface() {}
-	};
+	bool add_service(std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
 
+	std::vector<DiscoveryServiceDef> get_services();
+	bool has_service(std::string uri);
+
+protected:
+	std::vector<DiscoveryServiceDef> p_services;
 };
 
-#endif
+}
+
+
+#endif // DISCOVERY_CONFIG_H

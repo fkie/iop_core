@@ -28,14 +28,14 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Events/Messages/MessageSet.h"
 #include "urn_jaus_jss_core_Events/InternalEvents/InternalEventsSet.h"
 
-#include <ros/ros.h>
 #include <string>
 
 #include <fkie_iop_events/EventHandlerInterface.h>
+#include <fkie_iop_component/timer.hpp>
 
 namespace urn_jaus_jss_core_EventsClient {
 class EventsClient_ReceiveFSM;
-};
+}
 
 namespace iop
 {
@@ -88,8 +88,8 @@ public:
 
 protected:
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *p_parent;
-	ros::NodeHandle p_nh;
-	ros::Timer p_timeout_timer;
+	rclcpp::Logger events_logger;
+	iop::Timer p_timer;
 	int p_timeout;
 	JausAddress p_remote;
 	jUnsignedShortInteger p_query_msg_id;
@@ -108,7 +108,7 @@ protected:
 	void p_send_cancel_event();
 	void p_send_update_event();
 
-	void timeout(const ros::TimerEvent& event);
+	void timeout();
 	void p_timer_stop();
 	void p_timer_start();
 
@@ -117,6 +117,6 @@ private:
 	const InternalEventClient& operator=(const InternalEventClient& from);
 };
 
-};
+}
 
 #endif

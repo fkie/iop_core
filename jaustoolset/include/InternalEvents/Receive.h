@@ -59,7 +59,7 @@ public:
 				int setNodeID(jUnsignedInteger value);
 				jUnsignedInteger getSubsystemID();
 				int setSubsystemID(jUnsignedInteger value);
-				const unsigned int getSize();
+				unsigned int getSize();
 				virtual void encode(unsigned char *bytes);
 				virtual void decode(const unsigned char *bytes);
 				SourceID &operator=(const SourceID &value);
@@ -75,10 +75,10 @@ public:
 			class DllExport MessagePayload
 			{
 			public:
-				const jUnsignedInteger getLength() const;
+				jUnsignedInteger getLength() const;
 				const unsigned char *getData() const;
 				int set(const jUnsignedInteger &length, const unsigned char *data);
-				const unsigned int getSize();
+				unsigned int getSize();
 				virtual void encode(unsigned char *bytes);
 				virtual void decode(const unsigned char *bytes);
 				MessagePayload &operator=(const MessagePayload &value);
@@ -105,7 +105,7 @@ public:
 			int setSourceID(const SourceID &value);
 			MessagePayload* const getMessagePayload();
 			int setMessagePayload(const MessagePayload &value);
-			const unsigned int getSize();
+			unsigned int getSize();
 			virtual void encode(unsigned char *bytes);
 			virtual void decode(const unsigned char *bytes);
 			ReceiveRec &operator=(const ReceiveRec &value);
@@ -122,7 +122,7 @@ public:
 
 		ReceiveRec* const getReceiveRec();
 		int setReceiveRec(const ReceiveRec &value);
-		const unsigned int getSize();
+		unsigned int getSize();
 		virtual void encode(unsigned char *bytes);
 		virtual void decode(const unsigned char *bytes);
 		Body &operator=(const Body &value);

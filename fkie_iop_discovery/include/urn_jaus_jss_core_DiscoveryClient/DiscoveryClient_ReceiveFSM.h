@@ -41,12 +41,11 @@ along with this program; or you can read the full license at
 #include "DiscoveryClient_ReceiveFSM_sm.h"
 #include "urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <ros/ros.h>
+#include <mutex>
+#include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_discovery/DiscoveryServiceDef.h>
 #include <fkie_iop_discovery/DiscoveryRosInterface.h>
+#include <fkie_iop_component/timer.hpp>
 
 
 namespace urn_jaus_jss_core_DiscoveryClient
@@ -93,7 +92,7 @@ public:
 	template<class T>
 	void discover(std::string service_uri, void(T::*handler)(const std::string &, JausAddress &), T*obj, unsigned char major_version=1, unsigned char minor_version=255, unsigned short subsystem=65535)
 	{
-		boost::function<void (const std::string &, JausAddress &)> callback = boost::bind(handler, obj, _1, _2);;
+		std::function<void (const std::string &, JausAddress &)> callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2);;
 		iop::DiscoveryServiceDef service(service_uri, major_version, minor_version);
 		p_discover_callbacks[service].push_back(callback);
 		pDiscover(service_uri, major_version, minor_version, subsystem);
@@ -103,7 +102,7 @@ public:
 	void query_identification(int query_type, jUnsignedShortInteger subsystem=0xFFFF, jUnsignedByte node=0xFF, jUnsignedByte component=0xFF);
 	template<class T>
 	void set_discovery_handler(void(T::*handler)(const std::string &, JausAddress &), T*obj) {
-		class_discovery_callback_ = boost::bind(handler, obj, _1, _2);
+		class_discovery_callback_ = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2);
 	}
 
 	DiscoveryClient_ReceiveFSMContext *context;
@@ -128,9 +127,9 @@ protected:
 	public:
 		int count;
 		bool received_list;
-		unsigned int ts_last_request;
+		int64_t ts_last_request;
 
-		bool allow_send(unsigned int now_sec) {
+		bool allow_send(int64_t now_sec) {
 			if (received_list || count > 5) {  // after 5 tries sends max once per minute
 				if (now_sec - ts_last_request < 60) {
 					return false;
@@ -144,8 +143,9 @@ protected:
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
 
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	rclcpp::Logger logger;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
 	// ros parameter
@@ -154,7 +154,7 @@ protected:
 	/** Variables used for registration by subsystem or node **/
 	bool register_own_services;
 	Discovery_ReceiveFSM *p_discovery_fsm;
-	int p_current_timeout;
+	int64_t p_current_timeout;
 	bool p_first_ready;
 	bool p_is_registered;
 	bool p_on_registration;
@@ -162,21 +162,21 @@ protected:
 	int p_current_diagnostic_level;
 	std::vector<iop::DiscoveryServiceDef> p_own_uri_services;
 	JausAddress p_addr_discovery_service;
-	int p_timeout_discover_service;
-	ros::WallTimer p_timeout_timer;
+	int64_t p_timeout_discover_service;
+	iop::Timer p_timer;
 	JTS::InternalEvent *p_timeout_event;
 	/// collect all requests to avoid too often requests
 	std::map<JausAddress, ServiceRequests> p_service_requests;
 	std::vector<JausAddress> p_unicast_subsystems;
 
-	std::map <iop::DiscoveryServiceDef, std::vector<boost::function<void (const std::string &, JausAddress &)> > > p_discover_callbacks;  // Service to discover, list with callbacks requested this service
-	boost::function<void (const std::string &, JausAddress &)> class_discovery_callback_;
+	std::map <iop::DiscoveryServiceDef, std::vector<std::function<void (const std::string &, JausAddress &)> > > p_discover_callbacks;  // Service to discover, list with callbacks requested this service
+	std::function<void (const std::string &, JausAddress &)> class_discovery_callback_;
 	std::vector<DiscoverItem> p_discover_services;
 	void pRegistrationFinished();
 	void pCheckTimer();
 	std::vector<JausAddress> pGetServices(ReportServices &msg, iop::DiscoveryServiceDef service, unsigned short subsystem);
 	std::vector<JausAddress> pGetServices(ReportServiceList &msg, iop::DiscoveryServiceDef service, unsigned short subsystem);
-	void pTimeoutCallback(const ros::WallTimerEvent& event);
+	void pTimeoutCallback();
 	bool pHasToDiscover(unsigned short subsystem_id);
 	void pInformDiscoverCallbacks(iop::DiscoveryServiceDef &service, JausAddress &address);
 
@@ -189,6 +189,6 @@ protected:
 	ServiceRequests& p_get_service_request(JausAddress &discovery_service);
 };
 
-};
+}
 
 #endif // DISCOVERYCLIENT_RECEIVEFSM_H

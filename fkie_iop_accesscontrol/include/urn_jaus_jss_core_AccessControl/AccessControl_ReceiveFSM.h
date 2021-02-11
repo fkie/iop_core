@@ -39,8 +39,8 @@ along with this program; or you can read the full license at
 
 #include "AccessControl_ReceiveFSM_sm.h"
 
-#include <ros/ros.h>
-#include <std_msgs/Bool.h>
+#include <std_msgs/msg/bool.hpp>
+#include <fkie_iop_component/timer.hpp>
 
 namespace urn_jaus_jss_core_AccessControl
 {
@@ -80,7 +80,6 @@ public:
 	void store_emergency_address(JausAddress address);
 	void delete_emergency_address(JausAddress address);
 	bool has_emergency_address(JausAddress address);
-	void timeout(void* arg);
 	JausAddress current_controller() {
 		return p_current_controller;
 	}
@@ -88,27 +87,29 @@ public:
 	AccessControl_ReceiveFSMContext *context;
 
 protected:
-	DeVivo::Junior::JrTimer *p_timer;
+	rclcpp::Logger logger;
+	iop::Timer p_timer;
 	JausAddress p_current_controller;
 	jUnsignedByte p_current_authority;
 	jUnsignedByte p_default_authority;
 	int p_default_timeout;
 	bool p_ros_available;
 	std::set<unsigned int> p_emergency_address;
-	ros::Publisher p_is_controlled_publisher;
-	ros::Publisher p_is_control_available;
-	ros::Subscriber p_sub_control_available;
+	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_is_controlled_publisher;
+	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_is_control_available;
+	rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr p_sub_control_available;
     /// References to parent FSMs
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
 
-	JTS::InternalEvent *p_timeout_event;
+	JTS::InternalEvent* p_timeout_event;
 
+	void pTimeout();
 	void pPublishControlState(bool state);
-	void p_set_control_available(const std_msgs::Bool::ConstPtr& state);
+	void p_set_control_available(const std_msgs::msg::Bool::SharedPtr msg);
 
 };
 
-};
+}
 
 #endif // ACCESSCONTROL_RECEIVEFSM_H

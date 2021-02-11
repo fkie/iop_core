@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>fkie_iop_list_manager</name>
   <version>1.1.0</version>
   <description>List Manager to support services with list operations.</description>
@@ -8,14 +8,15 @@
   <license>GPLv2</license>
   <url type="website">https://github.com/fkie/iop_jaus_mobility</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>fkie_iop_management</build_depend>
-  <build_depend>roscpp</build_depend>
-  <run_depend>fkie_iop_component</run_depend>
-  <run_depend>fkie_iop_management</run_depend>
-  <run_depend>roscpp</run_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>fkie_iop_management</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <fkie_iop_component plugin="${prefix}/plugin_iop.xml" />
   </export>
 

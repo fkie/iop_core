@@ -65,6 +65,6 @@ void *SimpleThread::InternalRunRoutine(void *ptr)
 {
 	((SimpleThread*)ptr)->run();
 	return NULL;
-};
+}
 
 }

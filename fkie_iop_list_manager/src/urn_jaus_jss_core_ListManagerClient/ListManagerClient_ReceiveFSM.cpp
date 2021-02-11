@@ -1,7 +1,7 @@
 
 
 #include "urn_jaus_jss_core_ListManagerClient/ListManagerClient_ReceiveFSM.h"
-
+#include <fkie_iop_component/ros_node.hpp>
 
 
 
@@ -14,6 +14,7 @@ namespace urn_jaus_jss_core_ListManagerClient
 
 
 ListManagerClient_ReceiveFSM::ListManagerClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM, urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM* pManagementClient_ReceiveFSM)
+: logger(iop::RosNode::get_instance().get_logger().get_child("ListManagerClient"))
 {
 
 	/*
@@ -57,7 +58,7 @@ void ListManagerClient_ReceiveFSM::set_remote(JausAddress &address)
 		QueryElementCount query;
 		sendJausMessage(query, p_remote);
 	} else if (p_remote != address) {
-		ROS_WARN_NAMED("ListManagerClient", "you try to set access to two different list manager: %s and %s! This is not supported. Use two different components", p_remote.str().c_str(), address.str().c_str());
+		RCLCPP_WARN(logger, "you try to set access to two different list manager: %s and %s! This is not supported. Use two different components", p_remote.str().c_str(), address.str().c_str());
 	}
 }
 
@@ -76,7 +77,7 @@ void ListManagerClient_ReceiveFSM::handleConfirmElementRequestAction(ConfirmElem
 {
 	JausAddress sender = transportData.getAddress();
 	int request_id = (int)msg.getBody()->getRequestIDRec()->getRequestID();
-	ROS_DEBUG_NAMED("ListManagerClient", "list element confirmed by %s: request_id: %d", sender.str().c_str(), request_id);
+	RCLCPP_DEBUG(logger, "list element confirmed by %s: request_id: %d", sender.str().c_str(), request_id);
 	if (p_request_id_in_process == request_id) {
 		p_request_id_in_process = 0;
 		if (!pSendCurrentList2Remote()) {
@@ -91,7 +92,7 @@ void ListManagerClient_ReceiveFSM::handleRejectElementRequestAction(RejectElemen
 	JausAddress sender = transportData.getAddress();
 	int request_id = (int)msg.getBody()->getRejectElementRec()->getRequestID();
 	int reject_code = (int)msg.getBody()->getRejectElementRec()->getResponseCode();
-	ROS_WARN_NAMED("ListManagerClient", "list element rejected by %s: request_id: %d, reject code: %d", sender.str().c_str(), request_id, reject_code);
+	RCLCPP_WARN(logger, "list element rejected by %s: request_id: %d, reject code: %d", sender.str().c_str(), request_id, reject_code);
 	if (p_request_id_in_process == request_id) {
 		p_request_id_in_process = 255;
 		QueryElementList query;
@@ -109,7 +110,7 @@ void ListManagerClient_ReceiveFSM::handleReportElementCountAction(ReportElementC
 {
 	JausAddress sender = transportData.getAddress();
 	unsigned short count = msg.getBody()->getElementCountRec()->getElementCount();
-	ROS_DEBUG_NAMED("ListManagerClient", "list manger %s reports %d elements", sender.str().c_str(), count);
+	RCLCPP_DEBUG(logger, "list manger %s reports %d elements", sender.str().c_str(), count);
 	if (count > 0 && p_remote.get() != 0) {
 		QueryElementList query;
 		sendJausMessage(query, p_remote);
@@ -146,7 +147,7 @@ void ListManagerClient_ReceiveFSM::push_back(Element &msg)
 			pSendCurrentList2Remote();
 		}
 	} else {
-		ROS_WARN_NAMED("ListManagerClient", "push_back(Element &) called without set_remote(JausAddress). This call will be ignored!");
+		RCLCPP_WARN(logger, "push_back(Element &) called without set_remote(JausAddress). This call will be ignored!");
 	}
 }
 
@@ -166,11 +167,11 @@ void ListManagerClient_ReceiveFSM::clear()
 			item.setElementUID(uid);
 			query.getBody()->getDeleteElementSeq()->getDeleteElementList()->addElement(item);
 		}
-		ROS_DEBUG_NAMED("ListManagerClient", "send request %d to delete %lu elements @ %s", (int)p_request_id, p_remote_uds.size(), p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "send request %d to delete %lu elements @ %s", (int)p_request_id, p_remote_uds.size(), p_remote.str().c_str());
 		p_request_id_in_process = p_request_id;
 		sendJausMessage(query, p_remote);
 	} else {
-		ROS_WARN_NAMED("ListManagerClient", "clear() called without set_remote(JausAddress). This call will be ignored!");
+		RCLCPP_WARN(logger, "clear() called without set_remote(JausAddress). This call will be ignored!");
 	}
 }
 
@@ -192,7 +193,7 @@ bool ListManagerClient_ReceiveFSM::pSendCurrentList2Remote() {
 			list->addElement(rec);
 			p_current_uid++;
 		}
-		ROS_DEBUG_NAMED("ListManagerClient", "send request %d to add %lu elements @ %s", (int)p_request_id, p_msgs_2_add.size(), p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "send request %d to add %lu elements @ %s", (int)p_request_id, p_msgs_2_add.size(), p_remote.str().c_str());
 		p_request_id_in_process = p_request_id;
 		sendJausMessage(query, p_remote);
 		// added elements are removed from the list. It is not save.
@@ -206,11 +207,11 @@ bool ListManagerClient_ReceiveFSM::pSendCurrentList2Remote() {
 
 void ListManagerClient_ReceiveFSM::pInformStateCallbacks(bool success, unsigned int count)
 {
-	std::vector<boost::function<void (bool success, unsigned int count)> >::iterator it_all;
+	std::vector<std::function<void (bool success, unsigned int count)> >::iterator it_all;
 	for (it_all = p_state_handler.begin(); it_all != p_state_handler.end(); ++it_all) {
 		(*it_all)(success, count);
 	}
 }
 
 
-};
+}

@@ -20,16 +20,16 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
+#include <string>
 #include <fkie_iop_list_manager/InternalElementList.h>
-#include <ros/ros.h>
-#include <ros/console.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_ListManager;
 
 
 InternalElementList::InternalElementList()
+: logger(iop::RosNode::get_instance().get_logger().get_child("InternalElementList"))
 {
 	p_error_code = 0;
 	p_error_msg = "";
@@ -49,13 +49,13 @@ void InternalElementList::register_supported_element(jUnsignedShortInteger repor
 	if (handler != NULL) {
 		lock_type lock(p_mutex);
 		if (p_supported_elements.find(report_id) == p_supported_elements.end()) {
-			ROS_DEBUG_NAMED("InternalElementList", "register supported list report_id: %#x", report_id);
+			RCLCPP_DEBUG(logger, "register supported list report_id: %#x", report_id);
 			p_supported_elements[report_id] = handler;
 		} else {
-			ROS_WARN_NAMED("InternalElementList", "supported list report_id: %#x already registered", report_id);
+			RCLCPP_WARN(logger, "supported list report_id: %#x already registered", report_id);
 		}
 	} else {
-		ROS_WARN_NAMED("InternalElementList", "register supported list report_id %#x failed, because the handler is NULL", report_id);
+		RCLCPP_WARN(logger, "register supported list report_id %#x failed, because the handler is NULL", report_id);
 	}
 }
 
@@ -75,13 +75,13 @@ bool InternalElementList::execute_list(jUnsignedShortInteger start_uid, double s
 		start_uid = el.get_uid();
 	}
 	if (el.get_uid() == 0) {
-		set_error(5, "element " + boost::lexical_cast<std::string>(start_uid) + " not found");
+		set_error(5, "element " + std::to_string(start_uid) + " not found");
 		return false;
 	}
 	jUnsignedShortInteger msg_id = el.get_message_id();
 	ListManagerListenerInterface *handler = p_supported_elements[msg_id];
 	if (handler == NULL) {
-		set_error(7, "no handler for element " + boost::lexical_cast<std::string>(start_uid) + " specified");
+		set_error(7, "no handler for element " + std::to_string(start_uid) + " specified");
 		return false;
 	}
 	while (el.get_message_id() == msg_id) {
@@ -123,12 +123,12 @@ bool InternalElementList::finished(jUnsignedShortInteger uid, bool execute_next)
 	iop::InternalElement el = get_element(uid);
 	jUnsignedShortInteger msg_id = el.get_message_id();
 	if (msg_id == 0) {
-		set_error(5, "element " + boost::lexical_cast<std::string>(uid) + " not found");
+		set_error(5, "element " + std::to_string(uid) + " not found");
 		return false;
 	}
 	ListManagerListenerInterface *handler = p_supported_elements[msg_id];
 	if (handler == NULL) {
-		set_error(7, "no handler for element " + boost::lexical_cast<std::string>(uid) + " specified");
+		set_error(7, "no handler for element " + std::to_string(uid) + " specified");
 		return false;
 	}
 	if (execute_next && el.get_uid_next() != 0) {
@@ -209,7 +209,7 @@ bool InternalElementList::set_element(SetElement msg)
 			if (elrec->getPreviousUID() == 0) {
 				// we have to insert at the begin
 				if (p_element_list.size() > 0 && elrec->getNextUID() != 65535 && elrec->getNextUID() != p_element_list.at(0).get_uid()) {
-					set_error(3, "invalid next UID of element at index " + boost::lexical_cast<std::string>(i));
+					set_error(3, "invalid next UID of element at index " + std::to_string(i));
 					return false;
 				} else {
 					p_element_list.insert(p_element_list.begin(), ie);
@@ -217,7 +217,7 @@ bool InternalElementList::set_element(SetElement msg)
 			} else if (elrec->getNextUID() == 0) {
 				// we have to insert at the end
 				if (p_element_list.size() > 0 && elrec->getPreviousUID() != 65535 && elrec->getPreviousUID() != p_element_list.at(p_element_list.size() - 1).get_uid()) {
-					set_error(3, "invalid previous UID of element at index " + boost::lexical_cast<std::string>(i));
+					set_error(3, "invalid previous UID of element at index " + std::to_string(i));
 					return false;
 				} else {
 					p_element_list.push_back(ie);
@@ -241,7 +241,7 @@ bool InternalElementList::set_element(SetElement msg)
 				if (found) {
 					p_element_list.insert(it, ie);
 				} else {
-					set_error(3, "invalid previous or next UID of element at index " + boost::lexical_cast<std::string>(i));
+					set_error(3, "invalid previous or next UID of element at index " + std::to_string(i));
 					return false;
 				}
 			}
@@ -264,11 +264,11 @@ bool InternalElementList::delete_element(DeleteElement msg)
 					p_supported_elements[p_element_list.begin()->get_message_id()]->stop_execution();
 					p_current_element = 0;
 				}
-				ROS_DEBUG_NAMED("InternalElementList", "delete first element with id: %d", p_element_list.begin()->get_uid());
+				RCLCPP_DEBUG(logger, "delete first element with id: %d", p_element_list.begin()->get_uid());
 				p_element_list.erase(p_element_list.begin());
 			}
 		} else if (delrec->getElementUID() == 65535) {
-			ROS_DEBUG_NAMED("InternalElementList", "delete all elements");
+			RCLCPP_DEBUG(logger, "delete all elements");
 			if (p_current_element != 0) {
 				// stop execution
 				iop::InternalElement el = get_element(p_current_element);
@@ -283,7 +283,7 @@ bool InternalElementList::delete_element(DeleteElement msg)
 			jUnsignedShortInteger msg_id = 0;
 			for (std::deque<iop::InternalElement>::iterator it = p_element_list.begin(); it != p_element_list.end(); it++) {
 				if (it->get_uid() == delrec->getElementUID()) {
-					ROS_DEBUG_NAMED("InternalElementList", "delete element with id: %d", it->get_uid());
+					RCLCPP_DEBUG(logger, "delete element with id: %d", it->get_uid());
 					if (p_current_element != 0) {
 						// stop execution
 						if (msg_id != p_element_list.begin()->get_message_id()) {
@@ -385,14 +385,14 @@ bool InternalElementList::isValidElementRequest(SetElement msg)
 	for (unsigned int i = 0; i < ellist->getNumberOfElements(); ++i) {
 		SetElement::Body::SetElementSeq::ElementList::ElementRec *elrec = ellist->getElement(i);
 		if (elrec->getElementUID() == 0 || elrec->getElementUID() == 65535) {
-			set_error(1, "invalid UID: " + boost::lexical_cast<std::string>(elrec->getElementUID()));
+			set_error(1, "invalid UID: " + std::to_string(elrec->getElementUID()));
 			return false;
 		}
 		new_element_ids.insert(elrec->getElementUID());
 		if (elrec->getPreviousUID() != 0 && elrec->getPreviousUID() != 65535) {
 			if (new_element_ids.find(elrec->getPreviousUID()) == new_element_ids.end()) {
 				if (!elementExists(elrec->getPreviousUID())) {
-					set_error(2, "invalid previous UID: " + boost::lexical_cast<std::string>(elrec->getPreviousUID()));
+					set_error(2, "invalid previous UID: " + std::to_string(elrec->getPreviousUID()));
 					return false;
 				}
 			}
@@ -404,7 +404,7 @@ bool InternalElementList::isValidElementRequest(SetElement msg)
 		if (elrec->getNextUID() != 0 && elrec->getNextUID() != 65535) {
 			if (new_element_ids.find(elrec->getNextUID()) == new_element_ids.end()) {
 				if (!elementExists(elrec->getNextUID())) {
-					set_error(3, "invalid next UID: " + boost::lexical_cast<std::string>(elrec->getNextUID()));
+					set_error(3, "invalid next UID: " + std::to_string(elrec->getNextUID()));
 					return false;
 				}
 			}

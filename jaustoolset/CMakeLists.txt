@@ -1,29 +1,35 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(jaustoolset)
 
-find_package(catkin REQUIRED COMPONENTS cmake_modules roscpp)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wno-ignored-qualifiers)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CFG_EXTRAS jts_cfg.cmake
-    DEPENDS TinyXML2
-    CATKIN_DEPENDS roscpp
+set(executable_name JTSNodeManager)
+set(library_name ${PROJECT_NAME})
+include_directories(
+    include
 )
 
 ###################################
 ## build jaustoolset library     ##
 ###################################
-include_directories(
-    ${catkin_INCLUDE_DIRS}
-    ${TinyXML2_INCLUDE_DIRS}
-    include
-)
-add_library(${PROJECT_NAME}
+
+add_library(${library_name} SHARED
     src/EventReceiver.cpp
     src/InternalEvents/InternalEventHandler.cpp
     src/InternalEvents/Receive.cpp
@@ -44,17 +50,25 @@ add_library(${PROJECT_NAME}
     src/jFixedLengthString.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-                      ${RT_LIBRARY}
-                      ${TinyXML2_LIBRARIES}
+
+
+# ament_target_dependencies(${library_name}
+#     ${dependencies}
+#     ${RT_LIBRARY}
+#     #${TinyXML2_LIBRARIES}
+# )
+
+target_link_libraries(${library_name}
+    pthread
+    rt
+    ${TinyXML2_LIBRARIES}
 )
 
 ###################################
 ## build JTSNodeManager          ##
 ###################################
 
-add_executable(JTSNodeManager
+add_executable(${executable_name}
     src/rte/JSerial.cpp
     src/rte/JTCPTransport.cpp
     src/rte/jts_node_manager.cpp
@@ -62,12 +76,26 @@ add_executable(JTSNodeManager
     src/rte/JuniorRTE.cpp
     src/rte/TCPConnection.cpp
 )
-target_link_libraries(JTSNodeManager
-                      ${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-                      ${RT_LIBRARY}
-                      ${TinyXML2_LIBRARIES}
+
+# ament_target_dependencies(${executable_name}
+#   ${dependencies}
+# # ${CMAKE_THREAD_LIBS_INIT}
+# #                           ${RT_LIBRARY}
+# #                       # ${PROJECT_NAME}
+# #                       # ${catkin_LIBRARIES}
+# #                       # ${RT_LIBRARY}
+# #                       ${rclcpp_LIBRARIES}
+# #                       ${TinyXML2_LIBRARIES}
+# )
+
+
+target_link_libraries(${executable_name} ${library_name}
+    pthread
+    rt
+    ${TinyXML2_LIBRARIES}
 )
+
+
 
 ###################################
 ## build iop_codegenerator.jar   ##
@@ -254,51 +282,76 @@ endif()
 add_jar(iop_codegenerator ${JAVA_SOURCE_FILES}
     INCLUDE_JARS ${INCLUDE_LOCAL_JARS}
     ENTRY_POINT org/jts/codegenerator/CodeGenerator
-    OUTPUT_DIR ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}
+    OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}
 )
 
 ###################################
 ## install iop_codegenerator.jar ##
 ###################################
-install_jar(iop_codegenerator ${CATKIN_PACKAGE_LIB_DESTINATION})
+install_jar(iop_codegenerator lib/${PROJECT_NAME})
 
 
 ###############################################################
 ## install resources and specific libs for iop_codegenerator ##
 ###############################################################
 install(
-  DIRECTORY libs_external DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DIRECTORY libs_external
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(
-  DIRECTORY resources DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DIRECTORY resources
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(
-  DIRECTORY templates DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DIRECTORY templates
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(
-  DIRECTORY cfg DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DIRECTORY cfg
+  DESTINATION share/${PROJECT_NAME}
 )
 
 
 ################################################
 ## install includes, library and node manager ##
 ################################################
+# install(
+#   DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+# )
+
 install(
-  DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+    DIRECTORY include/
+    DESTINATION include/${PROJECT_NAME}
 )
 
-install(TARGETS JTSNodeManager ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# install(TARGETS JTSNodeManager ${PROJECT_NAME}
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# )
+
+install(
+    TARGETS ${library_name} ${executable_name} 
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
 )
 
 install(
     PROGRAMS
         scripts/jaus_node_manager.sh
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    DESTINATION bin
 )
 
+ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_libraries(${library_name})
+ament_export_dependencies(${dependencies})
+
+ament_package(
+    #INCLUDE_DIRS include
+    CONFIG_EXTRAS cmake/jts_cfg.cmake
+    #CONFIG_EXTRAS_POST
+)

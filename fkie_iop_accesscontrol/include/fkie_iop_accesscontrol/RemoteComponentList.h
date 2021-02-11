@@ -26,9 +26,10 @@ along with this program; or you can read the full license at
 
 #include "Transport/JausTransport.h"
 
-#include <boost/thread/recursive_mutex.hpp>
-#include <ros/ros.h>
 #include <string>
+#include <mutex>
+#include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/timer.hpp>
 #include "RemoteComponent.h"
 
 
@@ -37,32 +38,32 @@ namespace iop
 
 class RemoteComponentList {
 public:
-	RemoteComponentList(int default_timeout=5);
+	RemoteComponentList(int64_t default_timeout=5);
 	~RemoteComponentList();
 
 	bool create(JausAddress address, jUnsignedByte authority);
 	bool remove(JausAddress address);
 	bool isin(JausAddress address);
-	void set_ack(JausAddress address, unsigned long secs);
+	void set_ack(JausAddress address, int64_t secs);
 	void set_insufficient_authority(JausAddress address);
-	void set_timeout(JausAddress address, int timeout);
+	void set_timeout(JausAddress address, int64_t timeout);
 	bool has_access(JausAddress address);
-	std::vector<boost::shared_ptr<iop::RemoteComponent> > time_to_send_request(unsigned long deadtime=2);
-	std::vector<boost::shared_ptr<iop::RemoteComponent> > timeouted();
+	std::vector<std::shared_ptr<iop::RemoteComponent> > time_to_send_request(int64_t deadtime=2);
+	std::vector<std::shared_ptr<iop::RemoteComponent> > timeouted();
 
 protected:
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	rclcpp::Logger logger;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
 	int p_default_timeout;
-	ros::NodeHandle p_nh;
-	ros::Timer p_timeout_timer;
-	std::map<JausAddress, boost::shared_ptr<iop::RemoteComponent> > p_components;
+	// iop::Timer p_timer;
+	std::map<JausAddress, std::shared_ptr<iop::RemoteComponent> > p_components;
 
 	//void p_timeout(const ros::TimerEvent& event);
 };
 
-};
+}
 
 #endif

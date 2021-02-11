@@ -22,9 +22,7 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
-
-#include <ros/console.h>
-
+#include <fkie_iop_component/ros_node.hpp>
 
 using namespace JTS;
 
@@ -34,6 +32,7 @@ namespace urn_jaus_jss_core_EventsClient
 
 
 EventsClient_ReceiveFSM::EventsClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: events_logger(iop::RosNode::get_instance().get_logger().get_child("EventsClient"))
 {
 
 	/*
@@ -77,7 +76,7 @@ void EventsClient_ReceiveFSM::handleConfirmEventRequestAction(ConfirmEventReques
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getConfirmEventRequestRec()->getRequestID();
-	ROS_DEBUG_NAMED("EventsClient", "Confirmed for request_id: %d to %s, rate: %.2f", request_id,
+	RCLCPP_DEBUG(events_logger, "Confirmed for request_id: %d to %s, rate: %.2f", request_id,
 			sender.str().c_str(), msg.getBody()->getConfirmEventRequestRec()->getConfirmedPeriodicRate());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -99,7 +98,7 @@ void EventsClient_ReceiveFSM::handleEventAction(Event msg, Receive::Body::Receiv
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte event_id = msg.getBody()->getEventRec()->getEventID();
-	ROS_DEBUG_NAMED("EventsClient.Event", "event %d from %s received, seqnr: %d", (int)event_id,
+	RCLCPP_DEBUG(events_logger, "event %d from %s received, seqnr: %d", (int)event_id,
 			sender.str().c_str(), msg.getBody()->getEventRec()->getSequenceNumber());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -113,7 +112,7 @@ void EventsClient_ReceiveFSM::handleRejectEventRequestAction(RejectEventRequest 
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getRejectEventRequestRec()->getRequestID();
-	ROS_DEBUG_NAMED("EventsClient", "Rejected for request_id: %d to %s, code: %d", request_id,
+	RCLCPP_DEBUG(events_logger, "Rejected for request_id: %d to %s, code: %d", request_id,
 			sender.str().c_str(), msg.getBody()->getRejectEventRequestRec()->getResponseCode());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -133,7 +132,7 @@ void EventsClient_ReceiveFSM::handleReportEventTimeoutAction(ReportEventTimeout 
 {
 	JausAddress reporter(transportData.getAddress());
 	jUnsignedByte rto = msg.getBody()->getReportTimoutRec()->getTimeout();
-	ROS_DEBUG_NAMED("EventsClient", "ReportEventTimeout from %s received: %d sec", reporter.str().c_str(), (int)rto);
+	RCLCPP_DEBUG(events_logger, "ReportEventTimeout from %s received: %d sec", reporter.str().c_str(), (int)rto);
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
 	for (it = p_events.begin(); it != p_events.end(); ++it) {
@@ -189,4 +188,4 @@ iop::InternalEventClient* EventsClient_ReceiveFSM::p_get_event(JausAddress addre
 }
 
 
-};
+}

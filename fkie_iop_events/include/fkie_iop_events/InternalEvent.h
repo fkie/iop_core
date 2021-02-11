@@ -28,13 +28,17 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Events/Messages/MessageSet.h"
 #include "urn_jaus_jss_core_Events/InternalEvents/InternalEventsSet.h"
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
+#include <chrono>
+#include <fkie_iop_component/timer.hpp>
 
 #include "EventsConfig.h"
 
 namespace iop
 {
+
+typedef std::chrono::time_point<std::chrono::steady_clock> ChronoSysTP;
 
 class InternalEventList;
 
@@ -85,13 +89,13 @@ public:
 	std::string get_error_msg() { return p_error_msg; }
 	void set_error(jUnsignedByte code, std::string msg="");
 
-	ros::Time get_last_update_time() { return p_last_update; }
+	ChronoSysTP get_last_update_time() { return p_last_update; }
 
 protected:
 	InternalEventList *p_event_list;
-	ros::NodeHandle p_nh;
-	ros::Timer p_timeout_timer;
-	ros::Time p_last_update;
+	rclcpp::Logger events_logger;
+	iop::Timer p_timer;
+	ChronoSysTP p_last_update;
 	urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage p_query_msg;
 	jUnsignedShortInteger p_query_msg_id;
 	jUnsignedByte p_request_id;
@@ -104,12 +108,12 @@ protected:
 	std::string p_error_msg;
 	bool p_initialized;
 	JTS::Message *p_last_report;
-	std::map<jUnsignedShortInteger, ros::Time> p_last_send;  // some sensor id of a report, last send time
+	std::map<jUnsignedShortInteger, ChronoSysTP> p_last_send;  // some sensor id of a report, last send time
 
 	bool p_is_event_supported(jUnsignedShortInteger query_msg_id, jUnsignedByte p_event_type, double p_event_rate);
 	void p_send_as_event(JTS::Message &report, JausAddress &address);
 
-	void timeout(const ros::TimerEvent& event);
+	void timeout();
 	void p_timer_stop();
 	void p_timer_start();
 
@@ -120,6 +124,6 @@ private:
 
 };
 
-};
+}
 
 #endif

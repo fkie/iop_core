@@ -21,30 +21,34 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 
-#ifndef DISCOVERY_SERVICE_DEF_H
-#define DISCOVERY_SERVICE_DEF_H
+#ifndef DISCOVERY_COMPONENT_H
+#define DISCOVERY_COMPONENT_H
 
+#include "DiscoveryServiceList.h"
 #include "Transport/JausTransport.h"
-#include <string>
 
 namespace iop
 {
 
-class DiscoveryServiceDef {
+class DiscoveryComponent {
 public:
-	std::string service_uri;
-	unsigned char major_version;
-	unsigned char minor_version;
+	JausAddress address;
+	int64_t ts_last_ident;
 
-	DiscoveryServiceDef();
-	DiscoveryServiceDef(std::string service_uri, unsigned char major_version, unsigned char minor_version);
+	DiscoveryComponent();
+	DiscoveryComponent(JausAddress address);
+	bool add_service(std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
+	std::vector<DiscoveryServiceDef> get_services();
+	bool has_service(std::string uri);
 	// comparable for the map
-	bool operator<( const DiscoveryServiceDef& other) const;
-	bool operator==( const DiscoveryServiceDef& other) const;
-	bool operator!=( const DiscoveryServiceDef& other) const;
+	bool operator<( const DiscoveryComponent& other) const;
+	bool operator==( const DiscoveryComponent& other) const;
+	bool operator==( const JausAddress& other) const;
+
+protected:
+	DiscoveryServiceList p_services;
 };
 
-};
-
+}
 
 #endif // DISCOVERY_CONFIG_H

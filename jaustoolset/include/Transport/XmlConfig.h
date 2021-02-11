@@ -45,8 +45,8 @@ namespace Junior {
 class XmlConfig : public ConfigData
 {
 public:
-	XmlConfig(){};
-    ~XmlConfig(){};
+	XmlConfig();
+    	~XmlConfig();
 
     //
     // Functions to parse a config file

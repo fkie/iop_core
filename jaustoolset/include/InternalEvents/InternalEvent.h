@@ -52,8 +52,8 @@ public:
 	jVariableLengthString getSource() { return m_Source; };
 
 	virtual const unsigned int getSize(){return 0;};
-	virtual void encode(unsigned char *bytes){};
-	virtual void decode(const unsigned char *bytes){};
+	virtual void encode(unsigned char* /* bytes */){};
+	virtual void decode(const unsigned char* /* bytes */){};
 	
 protected:
 	jVariableLengthString m_Name;	

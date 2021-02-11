@@ -187,7 +187,7 @@ Transport::TransportError JUDPTransportLB::sendMsg(Message& msg)
     return result;
 }
 
-Transport::TransportError JUDPTransportLB::recvMsg(MessageList& msglist)
+Transport::TransportError JUDPTransportLB::recvMsg(MessageList& /* msglist */)
 {
     char buffer[5000];
     Transport::TransportError ret = NoMessages;

@@ -24,6 +24,7 @@ along with this program; or you can read the full license at
 #ifndef DISCOVERY_COMPONENT_LIST_H
 #define DISCOVERY_COMPONENT_LIST_H
 
+#include <rclcpp/rclcpp.hpp>
 #include "Transport/JausTransport.h"
 #include "DiscoveryComponent.h"
 
@@ -34,8 +35,8 @@ class DiscoveryComponentList {
 public:
 	/**
 	 * :param timeout: after this timeout a component will be removed on access or update. Zero disables timeout. */
-	DiscoveryComponentList(unsigned int timeout=60);
-	void set_timeout(unsigned int timeout);
+	DiscoveryComponentList(int64_t timeout=60);
+	void set_timeout(int64_t timeout);
 
 	bool add_service(JausAddress discovery_service, JausAddress component, std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
 	/** Returns false if component not in the list or was expired and removed since last update. */
@@ -47,13 +48,14 @@ public:
 	std::vector<JausAddress> get_discovery_services();
 
 protected:
+	rclcpp::Logger logger;
 	std::map<JausAddress, std::vector<DiscoveryComponent> > p_components;
-	unsigned int p_timeout;
+	int64_t p_timeout;
 
-	bool p_expired(unsigned int ts, unsigned int now=0);
+	bool p_expired(int64_t ts, int64_t now=0);
 	std::vector<DiscoveryComponent>& p_get_components(JausAddress discovery_service);
 };
 
-};
+}
 
 #endif // DISCOVERY_CONFIG_H

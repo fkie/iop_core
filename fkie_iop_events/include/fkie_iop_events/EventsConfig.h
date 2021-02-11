@@ -21,34 +21,34 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 
-#ifndef DISCOVERY_COMPONENT_H
-#define DISCOVERY_COMPONENT_H
+#ifndef EVENTSCONFIG_H
+#define EVENTSCONFIG_H
 
-#include "DiscoveryServiceList.h"
-#include "Transport/JausTransport.h"
+#include <string>
 
 namespace iop
 {
 
-class DiscoveryComponent {
+class EventsConfig {
 public:
-	JausAddress address;
-	unsigned int ts_last_ident;
-
-	DiscoveryComponent();
-	DiscoveryComponent(JausAddress address);
-	bool add_service(std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
-	std::vector<DiscoveryServiceDef> get_services();
-	bool has_service(std::string uri);
-	// comparable for the map
-	bool operator<( const DiscoveryComponent& other) const;
-	bool operator==( const DiscoveryComponent& other) const;
-	bool operator==( const JausAddress& other) const;
+#if __GNUC__ > 5
+	static constexpr float MINIMUM_RATE = 0.1f;
+	static constexpr float MAXIMUM_RATE = 25.0f;
+	static constexpr float RATE_PRECISION = 0.1f;
+#else
+	static const float MINIMUM_RATE;
+	static const float MAXIMUM_RATE;
+	static const float RATE_PRECISION;
+#endif
+	EventsConfig();
+	EventsConfig(EventsConfig const& from);
+	const EventsConfig& operator=(const EventsConfig& from);
+	int get_timeout();
 
 protected:
-	DiscoveryServiceList p_services;
+	int p_default_timeout;
 };
 
-};
+}
 
-#endif // DISCOVERY_CONFIG_H
+#endif

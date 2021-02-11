@@ -29,8 +29,6 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_ListManager/Messages/MessageSet.h"
 #include "urn_jaus_jss_core_ListManager/InternalEvents/InternalEventsSet.h"
 
-#include <ros/ros.h>
-
 namespace iop
 {
 
@@ -59,6 +57,6 @@ protected:
 
 };
 
-};
+}
 
 #endif

@@ -10,21 +10,20 @@ First of all we need an JSIDL which describes the service with all input/output 
     </action>
 ```
 
-Now we create a new ROS package (in our case *fkie_iop_visual_sensor*) which depends on `roscpp`, `fkie_iop_component` and `fkie_iop_accesscontrol`. Each plugin should depend on `fkie_iop_component` to get the funtionatlities of [Bridge-Plugins](../fkie_iop_component/README.md) and [Builder-package](../fkie_iop_builder/README.md). The `fkie_iop_accesscontrol` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
+Now we create a new ROS package (in our case *fkie_iop_visual_sensor*) which depends on `fkie_iop_component` and `fkie_iop_accesscontrol`. Each plugin should depend on `fkie_iop_component` to get the funtionatlities of [Bridge-Plugins](../fkie_iop_component/README.md) and [Builder-package](../fkie_iop_builder/README.md). The `fkie_iop_accesscontrol` package is included, because the *VisualSensor* inherits from *AccessControl* service. Our depends in package.xml looks now like:
 ```
-    <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>roscpp</build_depend>
-    <build_depend>fkie_iop_accesscontrol</build_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>fkie_iop_accesscontrol</run_depend>
-    <run_depend>fkie_iop_component</run_depend>
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <depend>fkie_iop_accesscontrol</depend>
 ```
 
 ### Generate and include JTS source
 
 In the next step we add JAUS services to `CMakeLists.txt`:
 ```makefile
-    iop_init(COMPONENT_ID 0)
+    iop_init()
+    iop_export_service(
+      urn_jaus_jss_environmentSensing_VisualSensor
+    )
     iop_code_generator(
       IDLS
         urn.jaus.jss.core-v1.0/AccessControl.xml
@@ -40,7 +39,7 @@ In the next step we add JAUS services to `CMakeLists.txt`:
       GENERATED_SOURCES cppfiles
     )
 ```
-The call `iop_init(COMPONENT_ID 0)` can stay for all plugins the same. In `iop_code_generator::IDLS` we list all JAUS services included in this plugin. It is our service and all services in the inherit tree. The services we inherit from are already implemented in other packages and we want use them. To do this we add this services to `iop_code_generator::EXTERN_SERVICES`. Thereby we use the directory name created by JTS for these services.
+The call `iop_init()` is for all plugins the same. `iop_export_service()` specifies the service to export, so it can be included in other services. In `iop_code_generator::IDLS` we list all JAUS services included in this plugin. It is our service and all services in the inherit tree. The services we inherit from are already implemented in other packages and we want use them. To do this we add this services to `iop_code_generator::EXTERN_SERVICES`. Thereby we use the directory name created by JTS for these services.
 > ! internally our build script deletes all generated sources defined in `EXTERN_SERVICES` after creation by JTS.
 
 Now we open a terminal and go to our package and run `catkin build --this`. This generates in `catkin_ws/build/fkie_iop_visual_sensor/jaus/Fkie_iop_visual_sensor_0` the source files for our service. In order to extend the functionality of the generated service, we copy the following files into our package, respecting the directory structure:
@@ -99,14 +98,14 @@ protected:
 
 };
 
-};
+}
 
 #endif
 ```
 
 #### src/VisualSensorPlugin.cpp:
 ```cpp
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include "VisualSensorPlugin.h"
 
 using namespace iop;
@@ -172,22 +171,35 @@ Then we include our plugin definition to the `package.xml`:
 
 Now is the `package.xml` done.
 
-### Provide catkin specific configuration `CMakeLists.txt`
+### Provide colcon specific configuration `CMakeLists.txt`
 Set include directories:
-``` include_directories(${catkin_INCLUDE_DIRS})```
+```makefile
+include_directories(
+  include
+  ${IOP_COMPONENT_INCLUDE_DIRS}
+)
+```
 
 Add source files to the library:
-```add_library(${PROJECT_NAME} src/VisualSensorPlugin.cpp ${cppfiles}) ```
+```makefile
+add_library(${PROJECT_NAME} src/VisualSensorPlugin.cpp ${cppfiles})
+```
 
 Specify libraries to link a library against:
-```target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})```
+```makefile
+ament_target_dependencies(
+  ${PROJECT_NAME}
+  fkie_iop_accesscontrol
+)
+```
 
 The service of this package is used by other packages, like *fkie_iop_digital_video* or *fkie_iop_still_image*. So that catkin works properly we have to configure `catkin_package`:
 ```makefile
-    catkin_package(
-        LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS fkie_iop_accesscontrol
-    )
+ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(fkie_iop_accesscontrol)
+
+ament_package()
 ```
 
 If the package will be used as installed package we have to add install directives:
@@ -195,23 +207,24 @@ If the package will be used as installed package we have to add install directiv
 ```makefile
     # Mark IOP include files for installation
     install(
-      DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+      DIRECTORY ${IOP_INSTALL_INCLUDE_DIRS}
+      DESTINATION include/${PROJECT_NAME}
       PATTERN "*.old" EXCLUDE
       PATTERN "*.gen" EXCLUDE
     )
 
     # Mark executables and/or libraries for installation
     install(TARGETS ${PROJECT_NAME}
-      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+      ARCHIVE DESTINATION lib
+      LIBRARY DESTINATION lib
+      RUNTIME DESTINATION bin
     )
 
     ## Mark other files for installation (e.g. launch and bag files, etc.)
     install(
        FILES ./plugin_iop.xml
-       DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+       DESTINATION share/${PROJECT_NAME}
     )
 ```
 
-done! Build the package with `catkin build fkie_iop_visual_sensor`
+done! Build the package with `colcon build fkie_iop_visual_sensor`

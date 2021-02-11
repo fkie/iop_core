@@ -143,7 +143,7 @@ int Receive::Body::ReceiveRec::SourceID::setSubsystemID(jUnsignedInteger value)
  *
  * @return
  */
-const unsigned int Receive::Body::ReceiveRec::SourceID::getSize()
+unsigned int Receive::Body::ReceiveRec::SourceID::getSize()
 {
 	unsigned int size = 0;
 
@@ -260,7 +260,7 @@ int Receive::Body::ReceiveRec::setSourceID(const SourceID &value)
 	return 0;
 }
 
-const jUnsignedInteger Receive::Body::ReceiveRec::MessagePayload::getLength() const
+jUnsignedInteger Receive::Body::ReceiveRec::MessagePayload::getLength() const
 {
 	return m_Length;
 }
@@ -294,7 +294,7 @@ int Receive::Body::ReceiveRec::MessagePayload::set(const jUnsignedInteger &lengt
  *
  * @return
  */
-const unsigned int Receive::Body::ReceiveRec::MessagePayload::getSize()
+unsigned int Receive::Body::ReceiveRec::MessagePayload::getSize()
 {
 	unsigned int size = 0;
 
@@ -469,7 +469,7 @@ JausAddress Receive::Body::ReceiveRec::getAddress()
  *
  * @return
  */
-const unsigned int Receive::Body::ReceiveRec::getSize()
+unsigned int Receive::Body::ReceiveRec::getSize()
 {
 	unsigned int size = 0;
 
@@ -587,7 +587,7 @@ int Receive::Body::setReceiveRec(const ReceiveRec &value)
  *
  * @return
  */
-const unsigned int Receive::Body::getSize()
+unsigned int Receive::Body::getSize()
 {
 	unsigned int size = 0;
 

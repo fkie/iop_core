@@ -41,12 +41,11 @@ along with this program; or you can read the full license at
 
 #include "ManagementClient_ReceiveFSM_sm.h"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread/recursive_mutex.hpp>
-#include <std_msgs/Bool.h>
-#include <std_msgs/String.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <fkie_iop_events/EventHandlerInterface.h>
+#include <fkie_iop_component/timer.hpp>
 
 namespace urn_jaus_jss_core_ManagementClient
 {
@@ -79,7 +78,7 @@ public:
 	/// user methods
 	template<class T>
 	void set_status_handler(void(T::*handler)(JausAddress &, unsigned char code), T*obj) {
-		p_class_interface_callback = boost::bind(handler, obj, _1, _2);
+		p_class_interface_callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2);
 	}
 	void queryStatus(JausAddress address);
 	void resume(JausAddress address);
@@ -96,26 +95,26 @@ protected:
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
 	urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM;
 
-	boost::function<void (JausAddress &, unsigned char code)> p_class_interface_callback;
+	std::function<void (JausAddress &, unsigned char code)> p_class_interface_callback;
 
+	rclcpp::Logger logger;
 	QueryStatus p_query_status;
 	JausAddress p_current_client;
 	JausAddress p_current_emergency_address;
 	unsigned char p_status;
-	ros::NodeHandle p_nh;
-	ros::Timer p_query_timer;
+	iop::Timer p_query_timer;
 	double p_hz;
 	bool by_query;
-	ros::Subscriber p_sub_cmd_emergency;
-	ros::Subscriber p_sub_cmd_ready;
-	ros::Publisher p_pub_status;
-	ros::Publisher p_pub_status_emergency;
+	rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr p_sub_cmd_emergency;
+	rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr p_sub_cmd_ready;
+	rclcpp::Publisher<std_msgs::msg::String>::SharedPtr p_pub_status;
+	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_status_emergency;
 	std::string p_status_to_str(unsigned char status);
-	void pRosEmergency(const std_msgs::Bool::ConstPtr& state);
-	void pRosReady(const std_msgs::Bool::ConstPtr& state);
-	void pQueryCallback(const ros::TimerEvent& event);
+	void pRosEmergency(const std_msgs::msg::Bool::SharedPtr state);
+	void pRosReady(const std_msgs::msg::Bool::SharedPtr state);
+	void pQueryCallback();
 };
 
-};
+}
 
 #endif // MANAGEMENTCLIENT_RECEIVEFSM_H

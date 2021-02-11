@@ -77,6 +77,6 @@ class DiscoveryConfig
 
 };
 
-};
+}
 
 #endif // DISCOVERY_CONFIG_H

@@ -25,8 +25,8 @@ along with this program; or you can read the full license at
 #define IOPREMOTECOMPONENT_H
 
 
-#include <ros/ros.h>
 #include <string>
+#include <rclcpp/rclcpp.hpp>
 #include "Transport/JausTransport.h"
 
 
@@ -37,27 +37,28 @@ class RemoteComponent {
 
 public:
 	/** A */
-	RemoteComponent(JausAddress address, jUnsignedByte authority, int timeout);
+	RemoteComponent(JausAddress address, jUnsignedByte authority, int64_t timeout);
 	~RemoteComponent();
 
 	bool operator==(RemoteComponent &value);
 	bool operator!=(RemoteComponent &value);
 
-	void set_timeout(int timeout);
-	void set_ack(unsigned long secs);
+	void set_timeout(int64_t timeout);
+	void set_ack(int64_t secs);
 	void set_insufficient_authority();
 	bool timeouted();
-	bool time_to_send_request(unsigned long deadtime=2);
+	bool time_to_send_request(int64_t deadtime=2);
 	bool has_access();
 	bool is_insufficient_authority();
 	JausAddress address();
 	jUnsignedByte authority();
 
 protected:
+	rclcpp::Logger logger;
 	JausAddress p_address;
-	int p_timeout;
-	unsigned long p_last_request;
-	unsigned long p_last_ack;
+	int64_t p_timeout;
+	int64_t p_last_request;
+	int64_t p_last_ack;
 	jUnsignedByte p_authority;
 	bool p_has_access;
 	bool p_insauth;
@@ -67,6 +68,6 @@ private:
 	const RemoteComponent& operator=(const RemoteComponent& from);
 };
 
-};
+}
 
 #endif

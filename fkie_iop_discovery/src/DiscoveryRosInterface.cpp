@@ -23,11 +23,14 @@ along with this program; or you can read the full license at
 #include <fkie_iop_discovery/DiscoveryRosInterface.h>
 #include <algorithm>
 #include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/time.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_DiscoveryClient;
 
 DiscoveryRosInterface::DiscoveryRosInterface()
+: logger(iop::RosNode::get_instance().get_logger().get_child("DiscoveryClient"))
 {
 	p_jaus_router = NULL;
 	p_enable_ros_interface = false;
@@ -38,34 +41,32 @@ DiscoveryRosInterface::DiscoveryRosInterface()
 void DiscoveryRosInterface::setup(JTS::StateMachine& jaus_router)
 {
 	p_jaus_router = &jaus_router;
-	iop::Config cfg("~DiscoveryClient");
+	iop::Config cfg("DiscoveryClient");
 	cfg.param("enable_ros_interface", p_enable_ros_interface, p_enable_ros_interface);
 	cfg.param("force_component_update_after", p_force_component_update_after, p_force_component_update_after);
 	if (p_enable_ros_interface) {
-		p_pub_identification = cfg.advertise<fkie_iop_msgs::Identification>("/iop_identification", 10);
-		p_pub_system = cfg.advertise<fkie_iop_msgs::System>("/iop_system", 10, true);
-		p_srv_query_ident = cfg.advertiseService("/iop_query_identification", &DiscoveryRosInterface::pQueryIdentificationSrv, this);
-		p_srv_update_system = cfg.advertiseService("/iop_update_discovery", &DiscoveryRosInterface::pUpdateSystemSrv, this);
+		p_pub_identification = cfg.create_publisher<fkie_iop_msgs::msg::Identification>("/iop_identification", 10);
+		p_pub_system = cfg.create_publisher<fkie_iop_msgs::msg::System>("/iop_system", 10);
+		p_srv_query_ident = cfg.create_service<fkie_iop_msgs::srv::QueryIdentification>("/iop_query_identification", std::bind(&DiscoveryRosInterface::pQueryIdentificationSrv, this, std::placeholders::_1, std::placeholders::_2));
+		p_srv_update_system = cfg.create_service<std_srvs::srv::Empty>("/iop_update_discovery", std::bind(&DiscoveryRosInterface::pUpdateSystemSrv, this, std::placeholders::_1, std::placeholders::_2));
 	}
 }
 
-void DiscoveryRosInterface::set_discovery_timeout(int timeout)
+void DiscoveryRosInterface::set_discovery_timeout(int64_t timeout)
 {
 	p_timeout_discover_service = timeout;
 	p_components.set_timeout(p_timeout_discover_service);
 }
 
-bool DiscoveryRosInterface::pQueryIdentificationSrv(fkie_iop_msgs::QueryIdentification::Request  &req, fkie_iop_msgs::QueryIdentification::Response &res)
+void DiscoveryRosInterface::pQueryIdentificationSrv(const fkie_iop_msgs::srv::QueryIdentification::Request::SharedPtr req, fkie_iop_msgs::srv::QueryIdentification::Response::SharedPtr /* res */)
 {
-	p_query_identification(req.type, 0xFFFF, 0xFF, 0xFF);
-	return true;
+	p_query_identification(req->type, 0xFFFF, 0xFF, 0xFF);
 }
 
-bool DiscoveryRosInterface::pUpdateSystemSrv(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res)
+void DiscoveryRosInterface::pUpdateSystemSrv(const std_srvs::srv::Empty::Request::SharedPtr /* req */, std_srvs::srv::Empty::Response::SharedPtr /* res */)
 {
 	p_discovery_srvs_stamps.clear();
 	p_query_identification(2, 0xFFFF, 0xFF, 0xFF);
-	return true;
 }
 
 void DiscoveryRosInterface::p_query_identification(int query_type, jUnsignedShortInteger subsystem, jUnsignedByte node, jUnsignedByte component)
@@ -73,7 +74,7 @@ void DiscoveryRosInterface::p_query_identification(int query_type, jUnsignedShor
 	JausAddress dest(subsystem, node, component);
 	urn_jaus_jss_core_DiscoveryClient::QueryIdentification msg;
 	msg.getBody()->getQueryIdentificationRec()->setQueryType(query_type);
-	ROS_DEBUG_NAMED("DiscoveryClient", "send QueryIdentification by ROS request to subsystem.node.comp: %s of type %d", dest.str().c_str(), query_type);
+	RCLCPP_DEBUG(logger, "send QueryIdentification by ROS request to subsystem.node.comp: %s of type %d", dest.str().c_str(), query_type);
 	p_jaus_router->sendJausMessage(msg, dest); //0xFFFF, 0xFF, 0xFF
 }
 
@@ -83,7 +84,7 @@ bool DiscoveryRosInterface::update_ident(JausAddress &addr, ReportIdentification
 		return false;
 	}
 	bool result = false;
-	fkie_iop_msgs::Identification ident;
+	auto ident = fkie_iop_msgs::msg::Identification();
 	ident.name = report_ident.getBody()->getReportIdentificationRec()->getIdentification();
 	ident.request_type = report_ident.getBody()->getReportIdentificationRec()->getQueryType();
 	ident.system_type = report_ident.getBody()->getReportIdentificationRec()->getType();
@@ -96,11 +97,11 @@ bool DiscoveryRosInterface::update_ident(JausAddress &addr, ReportIdentification
 		case 2: {  // SUBSYSTEM TYPE
 			p_subsystem_idents[addr] = ident;
 			p_components.update_ts(addr, addr.getSubsystemID());
-			std::map<JausAddress, unsigned int>::iterator itts = p_discovery_srvs_stamps.find(addr);
+			std::map<JausAddress, int64_t>::iterator itts = p_discovery_srvs_stamps.find(addr);
 			if (itts == p_discovery_srvs_stamps.end()) {
 				result = true;
 			} else if (p_force_component_update_after > 0) {
-				if (ros::WallTime::now().sec - itts->second > (unsigned int)p_force_component_update_after) {
+				if (iop::now_secs() - itts->second > p_force_component_update_after) {
 					result = true;
 				}
 			}
@@ -115,7 +116,7 @@ bool DiscoveryRosInterface::update_ident(JausAddress &addr, ReportIdentification
 			break;
 		}
 	}
-	p_pub_identification.publish(ident);
+	p_pub_identification->publish(ident);
 	return result;
 }
 
@@ -125,7 +126,7 @@ void DiscoveryRosInterface::update_services(JausAddress discovery_addr, ReportSe
 		return;
 	}
 	// Create ROS message from components
-	p_discovery_srvs_stamps[discovery_addr] = ros::WallTime::now().sec;
+	p_discovery_srvs_stamps[discovery_addr] = now_secs();
 	p_components.remove_discovery_service(discovery_addr);
 	// update the object with discovered system and publish it to ROS
 	ReportServiceList::Body::SubsystemList *ssys_list = msg.getBody()->getSubsystemList();
@@ -157,7 +158,7 @@ void DiscoveryRosInterface::update_services(JausAddress discovery_addr, ReportSe
 		return;
 	}
 	// Create ROS message from components
-	p_discovery_srvs_stamps[discovery_addr] = ros::WallTime::now().sec;
+	p_discovery_srvs_stamps[discovery_addr] = now_secs();
 	p_components.remove_discovery_service(discovery_addr);
 	// update the object with discovered system and publish it to ROS
 	ReportServices::Body::NodeList *node_list = msg.getBody()->getNodeList();
@@ -185,30 +186,30 @@ bool DiscoveryRosInterface::enabled()
 
 void DiscoveryRosInterface::p_publish_subsystem()
 {
-	fkie_iop_msgs::System system;
+	auto system = fkie_iop_msgs::msg::System();
 	std::vector<JausAddress> discover_services = p_components.get_discovery_services();
 	std::vector<JausAddress>::iterator itds;
 	for (itds = discover_services.begin(); itds != discover_services.end(); ++itds) {
 		// create subsystem
-		fkie_iop_msgs::Subsystem ss_new;
-		std::map<JausAddress, fkie_iop_msgs::Identification>::iterator itidss = p_subsystem_idents.find(*itds);
+		fkie_iop_msgs::msg::Subsystem ss_new;
+		std::map<JausAddress, fkie_iop_msgs::msg::Identification>::iterator itidss = p_subsystem_idents.find(*itds);
 		if (itidss != p_subsystem_idents.end()) {
 			ss_new.ident = itidss->second;
 		}
-		std::map<JausAddress, fkie_iop_msgs::Subsystem>::iterator it;
+		std::map<JausAddress, fkie_iop_msgs::msg::Subsystem>::iterator it;
 		std::vector<DiscoveryComponent> components = p_components.get_components(*itds);
 		std::vector<DiscoveryComponent>::iterator itcmp;
 		for (itcmp = components.begin(); itcmp != components.end(); ++itcmp) {
 			// create a new node if need. this node is already added to subsystem
-			fkie_iop_msgs::Node& ros_node = p_get_node(ss_new, itcmp->address);
+			fkie_iop_msgs::msg::Node& ros_node = p_get_node(ss_new, itcmp->address);
 			// create component
-			fkie_iop_msgs::Component ros_cmpt;
+			fkie_iop_msgs::msg::Component ros_cmpt;
 			ros_cmpt.address = p_convert(itcmp->address);
 			std::vector<iop::DiscoveryServiceDef> services = itcmp->get_services();
 			std::vector<iop::DiscoveryServiceDef>::iterator itsvs;
 			// add services
 			for (itsvs = services.begin(); itsvs != services.end(); ++itsvs) {
-				fkie_iop_msgs::Service ros_srv;
+				fkie_iop_msgs::msg::Service ros_srv;
 				ros_srv.uri = itsvs->service_uri;
 				ros_srv.major_version = itsvs->major_version;
 				ros_srv.minor_version = itsvs->minor_version;
@@ -218,10 +219,10 @@ void DiscoveryRosInterface::p_publish_subsystem()
 		}
 		system.subsystems.push_back(ss_new);
 	}
-	p_pub_system.publish(system);
+	p_pub_system->publish(system);
 }
 
-bool DiscoveryRosInterface::p_equal2ident(fkie_iop_msgs::Identification &ros_ident, JausAddress &addr)
+bool DiscoveryRosInterface::p_equal2ident(fkie_iop_msgs::msg::Identification &ros_ident, JausAddress &addr)
 {
 	if (ros_ident.address.subsystem_id == addr.getSubsystemID()
 			&& ros_ident.address.node_id == addr.getNodeID()) {
@@ -231,17 +232,17 @@ bool DiscoveryRosInterface::p_equal2ident(fkie_iop_msgs::Identification &ros_ide
 	return false;
 }
 
-fkie_iop_msgs::Node& DiscoveryRosInterface::p_get_node(fkie_iop_msgs::Subsystem& ros_subsystem, JausAddress& addr)
+fkie_iop_msgs::msg::Node& DiscoveryRosInterface::p_get_node(fkie_iop_msgs::msg::Subsystem& ros_subsystem, JausAddress& addr)
 {
 	for (unsigned int i = 0; i < ros_subsystem.nodes.size(); i++) {
-		fkie_iop_msgs::Node& node = ros_subsystem.nodes[i];
+		fkie_iop_msgs::msg::Node& node = ros_subsystem.nodes[i];
 		if (p_equal2ident(node.ident, addr)) {
 			return node;
 		}
 	}
 	// create new one
-	fkie_iop_msgs::Node node;
-	std::map<JausAddress, fkie_iop_msgs::Identification>::iterator itidnd = p_node_idents.find(p_get_node_addr(addr));
+	fkie_iop_msgs::msg::Node node;
+	std::map<JausAddress, fkie_iop_msgs::msg::Identification>::iterator itidnd = p_node_idents.find(p_get_node_addr(addr));
 	if (itidnd != p_node_idents.end()) {
 		node.ident = itidnd->second;
 	} else {
@@ -258,9 +259,9 @@ JausAddress DiscoveryRosInterface::p_get_node_addr(JausAddress& addr)
 	return JausAddress(addr.getSubsystemID(), addr.getNodeID(), 255);
 }
 
-fkie_iop_msgs::JausAddress DiscoveryRosInterface::p_convert(JausAddress& addr)
+fkie_iop_msgs::msg::JausAddress DiscoveryRosInterface::p_convert(JausAddress& addr)
 {
-	fkie_iop_msgs::JausAddress result;
+	fkie_iop_msgs::msg::JausAddress result;
 	result.subsystem_id = addr.getSubsystemID();
 	result.node_id = addr.getNodeID();
 	result.component_id = addr.getComponentID();

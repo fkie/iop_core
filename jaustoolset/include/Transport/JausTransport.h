@@ -82,7 +82,7 @@ protected:
 	InternalEventHandler* ieHandler;
 };
 
-};
+}
 
 #endif // JAUSROUTER_H
 

@@ -31,9 +31,8 @@ along with this program; or you can read the full license at
 #include "InternalElement.h"
 #include "ListManagerListenerInterface.h"
 
-#include <boost/thread/recursive_mutex.hpp>
-#include <ros/ros.h>
 #include <string>
+#include <rclcpp/rclcpp.hpp>
 
 namespace iop
 {
@@ -98,8 +97,9 @@ public:
 	void reset_erros();
 
 protected:
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
+	rclcpp::Logger logger;
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
 	std::map<jUnsignedShortInteger, ListManagerListenerInterface *> p_supported_elements;
@@ -112,6 +112,6 @@ protected:
 	void set_error(jUnsignedByte code, std::string msg="");
 };
 
-};
+}
 
 #endif

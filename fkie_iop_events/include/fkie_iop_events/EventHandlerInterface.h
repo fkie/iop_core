@@ -41,8 +41,8 @@ namespace iop
 		// ____________________________
 		// === must be overridden =====
 		// ============================
-		virtual void confirmed(JausAddress reporter, unsigned short query_msg_id) {}
-		virtual void rejected(JausAddress reporter, unsigned short query_msg_id, unsigned char error_code, std::string error_msg) {}
+		virtual void confirmed(JausAddress /* eporter */, unsigned short /* query_msg_id */) {}
+		virtual void rejected(JausAddress /* reporter */, unsigned short /* query_msg_id */, unsigned char /* error_code */ , std::string /* error_msg */) {}
 
 		virtual ~EventHandlerInterface(){}
 
@@ -50,6 +50,6 @@ namespace iop
 		EventHandlerInterface() {}
 	};
 
-};
+}
 
 #endif

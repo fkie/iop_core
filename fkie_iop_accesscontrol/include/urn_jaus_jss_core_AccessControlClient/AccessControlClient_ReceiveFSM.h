@@ -38,13 +38,13 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
 
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <ros/ros.h>
-#include <fkie_iop_msgs/JausAddress.h>
-#include <std_msgs/UInt8.h>
+#include <rclcpp/rclcpp.hpp>
+#include <functional>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <fkie_iop_accesscontrol/RemoteComponent.h>
 #include <fkie_iop_accesscontrol/RemoteComponentList.h>
+#include <fkie_iop_component/timer.hpp>
 #include "AccessControlClient_ReceiveFSM_sm.h"
 
 namespace urn_jaus_jss_core_AccessControlClient
@@ -80,7 +80,7 @@ public:
 	template<class T>
 	void requestAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj, jUnsignedByte authority=255)
 	{
-		boost::function<void (JausAddress &, unsigned char code)> callback = boost::bind(reply_handler, obj, _1, _2);;
+		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);;
 		p_reply_callbacks[address.get()].push_back(callback);
 		pRequestAccess(address, authority);
 	}
@@ -91,7 +91,7 @@ public:
 	template<class T>
 	void releaseAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj)
 	{
-		boost::function<void (JausAddress &, unsigned char code)> callback = boost::bind(reply_handler, obj, _1, _2);;
+		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);;
 		p_reply_callbacks[address.get()].push_back(callback);
 		pReleaseAccess(address);
 	}
@@ -102,7 +102,7 @@ public:
 	bool hasAccess(JausAddress address);
 	template<class T>
 	void add_reply_handler(void(T::*handler)(JausAddress &, unsigned char code), T*obj) {
-		p_reply_handler.push_back(boost::bind(handler, obj, _1, _2));
+		p_reply_handler.push_back(std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2));
 	}
 	void set_emergency_client(JausAddress address) { p_emergency_address = address; }
 
@@ -113,23 +113,24 @@ protected:
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
 
-	std::vector<boost::function<void (JausAddress &, unsigned char code)> > p_reply_handler;
-	std::map <unsigned int, std::vector<boost::function<void (JausAddress &, unsigned char code)> > > p_reply_callbacks;  // unsigned int -> JausAddress::get(), list with callbacks to this address
-	boost::function<void (JausAddress &, unsigned char code)> p_class_access_reply_callback;
+	rclcpp::Logger logger;
+	std::vector<std::function<void (JausAddress &, unsigned char code)> > p_reply_handler;
+	std::map <unsigned int, std::vector<std::function<void (JausAddress &, unsigned char code)> > > p_reply_callbacks;  // unsigned int -> JausAddress::get(), list with callbacks to this address
+	std::function<void (JausAddress &, unsigned char code)> p_class_access_reply_callback;
 	JausAddress p_emergency_address;
 	jUnsignedByte p_default_timeout;
 	iop::RemoteComponentList p_remote_components;
-	ros::WallTimer p_timer;
+	iop::Timer p_timer;
 	JTS::InternalEvent *p_timeout_event;
 	QueryControl p_query_control;
-	ros::Publisher p_pub_current_controller;
-	ros::Publisher p_pub_current_authority;
-	void pTimeoutCallback(const ros::WallTimerEvent& event);
+	rclcpp::Publisher<fkie_iop_msgs::msg::JausAddress>::SharedPtr p_pub_current_controller;
+	rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr p_pub_current_authority;
+	void pTimeoutCallback();
 	void pInformReplyCallbacks(JausAddress &address, unsigned char code);
 	void pRequestAccess(JausAddress address, jUnsignedByte authority=255);
 	void pReleaseAccess(JausAddress address);
 };
 
-};
+}
 
 #endif // ACCESSCONTROLCLIENT_RECEIVEFSM_H

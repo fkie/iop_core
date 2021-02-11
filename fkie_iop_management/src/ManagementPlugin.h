@@ -50,6 +50,6 @@ protected:
 
 };
 
-};
+}
 
 #endif

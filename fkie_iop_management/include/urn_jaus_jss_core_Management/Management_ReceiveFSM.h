@@ -38,9 +38,9 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Events/Events_ReceiveFSM.h"
 #include "urn_jaus_jss_core_AccessControl/AccessControl_ReceiveFSM.h"
 
-
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include "Management_ReceiveFSM_sm.h"
-#include <ros/ros.h>
 
 namespace urn_jaus_jss_core_Management
 {
@@ -96,13 +96,14 @@ protected:
 	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
 	urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM;
 
+	rclcpp::Logger logger;
 	ReportStatus p_report_status;
-	ros::Publisher p_pub_emergency;
-	ros::Publisher p_pub_ready;
+	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_emergency;
+	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_ready;
 	jUnsignedByte p_state;
 	void pSetState(jUnsignedByte state);
 };
 
-};
+}
 
 #endif // MANAGEMENT_RECEIVEFSM_H

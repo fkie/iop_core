@@ -22,13 +22,12 @@ along with this program; or you can read the full license at
 
 
 #include <fkie_iop_discovery/DiscoveryConfig.h>
-#include <ros/ros.h>
-#include <ros/console.h>
 
 namespace discovery_config
 {
 
 DiscoveryConfig::DiscoveryConfig(int system_id, int system_type, std::string name_subsystem, std::string name_node, int id_subsystem, int id_node)
+: logger(iop::RosNode::get_instance().get_logger().get_child("DiscoveryConfig"))
 {
 	this->system_id = system_id; // report as subsystem
 	this->system_type = system_type; // report as vehicle

@@ -27,6 +27,15 @@
 using namespace tinyxml2;
 using namespace DeVivo::Junior;
 
+XmlConfig::XmlConfig()
+{
+
+}
+
+XmlConfig::~XmlConfig()
+{
+
+}
 
 ConfigData::ConfigError XmlConfig::parseFile(const  std::string& filename)
 {

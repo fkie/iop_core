@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>fkie_iop_component</name>
   <version>2.0.0</version>
   <description>
@@ -10,19 +10,18 @@
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
   <license>GPLv2</license>
 
-  <!-- <url type="website">http://</url> -->
+  <url type="website">https://github.com/fkie/iop_jaus_core.git</url>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>diagnostic_msgs</build_depend>
-  <build_depend>fkie_iop_builder</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>tinyxml</build_depend>
-  <run_depend>diagnostic_msgs</run_depend>
-  <run_depend>fkie_iop_builder</run_depend>
-  <run_depend>pluginlib</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>tinyxml</run_depend>
+  <depend>fkie_iop_builder</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

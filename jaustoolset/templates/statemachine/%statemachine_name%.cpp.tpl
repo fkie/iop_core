@@ -32,4 +32,4 @@ void %statemachine_name%::setupNotifications()
 
 %guard_method_definitions%
 
-};
+}

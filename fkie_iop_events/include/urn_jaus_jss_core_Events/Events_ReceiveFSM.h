@@ -24,6 +24,8 @@ along with this program; or you can read the full license at
 #ifndef EVENTS_RECEIVEFSM_H
 #define EVENTS_RECEIVEFSM_H
 
+#include <rclcpp/rclcpp.hpp>
+
 #include "JausUtils.h"
 #include "InternalEvents/InternalEventHandler.h"
 #include "Transport/JausTransport.h"
@@ -39,7 +41,6 @@ along with this program; or you can read the full license at
 #include "fkie_iop_events/InternalEventList.h"
 #include "Events_ReceiveFSM_sm.h"
 
-#include <ros/ros.h>
 
 namespace urn_jaus_jss_core_Events
 {
@@ -76,9 +77,10 @@ protected:
     /// References to parent FSMs
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	iop::InternalEventList p_event_list;
+	rclcpp::Logger events_logger;
 
 };
 
-};
+}
 
 #endif // EVENTS_RECEIVEFSM_H

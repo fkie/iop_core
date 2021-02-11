@@ -24,22 +24,22 @@ along with this program; or you can read the full license at
 #define OCU_COMMON_H_
 
 #include <Transport/JausAddress.h>
-#include <fkie_iop_msgs/JausAddress.h>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
 
 namespace iop
 {
 
 namespace ocu
 {
-	inline fkie_iop_msgs::JausAddress address_to_msg(JausAddress addr) {
-		fkie_iop_msgs::JausAddress result;
+	inline fkie_iop_msgs::msg::JausAddress address_to_msg(JausAddress addr) {
+		fkie_iop_msgs::msg::JausAddress result;
 		result.subsystem_id = addr.getSubsystemID();
 		result.node_id = addr.getNodeID();
 		result.component_id = addr.getComponentID();
 		return result;
 	}
 
-	inline JausAddress address_from_msg(fkie_iop_msgs::JausAddress addr) {
+	inline JausAddress address_from_msg(fkie_iop_msgs::msg::JausAddress addr) {
 		JausAddress result;
 		result.setSubsystemID(addr.subsystem_id);
 		result.setNodeID(addr.node_id);
@@ -70,8 +70,8 @@ namespace ocu
 		}
 		return result;
 	}
-};
+}
 
-};
+}
 
 #endif
