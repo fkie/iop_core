@@ -22,15 +22,15 @@ along with this program; or you can read the full license at
 
 
 #include <fkie_iop_events/InternalEventList.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 
 
 using namespace iop;
 using namespace urn_jaus_jss_core_Events;
 
 
-InternalEventList::InternalEventList(JTS::StateMachine *jrHandler)
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+InternalEventList::InternalEventList(rclcpp::Logger& logger, JTS::StateMachine *jrHandler)
+: logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEventList::p_timeout, this), false)
 {
 	this->jrHandler = jrHandler;
@@ -43,6 +43,18 @@ InternalEventList::~InternalEventList()
 	p_events.clear();
 }
 
+void InternalEventList::init_config(std::shared_ptr<iop::Component> cmp)
+{
+	iop::Config cfg(cmp, "Events");
+	int64_t events_timeout = 1;
+	cfg.declare_param<int64_t>("timeout", events_timeout, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Time period in minutes after which the event will be canceled if no update for event received. Zero disables the timeout.",
+		"Default: 1 min");
+	cfg.param<int64_t>("timeout", events_timeout, events_timeout);
+	p_config.set_timeout(events_timeout);
+}
+
 void InternalEventList::p_timeout()
 {
 	lock_type lock(p_mutex);
@@ -52,7 +64,7 @@ void InternalEventList::p_timeout()
 		auto dur = now - it->second->get_last_update_time();
 		int64_t msecs = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
 		if (msecs > p_config.get_timeout() * 60 * 1000) {
-			RCLCPP_DEBUG(events_logger, "event %d with query %#x to %s timed out, remove",
+			RCLCPP_DEBUG(logger, "event %d with query %#x to %s timed out, remove",
 				     it->second->get_event_id(), it->second->get_query_msg_id(), it->second->requestor.str().c_str());
 			p_events.erase(it);
 			return;
@@ -65,11 +77,11 @@ void InternalEventList::register_query(jUnsignedShortInteger query_msg_id, bool 
 	lock_type lock(p_mutex);
 	for (unsigned int i = 0; i < p_registered_reports.size(); i++) {
 		if (p_registered_reports[i].query_msg_id == query_msg_id) {
-			RCLCPP_WARN(events_logger, "query id %d already registered, skip registration", query_msg_id);
+			RCLCPP_WARN(logger, "query id %d already registered, skip registration", query_msg_id);
 			return;
 		}
 	}
-	RCLCPP_INFO(events_logger, "register query id %d", query_msg_id);
+	RCLCPP_INFO(logger, "register query id %d", query_msg_id);
 	RegisteredReports rep(query_msg_id, supports_on_change, supports_periodic);
 	p_registered_reports.push_back(rep);
 }
@@ -90,7 +102,7 @@ bool InternalEventList::set_report(jUnsignedShortInteger query_msg_id, JTS::Mess
 			return true;
 		}
 	}
-	RCLCPP_WARN(events_logger, "set report for an unregistered query id %#x failed", query_msg_id);
+	RCLCPP_WARN(logger, "set report for an unregistered query id %#x failed", query_msg_id);
 	return false;
 }
 
@@ -228,7 +240,7 @@ std::shared_ptr<iop::InternalEvent> InternalEventList::create_event(CreateEvent 
 	double event_rate = erec->getRequestedPeriodicRate();
 	jUnsignedByte current_event_id = get_event_id(query_msg_id, requestor);
 	if (current_event_id != 255) {
-		RCLCPP_DEBUG(events_logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s alredy registered -> update...",
+		RCLCPP_DEBUG(logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s alredy registered -> update...",
 			     query_msg_id, request_id, (event_type == 0) ? "Periodic" : "Every change", event_rate, requestor.str().c_str());
 		CreateEvent::Body::CreateEventRec::QueryMessage *query_msg = erec->getQueryMessage();
 		return p_update_event(current_event_id, *query_msg, query_msg_id, requestor, request_id, event_type, event_rate);
@@ -236,10 +248,10 @@ std::shared_ptr<iop::InternalEvent> InternalEventList::create_event(CreateEvent 
 		lock_type lock(p_mutex);
 		jUnsignedByte event_id = get_free_event_id();
 		if (event_id < 255) {
-			RCLCPP_DEBUG(events_logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s -> new event id: %d",
+			RCLCPP_DEBUG(logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s -> new event id: %d",
 				     query_msg_id, request_id, (event_type == 0) ? "Periodic" : "Every change", event_rate, requestor.str().c_str(), (int)event_id);
 			CreateEvent::Body::CreateEventRec::QueryMessage *query_msg = erec->getQueryMessage();
-			std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(this, event_id, request_id, query_msg_id, event_type, event_rate, *query_msg, requestor));
+			std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(logger, this, event_id, request_id, query_msg_id, event_type, event_rate, *query_msg, requestor));
 			if (event->get_error_code() == 0) {
 				p_events[event_id] = event;
 				event->new_report_available(get_report(query_msg_id), false);
@@ -249,14 +261,14 @@ std::shared_ptr<iop::InternalEvent> InternalEventList::create_event(CreateEvent 
 //			p_events.insert(std::map<jUnsignedByte, std::shared_ptr<iop::InternalEvent> >::value_type(event_id, std::make_shared<iop::InternalEvent>(*this, event_id, request_id, query_msg_id, event_type, event_rate, *query_msg, requestor)));
 //			return p_events.find(event_id)->second;
 		} else {
-			RCLCPP_WARN(events_logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s failed, maximum registered events reached!",
+			RCLCPP_WARN(logger, "create event for query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s failed, maximum registered events reached!",
 				    query_msg_id, request_id, (event_type == 0) ? "Periodic" : "Every change", event_rate, requestor.str().c_str());
-			std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(this, request_id, query_msg_id, event_type, event_rate));
+			std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(logger, this, request_id, query_msg_id, event_type, event_rate));
 			event->set_error(4, "maximum registered events reached");
 			return event;
 		}
 	}
-	std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(this, request_id, query_msg_id, event_type, event_rate));
+	std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(logger, this, request_id, query_msg_id, event_type, event_rate));
 	event->set_error(4, "unknown error, should not happen");
 	return event;
 }
@@ -280,20 +292,20 @@ std::shared_ptr<iop::InternalEvent> InternalEventList::p_update_event(jUnsignedB
 	std::map<jUnsignedByte, std::shared_ptr<iop::InternalEvent> >::iterator it;
 	for (it = p_events.begin(); it != p_events.end(); ++it) {
 		if (it->first == event_id) {
-			RCLCPP_DEBUG(events_logger, "update event %d with query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s",
+			RCLCPP_DEBUG(logger, "update event %d with query_id: %#x, request_id: %d, event type: %s, rate: %f, sender %s",
 				     (int)event_id, query_msg_id, request_id, (event_type == 0) ? "Periodic" : "Every change", event_rate, requestor.str().c_str());
-			std::shared_ptr<iop::InternalEvent> test_event(std::make_shared<iop::InternalEvent>(this, request_id, query_msg_id, event_type, event_rate));
+			std::shared_ptr<iop::InternalEvent> test_event(std::make_shared<iop::InternalEvent>(logger, this, request_id, query_msg_id, event_type, event_rate));
 			if (test_event->get_error_code() == 0) {
 				it->second->update(event_id, query_msg, query_msg_id, requestor, request_id, event_type, event_rate);
 				return it->second;
 			} else {
-				RCLCPP_DEBUG(events_logger, "update event %d failed: error %d: %s",
+				RCLCPP_DEBUG(logger, "update event %d failed: error %d: %s",
 					     (int)event_id, (int)test_event->get_error_code(), test_event->get_error_msg().c_str());
 				return test_event;
 			}
 		}
 	}
-	std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(this, request_id, query_msg_id, event_type, event_rate));
+	std::shared_ptr<iop::InternalEvent> event(std::make_shared<iop::InternalEvent>(logger, this, request_id, query_msg_id, event_type, event_rate));
 	event->set_error(6, "Invalid event ID for update event request");
 	return event;
 
@@ -306,16 +318,16 @@ bool InternalEventList::cancel_event(urn_jaus_jss_core_Events::CancelEvent msg, 
 	std::map<jUnsignedByte, std::shared_ptr<iop::InternalEvent> >::iterator res = p_events.find(event_id);
 	if (res != p_events.end()) {
 		if (res->second->requestor == requestor) {
-			RCLCPP_DEBUG(events_logger, "remove event with id %d for query message %#x, requested from %s",
+			RCLCPP_DEBUG(logger, "remove event with id %d for query message %#x, requested from %s",
 				     (int)event_id, res->second->get_query_msg_id(), requestor.str().c_str());
 			p_events.erase(res);
 			return true;
 		} else {
-			RCLCPP_WARN(events_logger, "the requestor %s to cancel event %d is not the creator %s, ignore!",
+			RCLCPP_WARN(logger, "the requestor %s to cancel event %d is not the creator %s, ignore!",
 				    requestor.str().c_str(), (int)event_id, res->second->requestor.str().c_str());
 		}
 	} else {
-		RCLCPP_DEBUG(events_logger, "no event with id %d to cancel found, requested from %s -> ignore!",
+		RCLCPP_DEBUG(logger, "no event with id %d to cancel found, requested from %s -> ignore!",
 			     (int)event_id, requestor.str().c_str());
 	}
 	return false;

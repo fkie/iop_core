@@ -42,6 +42,7 @@ along with this program; or you can read the full license at
 #include "Transport/JausTransport.h"
 #include "DiscoveryComponentList.h"
 #include "DiscoveryServiceList.h"
+#include <fkie_iop_component/iop_component.hpp>
 
 namespace iop
 {
@@ -51,8 +52,8 @@ typedef urn_jaus_jss_core_DiscoveryClient::ReportServices::Body::NodeList::NodeS
 
 class DiscoveryRosInterface {
 public:
-	DiscoveryRosInterface();
-	void setup(JTS::StateMachine& jaus_router);
+	DiscoveryRosInterface(std::shared_ptr<iop::Component> cmp);
+	void setup(std::shared_ptr<iop::Component> cmp, JTS::StateMachine& jaus_router);
 	/** Return true, if services should be updated. */
 	bool update_ident(JausAddress &addr, urn_jaus_jss_core_DiscoveryClient::ReportIdentification &report_ident);
 	void update_services(JausAddress discovery_addr, urn_jaus_jss_core_DiscoveryClient::ReportServiceList msg);

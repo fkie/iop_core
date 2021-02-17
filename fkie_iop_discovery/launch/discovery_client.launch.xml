@@ -1,0 +1,13 @@
+<!--
+NOTICE: this configuration is not a running example.
+It contains only all services and their parameter for current package.
+Some functional examples you can find in fkie_iop_cfg_sim_stage package!
+-->
+<launch>
+    <arg name="id_subsystem" default="127"/>
+    <arg name="id_node" default="64"/>
+    <node name="iop_discovery_node" pkg="fkie_iop_component" exec="iop_component">
+        <param name="iop_address" value="$(var id_subsystem).$(var id_node).200"/>
+        <param from="$(find-pkg-share fkie_iop_discovery)/launch/discovery_services.yaml"/>
+    </node>
+</launch>

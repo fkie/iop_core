@@ -72,18 +72,20 @@ public class CodeGenerator extends Thread
    private String cmptId = null;
    private ServiceSet serviceSet = null;
    private CodeLines.CodeType codeType;
+   private String rosNsPlugins = null;
 
     /**
      * @param sDef		the ServiceDef to auto-generate code for 
      * @param targetDir	a String which specifies the directory where the code should placed	
      */	
-    public CodeGenerator(String outDirName, String cmptName, String cmptId, ServiceSet sSet, CodeLines.CodeType codeType)
+    public CodeGenerator(String outDirName, String cmptName, String cmptId, ServiceSet sSet, CodeLines.CodeType codeType, String rosNsPlugins)
     {
     	this.serviceSet = sSet;
     	this.targetDir = outDirName;
     	this.cmptName = cmptName;
     	this.cmptId = cmptId;
         this.codeType = codeType;
+        this.rosNsPlugins = rosNsPlugins;
     }
     
     /**
@@ -101,7 +103,7 @@ public class CodeGenerator extends Thread
     		}
     		
               /* Run the Component Generator */
-    		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.SCONS).run(targetDir, cmptName, cmptId, serviceSet);
+    		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.SCONS).run(targetDir, cmptName, cmptId, serviceSet, rosNsPlugins);
     }
 
     private static void printUsage() {
@@ -111,6 +113,7 @@ public class CodeGenerator extends Thread
   "[{-i, --input} path to service set]\n"+
   "[{-o,--outdir} path to output directory (default= generatedOutput)]\n"+
   "[{-n,--name} component name (default = JAUSComponent)]\n"+
+  "[{-p, --plugins} namespaces of the services to include into ROS plugin definition]\n"+
   "[{--id} component id (default = 0)]" +
   "[{--c++} set language to C++ (default)]"+
   "[{--java} set language to Java]" +
@@ -126,6 +129,7 @@ public class CodeGenerator extends Thread
         CmdLineParser.Option inputPath = parser.addStringOption('i', "input");
         CmdLineParser.Option outputPath = parser.addStringOption('o', "outdir");
         CmdLineParser.Option name = parser.addStringOption('n', "name");
+        CmdLineParser.Option rosPlugins = parser.addStringOption('p', "plugins");
         CmdLineParser.Option id = parser.addStringOption("id");
         CmdLineParser.Option cpp = parser.addBooleanOption("c++");
         CmdLineParser.Option java = parser.addBooleanOption("java");
@@ -148,6 +152,7 @@ public class CodeGenerator extends Thread
         String inputPathValue = (String)parser.getOptionValue(inputPath);
         String outputPathValue = (String)parser.getOptionValue(outputPath, "generatedOutput");
         String nameValue = (String)parser.getOptionValue(name, "JAUSComponent");
+        String rosPluginsValue = (String)parser.getOptionValue(rosPlugins, "");
         String idValue = (String)parser.getOptionValue(id, "0");
         Boolean cppValue = (Boolean)parser.getOptionValue(cpp, true);
         Boolean javaValue = (Boolean)parser.getOptionValue(java);
@@ -189,24 +194,25 @@ public class CodeGenerator extends Thread
 	  } catch( SAXException saxe ) { 
 	    saxe.printStackTrace();
 	  }
-
 	  // call code generator		
         if(cppValue != null && cppValue.booleanValue()){
         	if( vsValue != null && vsValue.booleanValue() )
         	{
-        		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.VS).run(outputPathValue, nameValue, idValue.toString(), serviceSet);
+        		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.VS).run(outputPathValue, nameValue, idValue.toString(), serviceSet, rosPluginsValue);
         	}
         	else
         	{
-        		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet);
+        		new ComponentGenerator(CodeLines.CodeType.C_PLUS_PLUS, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet, rosPluginsValue);
         	}
         }
         else if (javaValue != null && javaValue.booleanValue()){
-            new ComponentGenerator(CodeLines.CodeType.JAVA, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet);
+            new ComponentGenerator(CodeLines.CodeType.JAVA, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet, rosPluginsValue);
         }
         else if (csValue != null && csValue.booleanValue()){
-            new ComponentGenerator(CodeLines.CodeType.C_SHARP, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet);
+            new ComponentGenerator(CodeLines.CodeType.C_SHARP, CodeLines.BuildType.SCONS).run(outputPathValue, nameValue, idValue.toString(), serviceSet, rosPluginsValue);
         }
+
+            // throw new RuntimeException("TEST" + rosPluginsValue);
 
         System.exit(0);
     }

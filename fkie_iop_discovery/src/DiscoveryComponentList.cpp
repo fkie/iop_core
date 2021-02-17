@@ -21,7 +21,7 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 #include <algorithm>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/time.hpp>
 #include <fkie_iop_discovery/DiscoveryComponentList.h>
 
@@ -29,8 +29,8 @@ along with this program; or you can read the full license at
 using namespace iop;
 
 
-DiscoveryComponentList::DiscoveryComponentList(int64_t timeout)
-: logger(iop::RosNode::get_instance().get_logger().get_child("Discovery"))
+DiscoveryComponentList::DiscoveryComponentList(rclcpp::Logger logger, int64_t timeout)
+: logger(logger)
 {
 	p_timeout = timeout;
 }

@@ -68,7 +68,7 @@ install(
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})

@@ -340,9 +340,9 @@ Transport::TransportError JrSocket::initialize(ConfigData& config)
 		{
 			// in case of restart nodes we need to wait until previous node unlinks the socket
 			JrError << "Socket (" << s.str()
-					<< ") currently in use. Wait 3 seconds and try to unlink and bind ..."
+					<< ") currently in use. Wait 1 seconds and try to unlink and bind ..."
 					<< std::endl;
-			JrSleep(3000);
+			JrSleep(1000);
 			unlink(addr.sun_path);
 			bindres = bind(sock, (struct sockaddr *) &addr,
 					sizeof(struct sockaddr_un));

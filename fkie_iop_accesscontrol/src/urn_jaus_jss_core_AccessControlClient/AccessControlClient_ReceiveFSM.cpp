@@ -22,8 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_AccessControlClient/AccessControlClient_ReceiveFSM.h"
-#include <fkie_iop_component/iop_config.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/time.hpp>
 
 
@@ -40,9 +40,10 @@ unsigned char AccessControlClient_ReceiveFSM::ACCESS_STATE_TIMEOUT              
 unsigned char AccessControlClient_ReceiveFSM::ACCESS_STATE_INSUFFICIENT_AUTHORITY = 5;
 
 
-AccessControlClient_ReceiveFSM::AccessControlClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("AccessControlClient")),
-  p_timer(std::chrono::seconds(1), std::bind(&AccessControlClient_ReceiveFSM::pTimeoutCallback, this), false)
+AccessControlClient_ReceiveFSM::AccessControlClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("AccessControlClient")),
+  p_timer(std::chrono::seconds(1), std::bind(&AccessControlClient_ReceiveFSM::pTimeoutCallback, this), false),
+  p_remote_components(logger)
 {
 
 	/*
@@ -52,8 +53,9 @@ AccessControlClient_ReceiveFSM::AccessControlClient_ReceiveFSM(urn_jaus_jss_core
 	 */
 	context = new AccessControlClient_ReceiveFSMContext(*this);
 
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
 	this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	p_default_timeout = 1;
 	p_timeout_event = new InternalEvent("Timeout", "ControlTimeout");
 }
@@ -73,7 +75,12 @@ void AccessControlClient_ReceiveFSM::setupNotifications()
 	pEventsClient_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving_Ready", "EventsClient_ReceiveFSM");
 	registerNotification("Receiving_Ready", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving_Ready", "AccessControlClient_ReceiveFSM");
 	registerNotification("Receiving", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving", "AccessControlClient_ReceiveFSM");
-	iop::Config cfg("AccessControlClient");
+
+}
+
+void AccessControlClient_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "AccessControlClient");
 	p_pub_current_controller = cfg.create_publisher<fkie_iop_msgs::msg::JausAddress>("current_controller", 5);
 	p_pub_current_authority = cfg.create_publisher<std_msgs::msg::UInt8>("current_authority", 5);
 	p_timer.start();

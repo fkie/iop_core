@@ -23,9 +23,9 @@ along with this program; or you can read the full license at
 //#include <boost/algorithm/string.hpp>
 #include <fkie_iop_ocu_slavelib/Slave.h>
 #include <fkie_iop_ocu_slavelib/common.h>
-#include <fkie_iop_component/iop_component.h>
 #include <fkie_iop_msgs/msg/ocu_cmd_entry.hpp>
-#include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 #include <fkie_iop_component/string.hpp>
 
 
@@ -34,13 +34,12 @@ using namespace urn_jaus_jss_core_DiscoveryClient;
 using namespace urn_jaus_jss_core_ManagementClient;
 using namespace iop::ocu;
 
-Slave* Slave::global_ptr = 0;
 
 
-Slave::Slave(JausAddress own_address)
-: logger(iop::RosNode::get_instance().get_logger().get_child("Slave"))
+Slave::Slave(std::shared_ptr<iop::Component> cmp, JausAddress own_address)
+: logger(cmp->get_logger().get_child("Slave")),
+  cmp(cmp)
 {
-	global_ptr = this;
 	p_subsystem_restricted = 65535;
 	p_controlled_component_nr = 1;
 	p_only_monitor = false;
@@ -74,14 +73,12 @@ Slave::Slave(const Slave& other)
 
 Slave::~Slave(void)
 {
-	delete global_ptr;
 }
 
 DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 {
 	if (p_discovery_client == NULL) {
-		iop::Component &cmp = iop::Component::get_instance();
-		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp.get_service("DiscoveryClient"));
+		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp->get_service("DiscoveryClient"));
 		if (discovery_srv != NULL) {
 			p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
 		} else {
@@ -94,8 +91,7 @@ DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 AccessControlClient_ReceiveFSM *Slave::pGetAccesscontrolClient()
 {
 	if (p_accesscontrol_client == NULL) {
-		iop::Component &cmp = iop::Component::get_instance();
-		AccessControlClientService *accesscontrol_srv = static_cast<AccessControlClientService*>(cmp.get_service("AccessControlClient"));
+		AccessControlClientService *accesscontrol_srv = static_cast<AccessControlClientService*>(cmp->get_service("AccessControlClient"));
 		if (accesscontrol_srv != NULL) {
 			p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 			p_accesscontrol_client->add_reply_handler(&Slave::pAccessControlClientReplyHandler, this);
@@ -110,8 +106,7 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 {
 	if (p_management_client == NULL && p_try_get_management) {
 		p_try_get_management = false;
-		iop::Component &cmp = iop::Component::get_instance();
-		ManagementClientService *management_srv = static_cast<ManagementClientService*>(cmp.get_service("ManagementClient"));
+		ManagementClientService *management_srv = static_cast<ManagementClientService*>(cmp->get_service("ManagementClient"));
 		if (management_srv != NULL) {
 			p_management_client = management_srv->pManagementClient_ReceiveFSM;
 		} else {
@@ -144,8 +139,36 @@ void Slave::set_supported_handoff(bool supported)
 void Slave::pInitRos()
 {
 	RCLCPP_INFO_ONCE(logger, "=== Initialize OCU Slave ===");
-	iop::Config cfg("Slave");
+	iop::Config cfg(cmp, "Slave");	
 	std::string control_addr;
+	cfg.declare_param<std::string>("control_addr", control_addr, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
+		"The JAUS address if only a specific component, node or system are controlled by the client.",
+		"Supported formats: XX, XX.XX or XX.XX.XX");
+	cfg.declare_param<int64_t>("authority", p_default_authority, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"The authority for access control.",
+		"Default: 205");
+	cfg.declare_param<int64_t>("access_control", p_default_access_control, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Access state after start the component.",
+		"Default: 10; 10:ACCESS_CONTROL_RELEASE, 11:ACCESS_CONTROL_MONITOR, 12:ACCESS_CONTROL_REQUEST");
+	cfg.declare_param<bool>("use_queries", p_use_queries, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"Enables query behaviour. Reports are send only as reply to own query.",
+		"Default: false");
+	cfg.declare_param<bool>("only_monitor", p_only_monitor, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"Disables the ability to send RequestControl and uses client only for monitoring if true",
+		"Default: false");
+	cfg.declare_param<int64_t>("subsystem_restricted", p_subsystem_restricted, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"This client can control only the specified subsystem (robot). Any by default.",
+		"Default: 65535");
+	cfg.declare_param<int64_t>("controlled_component", p_controlled_component_nr, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Use this parameter if more than one component with requested service is available on robot. Returns the service in the list, beginning with 1.",
+		"Default: 1");
 	cfg.param("control_addr", control_addr, control_addr);
 	if (!control_addr.empty()) {
 		// try to get the address of the component specified for this slave to avoid discovering
@@ -170,7 +193,7 @@ void Slave::pInitRos()
 	access_control_map[10] = "ACCESS_CONTROL_RELEASE";
 	access_control_map[11] = "ACCESS_CONTROL_MONITOR";
 	access_control_map[12] = "ACCESS_CONTROL_REQUEST";
-	cfg.param("access_control", p_default_access_control, p_default_access_control, true, "", access_control_map);
+	cfg.param("access_control", p_default_access_control, p_default_access_control, access_control_map, true, "");//, access_control_map);
 	cfg.param("use_queries", p_use_queries, p_use_queries);
 	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
 	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);

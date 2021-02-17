@@ -24,7 +24,7 @@ along with this program; or you can read the full license at
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-#include <stdio.h>
+#include <string>
 #include <ros/ros.h>
 #include <ros/time.h>
 

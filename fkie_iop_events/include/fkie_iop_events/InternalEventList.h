@@ -32,6 +32,8 @@ along with this program; or you can read the full license at
 
 #include <string>
 
+#include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/timer.hpp>
 
 #include "EventsConfig.h"
@@ -41,8 +43,10 @@ namespace iop
 
 class InternalEventList {
 public:
-	InternalEventList(JTS::StateMachine *jrHandler);
+	InternalEventList(rclcpp::Logger& logger, JTS::StateMachine *jrHandler);
 	~InternalEventList();
+
+	void init_config(std::shared_ptr<iop::Component> cmp);
 
 	void register_query(jUnsignedShortInteger query_msg_id, bool supports_on_change=true, bool supports_periodic=true);
 	/** register_query() should be called before use this method. Otherwise it will return false. */
@@ -98,7 +102,7 @@ protected:
 	typedef std::unique_lock<mutex_type> lock_type;
 	mutable mutex_type p_mutex;
 
-	rclcpp::Logger events_logger;
+	rclcpp::Logger logger;
 	iop::Timer p_timer;
 	EventsConfig p_config;
 	JTS::StateMachine *jrHandler;

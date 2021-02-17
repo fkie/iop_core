@@ -21,8 +21,9 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 
+#include <string>
 #include <fkie_iop_events/EventsConfig.h>
-#include <fkie_iop_component/iop_config.h>
+#include <fkie_iop_component/iop_config.hpp>
 
 using namespace iop;
 
@@ -33,11 +34,9 @@ const float EventsConfig::MAXIMUM_RATE = 25.0f;
 const float EventsConfig::RATE_PRECISION = 0.1f;
 #endif
 
-EventsConfig::EventsConfig()
+EventsConfig::EventsConfig(int64_t timeout)
 {
-	p_default_timeout = 1;
-	iop::Config cfg("Events");
-	cfg.param("events_timeout", p_default_timeout, p_default_timeout);
+	p_default_timeout = timeout;
 }
 
 EventsConfig::EventsConfig(EventsConfig const& from)
@@ -53,7 +52,12 @@ const EventsConfig& EventsConfig::operator=(const EventsConfig& from)
 	return *this;
 }
 
-int EventsConfig::get_timeout()
+void EventsConfig::set_timeout(int64_t timeout)
+{
+	p_default_timeout = timeout;
+}
+
+int64_t EventsConfig::get_timeout()
 {
 	return p_default_timeout;
 }

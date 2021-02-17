@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -605,7 +606,13 @@ public class ProtocolBehaviorGenerator {
          StringBuffer parentFSMReferences = new StringBuffer();
          StringBuffer parentFSMAssignments = new StringBuffer();
          StringBuffer parentFSMIncludes = new StringBuffer();
-         
+
+         // IOP: add component parameter to _ReceiveFSM
+         if (smName.contains("_ReceiveFSM")) {
+             parentFSMArguments.append("std::shared_ptr<iop::Component> cmp");
+         }
+
+        Collections.reverse(parentList);
          for ( Reference ref : parentList )
          {             
              // Argument list for constructor...
@@ -619,21 +626,28 @@ public class ProtocolBehaviorGenerator {
              // And assign incoming arguments to member variables
              parentFSMAssignments.append("\tthis->p" + ref.name + " = p" + ref.name + ";");
              parentFSMAssignments.append(System.getProperty("line.separator"));
-             
+
              // Include list...
              parentFSMIncludes.append("#include \"" + ref.namespace + "/" + ref.name + ".h\"");
              parentFSMIncludes.append(System.getProperty("line.separator"));
          }
-         
-         replaceTable.put("%parent_fsm_arguments%", parentFSMArguments.toString());
-         replaceTable.put("%parent_fsm_references%", parentFSMReferences.toString());
-         replaceTable.put("%parent_fsm_includes%", parentFSMIncludes.toString());
+        // And assign component to member variables
+        // IOP: add component parameter to _ReceiveFSM
+        if (smName.contains("_ReceiveFSM")) {
+            parentFSMAssignments.append("\tthis->cmp = cmp;");
+            parentFSMAssignments.append(System.getProperty("line.separator"));
+        }
+
+        replaceTable.put("%parent_fsm_arguments%", parentFSMArguments.toString());
+        replaceTable.put("%parent_fsm_references%", parentFSMReferences.toString());
+        replaceTable.put("%parent_fsm_includes%", parentFSMIncludes.toString());
         //---------------------------
 
         // put user changes in template
         // make sure header was included
         if (replaceUserHeaders.length() == 0) {
             replaceUserHeaders.append("#include \"" + namespace + "/" + smName + ".h\"").append(System.getProperty("line.separator"));
+            replaceUserHeaders.append("#include <fkie_iop_component/iop_config.hpp>");
         }
         replaceTable.put("%user_include_definitions%", replaceUserHeaders.toString());
         replaceTable.put("%user_constants_definitions%", replaceUserConstants.toString());
@@ -644,13 +658,18 @@ public class ProtocolBehaviorGenerator {
         //---------------------------
         // put items in template
         // make sure constructor was included, if not put in standard constructor
+        String smNamePrefix = smName.substring(0, smName.indexOf("_"));
         if (replaceUserConstructor.length() == 0) {
+            // IOP: add logger to ReceiveFSM constructor
+            if (smName.contains("_ReceiveFSM")) {
+                replaceUserConstructor.append(": logger(cmp->get_logger().get_child(\"" + smNamePrefix + "\"))").append(System.getProperty("line.separator"));
+            }
             replaceUserConstructor.append("{").append(System.getProperty("line.separator"));
             replaceUserConstructor.append(System.getProperty("line.separator"));
             replaceUserConstructor.append("\t/*").append(System.getProperty("line.separator"));
-            replaceUserConstructor.append("\t * If there are other variables, context must be constructed last so that all ").append(System.getProperty("line.separator"));
-            replaceUserConstructor.append("\t * class variables are available if an EntryAction of the InitialState of the ").append(System.getProperty("line.separator"));
-            replaceUserConstructor.append("\t * statemachine needs them. ").append(System.getProperty("line.separator"));
+            replaceUserConstructor.append("\t * If there are other variables, context must be constructed last so that all").append(System.getProperty("line.separator"));
+            replaceUserConstructor.append("\t * class variables are available if an EntryAction of the InitialState of the").append(System.getProperty("line.separator"));
+            replaceUserConstructor.append("\t * statemachine needs them.").append(System.getProperty("line.separator"));
             replaceUserConstructor.append("\t */").append(System.getProperty("line.separator"));
             replaceUserConstructor.append("\tcontext = new " + smName + "Context(*this);").append(System.getProperty("line.separator"));
             replaceUserConstructor.append(System.getProperty("line.separator")).append(parentFSMAssignments);
@@ -658,7 +677,6 @@ public class ProtocolBehaviorGenerator {
         }
 
         replaceTable.put("%sm_constuctor%", replaceUserConstructor.toString());
-
         //---------------------------
 
 
@@ -682,7 +700,28 @@ public class ProtocolBehaviorGenerator {
         replaceTable.put("%pure_virtual_action_method_declarations%", virtualActionMethods.toString());
         replaceTable.put("%action_method_declarations%", actionDeclarations.toString());
         replaceTable.put("%action_method_definitions%", actionDefinitions.toString());
+
 		replaceTable.put("%setup_notifications%", setupNotifications.toString());
+
+
+        // IOP: add component parameter toReceiveFSM
+        StringBuffer replaceSetupIOPConfiguration = new StringBuffer();
+        StringBuffer replaceSetupIOPConfigurationH = new StringBuffer();
+        StringBuffer replaceFSMIOPArgs = new StringBuffer();
+        if (smName.contains("_ReceiveFSM")) {
+            replaceSetupIOPConfigurationH.append("\tvirtual void setupIopConfiguration();").append(System.getProperty("line.separator"));
+            replaceFSMIOPArgs.append("\tstd::shared_ptr<iop::Component> cmp;").append(System.getProperty("line.separator"));
+            replaceFSMIOPArgs.append("\trclcpp::Logger logger;").append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append("void " + smName + "::setupIopConfiguration()").append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append("{").append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append("\tiop::Config cfg(cmp, \"" + smNamePrefix + "\");").append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append("}").append(System.getProperty("line.separator"));
+            replaceSetupIOPConfiguration.append(System.getProperty("line.separator"));
+        }
+        replaceTable.put("%setup_iop_configuration_h%", replaceSetupIOPConfigurationH.toString());
+        replaceTable.put("%parent_fsm_iop_args%", replaceFSMIOPArgs.toString());
+        replaceTable.put("%setup_iop_configuration%", replaceSetupIOPConfiguration.toString());
 
         //junit testing
         actionMethodCode = actionDefinitions;
@@ -856,7 +895,7 @@ public class ProtocolBehaviorGenerator {
         replaceTable.put("%statemachine_name_allcaps%", smName.toUpperCase());
 
 		//---------------------------
-		// Generate references to all parent FSMssm_constuctor
+		// Generate references to all parent FSMs
 			StringBuffer parentFSMArguments = new StringBuffer();
 			StringBuffer parentFSMReferences = new StringBuffer();
 			StringBuffer parentFSMAssignments = new StringBuffer();
@@ -1726,6 +1765,7 @@ public class ProtocolBehaviorGenerator {
 
         // keep track of in and out brackets, each must have a match
         int bracketCount = 0;
+        boolean readed = false;
 
         do {
             try {
@@ -1754,12 +1794,13 @@ public class ProtocolBehaviorGenerator {
 
             if (strLine.contains("{")) {
                 bracketCount++;
+                readed = true;
             }
 
             if (strLine.contains("}")) {
                 bracketCount--;
             }
-        } while (bracketCount != 0);
+        } while (bracketCount != 0 || !readed);
 
         // put function in buffer
         replaceConstructor.append(constructor);

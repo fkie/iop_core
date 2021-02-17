@@ -41,7 +41,6 @@ iop_code_generator(
     include/urn_jaus_jss_core_DiscoveryClient/DiscoveryClient_ReceiveFSM.h
     src/urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.cpp
     src/urn_jaus_jss_core_DiscoveryClient/DiscoveryClient_ReceiveFSM.cpp
-    src/main.cpp
   EXTERN_SERVICES
     urn_jaus_jss_core_Events
     urn_jaus_jss_core_EventsClient
@@ -64,10 +63,8 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-            src/DiscoveryClientPlugin.cpp
             src/DiscoveryComponent.cpp
             src/DiscoveryComponentList.cpp
-            src/DiscoveryPlugin.cpp
             src/DiscoveryRosInterface.cpp
             src/DiscoveryServiceDef.cpp
             src/DiscoveryServiceList.cpp
@@ -96,17 +93,18 @@ install(
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(
-   FILES ./plugin_iop.xml
-   DESTINATION share/${PROJECT_NAME}
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
+pluginlib_export_plugin_description_file(fkie_iop_component plugin_iop.xml)
 
 ament_package()

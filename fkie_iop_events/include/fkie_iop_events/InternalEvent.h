@@ -31,6 +31,7 @@ along with this program; or you can read the full license at
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <chrono>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/timer.hpp>
 
 #include "EventsConfig.h"
@@ -48,9 +49,9 @@ public:
 	urn_jaus_jss_core_Events::Event event;
 	jUnsignedByte seq_nr;
 	JausAddress requestor;
-	InternalEvent(InternalEventList* event_list);
-	InternalEvent(InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type=0, double event_rate=0.0);
-	InternalEvent(InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor);
+	InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list);
+	InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type=0, double event_rate=0.0);
+	InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor);
 	~InternalEvent();
 	bool operator==(InternalEvent &value);
 	bool operator!=(InternalEvent &value);
@@ -87,14 +88,14 @@ public:
 	jUnsignedByte get_error_code() { return p_error_code; }
 	/** Returns message for current error. */
 	std::string get_error_msg() { return p_error_msg; }
-	void set_error(jUnsignedByte code, std::string msg="");
+	void set_error(jUnsignedByte code, std::string msg=std::string());
 
 	ChronoSysTP get_last_update_time() { return p_last_update; }
 
 protected:
-	InternalEventList *p_event_list;
-	rclcpp::Logger events_logger;
+	rclcpp::Logger logger;
 	iop::Timer p_timer;
+	InternalEventList *p_event_list;
 	ChronoSysTP p_last_update;
 	urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage p_query_msg;
 	jUnsignedShortInteger p_query_msg_id;

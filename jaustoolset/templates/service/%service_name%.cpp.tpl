@@ -1,22 +1,40 @@
 %copyright%
 
+#include <pluginlib/class_list_macros.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 #include "%service_namespace%/%service_name%.h"
 
 using namespace JTS;
 
 namespace %service_namespace%
 {
-	
-%service_name%::%service_name%(JTS::JausRouter* jausRouter %parent_service_list%) : Service()
+
+%service_name%::%service_name%() : Service()
 {
-	
+	p_initialized = false;
+	pParentService = nullptr;
+%service_assignment_list%
+}
+
+void %service_name%::init_service(std::shared_ptr<iop::Component> cmp, JTS::JausRouter* jausRouter, JTS::Service* parentService)
+{
+	if (!p_initialized) {
 %statemachine_assignment_list%
+	}
+	p_initialized = true;
 }
 
 
 %service_name%::~%service_name%()
 {
+	if (p_initialized) {
 %statemachine_destruction_list%
+	}
+}
+
+%parent_service_type% %service_name%::getParent()
+{
+	return pParentService;
 }
 
 /**
@@ -78,3 +96,5 @@ leave:
 
 
 }
+
+PLUGINLIB_EXPORT_CLASS(%service_namespace%::%statemachine_name_prefix%, JTS::Service)

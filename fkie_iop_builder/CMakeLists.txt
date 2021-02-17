@@ -28,10 +28,12 @@ install(
     DESTINATION include/${PROJECT_NAME}
 )
 install(
-  DIRECTORY cmake DESTINATION share/${PROJECT_NAME}
+  DIRECTORY cmake
+  DESTINATION share/${PROJECT_NAME}
 )
 install(
-  DIRECTORY jsidl DESTINATION share/${PROJECT_NAME}
+  DIRECTORY jsidl
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include)

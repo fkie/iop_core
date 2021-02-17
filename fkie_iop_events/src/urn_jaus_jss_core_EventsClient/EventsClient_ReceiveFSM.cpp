@@ -22,7 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 using namespace JTS;
 
@@ -31,8 +32,8 @@ namespace urn_jaus_jss_core_EventsClient
 
 
 
-EventsClient_ReceiveFSM::EventsClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("EventsClient"))
+EventsClient_ReceiveFSM::EventsClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("EventsClient"))
 {
 
 	/*
@@ -43,6 +44,7 @@ EventsClient_ReceiveFSM::EventsClient_ReceiveFSM(urn_jaus_jss_core_Transport::Tr
 	context = new EventsClient_ReceiveFSMContext(*this);
 
 	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	p_request_id_idx = 0;
 }
 
@@ -64,7 +66,11 @@ void EventsClient_ReceiveFSM::setupNotifications()
 	pTransport_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving_Ready", "Transport_ReceiveFSM");
 	registerNotification("Receiving_Ready", pTransport_ReceiveFSM->getHandler(), "InternalStateChange_To_Transport_ReceiveFSM_Receiving", "EventsClient_ReceiveFSM");
 	registerNotification("Receiving", pTransport_ReceiveFSM->getHandler(), "InternalStateChange_To_Transport_ReceiveFSM_Receiving", "EventsClient_ReceiveFSM");
+}
 
+void EventsClient_ReceiveFSM::setupIopConfiguration()
+{
+	// iop::Config cfg(cmp, "EventsClient");
 }
 
 void EventsClient_ReceiveFSM::handleCommandEventAction(CommandEvent msg, Receive::Body::ReceiveRec transportData)
@@ -76,7 +82,7 @@ void EventsClient_ReceiveFSM::handleConfirmEventRequestAction(ConfirmEventReques
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getConfirmEventRequestRec()->getRequestID();
-	RCLCPP_DEBUG(events_logger, "Confirmed for request_id: %d to %s, rate: %.2f", request_id,
+	RCLCPP_DEBUG(logger, "Confirmed for request_id: %d to %s, rate: %.2f", request_id,
 			sender.str().c_str(), msg.getBody()->getConfirmEventRequestRec()->getConfirmedPeriodicRate());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -98,7 +104,7 @@ void EventsClient_ReceiveFSM::handleEventAction(Event msg, Receive::Body::Receiv
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte event_id = msg.getBody()->getEventRec()->getEventID();
-	RCLCPP_DEBUG(events_logger, "event %d from %s received, seqnr: %d", (int)event_id,
+	RCLCPP_DEBUG(logger, "event %d from %s received, seqnr: %d", (int)event_id,
 			sender.str().c_str(), msg.getBody()->getEventRec()->getSequenceNumber());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -112,7 +118,7 @@ void EventsClient_ReceiveFSM::handleRejectEventRequestAction(RejectEventRequest 
 {
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getRejectEventRequestRec()->getRequestID();
-	RCLCPP_DEBUG(events_logger, "Rejected for request_id: %d to %s, code: %d", request_id,
+	RCLCPP_DEBUG(logger, "Rejected for request_id: %d to %s, code: %d", request_id,
 			sender.str().c_str(), msg.getBody()->getRejectEventRequestRec()->getResponseCode());
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -132,7 +138,7 @@ void EventsClient_ReceiveFSM::handleReportEventTimeoutAction(ReportEventTimeout 
 {
 	JausAddress reporter(transportData.getAddress());
 	jUnsignedByte rto = msg.getBody()->getReportTimoutRec()->getTimeout();
-	RCLCPP_DEBUG(events_logger, "ReportEventTimeout from %s received: %d sec", reporter.str().c_str(), (int)rto);
+	RCLCPP_DEBUG(logger, "ReportEventTimeout from %s received: %d sec", reporter.str().c_str(), (int)rto);
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
 	for (it = p_events.begin(); it != p_events.end(); ++it) {
@@ -154,7 +160,7 @@ void EventsClient_ReceiveFSM::create_event(iop::EventHandlerInterface &handler, 
 		if (rate < 0.1 || rate > 25.0) {
 			event_type = 1;
 		}
-		iop::InternalEventClient *event = new iop::InternalEventClient(*this, handler, p_request_id_idx, query_msg, address, event_type, rate);
+		iop::InternalEventClient *event = new iop::InternalEventClient(logger, *this, handler, p_request_id_idx, query_msg, address, event_type, rate);
 		p_events.push_back(event);
 		event = p_get_event(address, query_msg.getID());
 		p_request_id_idx++;

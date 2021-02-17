@@ -52,7 +52,7 @@ public:
 	 * event_type:
 	 * 0 = Periodic
 	 * 1 = Every Change */
-	InternalEventClient(urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM& parent, iop::EventHandlerInterface& handler, jUnsignedByte request_id, JTS::Message &query_msg, JausAddress address, jUnsignedByte event_type=0, double rate=1.0);
+	InternalEventClient(rclcpp::Logger& logger, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM& parent, iop::EventHandlerInterface& handler, jUnsignedByte request_id, JTS::Message &query_msg, JausAddress address, jUnsignedByte event_type=0, double rate=1.0);
 	~InternalEventClient();
 //	InternalEventClient(InternalEventClient const& from);
 //	const InternalEventClient& operator=(const InternalEventClient& from);
@@ -84,11 +84,11 @@ public:
 	jUnsignedByte get_error_code() { return p_error_code; }
 	/** Returns message for current error. */
 	std::string get_error_msg() { return p_error_msg; }
-	void set_error(jUnsignedByte code, std::string msg="");
+	void set_error(jUnsignedByte code, std::string msg=std::string());
 
 protected:
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *p_parent;
-	rclcpp::Logger events_logger;
+	rclcpp::Logger logger;
 	iop::Timer p_timer;
 	int p_timeout;
 	JausAddress p_remote;

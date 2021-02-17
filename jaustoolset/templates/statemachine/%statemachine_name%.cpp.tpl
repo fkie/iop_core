@@ -1,6 +1,5 @@
 %copyright%
 
-#include <fkie_iop_component/iop_config.h>
 %user_include_definitions%
 
 %user_constants_definitions%
@@ -15,8 +14,7 @@ namespace %service_namespace%
 %statemachine_name%::%statemachine_name%(%parent_fsm_arguments%)
 %sm_constuctor%
 
-
-%statemachine_name%::~%statemachine_name%() 
+%statemachine_name%::~%statemachine_name%()
 {
 	delete context;
 }
@@ -24,9 +22,9 @@ namespace %service_namespace%
 void %statemachine_name%::setupNotifications()
 {
 %setup_notifications%
-
-	iop::Config cfg("%statemachine_name%");
 }
+
+%setup_iop_configuration%
 
 %action_method_definitions%
 

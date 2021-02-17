@@ -22,8 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_ManagementClient/ManagementClient_ReceiveFSM.h"
-#include <fkie_iop_component/iop_config.h>
-
+#include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 
 using namespace JTS;
 
@@ -38,8 +38,8 @@ unsigned char ManagementClient_ReceiveFSM::MANAGEMENT_STATE_FAILURE   = 4;
 unsigned char ManagementClient_ReceiveFSM::MANAGEMENT_STATE_EMERGENCY = 5;
 unsigned char ManagementClient_ReceiveFSM::MANAGEMENT_STATE_UNKNOWN   = 255;
 
-ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("ManagementClient")),
+ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM* pAccessControlClient_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("ManagementClient")),
   p_query_timer(std::chrono::seconds(10), std::bind(&ManagementClient_ReceiveFSM::pQueryCallback, this), false)
 {
 
@@ -50,9 +50,10 @@ ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(urn_jaus_jss_core_Trans
 	 */
 	context = new ManagementClient_ReceiveFSMContext(*this);
 
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
-	this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
 	this->pAccessControlClient_ReceiveFSM = pAccessControlClient_ReceiveFSM;
+	this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	p_status = 255;
 	p_hz = 0.0;
 	by_query = false;
@@ -72,7 +73,19 @@ void ManagementClient_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pAccessControlClient_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving_Ready", "ManagementClient_ReceiveFSM");
 	registerNotification("Receiving", pAccessControlClient_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControlClient_ReceiveFSM_Receiving", "ManagementClient_ReceiveFSM");
 
-	iop::Config cfg("ManagementClient");
+}
+
+void ManagementClient_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "ManagementClient");
+	cfg.declare_param<double>("hz", p_hz, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE,
+		"Sets how often the reports are requested. If by_query is true hz must be greather then 0. In this case each time a Query message is sent to get a report. If by_query is false an event is created to get Reports. In this case 0 disables the rate and an event of type on_change will be created.",
+		"Default: 0 (each new one)");
+	cfg.declare_param<bool>("by_query", by_query, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"By default the current state will be requested by creating an event. By setting this variable to true the state is requested by query.",
+		"Default: false");
 	cfg.param("hz", p_hz, p_hz, false);
 	cfg.param("by_query", by_query, by_query, true);
 	p_pub_status = cfg.create_publisher<std_msgs::msg::String>("mgmt_status", 5);

@@ -22,15 +22,15 @@ along with this program; or you can read the full license at
 
 #include <fkie_iop_discovery/DiscoveryRosInterface.h>
 #include <algorithm>
-#include <fkie_iop_component/iop_config.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 #include <fkie_iop_component/time.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_DiscoveryClient;
 
-DiscoveryRosInterface::DiscoveryRosInterface()
-: logger(iop::RosNode::get_instance().get_logger().get_child("DiscoveryClient"))
+DiscoveryRosInterface::DiscoveryRosInterface(std::shared_ptr<iop::Component> cmp)
+: logger(cmp->get_logger().get_child("DiscoveryClient")),
+  p_components(logger)
 {
 	p_jaus_router = NULL;
 	p_enable_ros_interface = false;
@@ -38,10 +38,18 @@ DiscoveryRosInterface::DiscoveryRosInterface()
 	p_timeout_discover_service = 60;
 }
 
-void DiscoveryRosInterface::setup(JTS::StateMachine& jaus_router)
+void DiscoveryRosInterface::setup(std::shared_ptr<iop::Component> cmp, JTS::StateMachine& jaus_router)
 {
 	p_jaus_router = &jaus_router;
-	iop::Config cfg("DiscoveryClient");
+	iop::Config cfg(cmp, "DiscoveryClient");
+	cfg.declare_param<bool>("enable_ros_interface", p_enable_ros_interface, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"Enables ROS interface for using with ROS operator control unit (e.g. RQt or RViz)",
+		"Default: false");
+	cfg.declare_param<int64_t>("force_component_update_after", p_force_component_update_after, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Discovery client updates all discovered services after given time",
+		"Default: 300 sec");
 	cfg.param("enable_ros_interface", p_enable_ros_interface, p_enable_ros_interface);
 	cfg.param("force_component_update_after", p_force_component_update_after, p_force_component_update_after);
 	if (p_enable_ros_interface) {

@@ -24,8 +24,6 @@ along with this program; or you can read the full license at
 #ifndef EVENTSCONFIG_H
 #define EVENTSCONFIG_H
 
-#include <string>
-
 namespace iop
 {
 
@@ -40,13 +38,14 @@ public:
 	static const float MAXIMUM_RATE;
 	static const float RATE_PRECISION;
 #endif
-	EventsConfig();
+	EventsConfig(int64_t timeout=1);
 	EventsConfig(EventsConfig const& from);
 	const EventsConfig& operator=(const EventsConfig& from);
-	int get_timeout();
+	void set_timeout(int64_t timeout);
+	int64_t get_timeout();
 
 protected:
-	int p_default_timeout;
+	int64_t p_default_timeout;
 };
 
 }

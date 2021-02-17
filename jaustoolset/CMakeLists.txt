@@ -163,6 +163,7 @@ set(JAVA_SOURCE_FILES
     src/org/jts/codegenerator/support/PathExtender.java
     src/org/jts/codegenerator/support/Reference.java
     src/org/jts/codegenerator/support/ReferenceHolder.java
+    src/org/jts/codegenerator/support/ROSPluginGenerator.java
     src/org/jts/codegenerator/support/SconstructGenerator.java
     src/org/jts/codegenerator/support/TemplateHandler.java
     src/org/jts/codegenerator/support/VisualStudioGenerator.java
@@ -319,26 +320,17 @@ install(
 ################################################
 ## install includes, library and node manager ##
 ################################################
-# install(
-#   DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-# )
 
 install(
     DIRECTORY include/
     DESTINATION include/${PROJECT_NAME}
 )
 
-# install(TARGETS JTSNodeManager ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
-
 install(
     TARGETS ${library_name} ${executable_name} 
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(

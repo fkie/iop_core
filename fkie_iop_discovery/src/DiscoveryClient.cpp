@@ -25,7 +25,7 @@ along with this program; or you can read the full license at
 #include "Transport/OS.h"
 #include "Fkie_iop_discovery_client.h"
 
-#include <fkie_iop_builder/ros_init.h>
+#include <fkie_iop_component/ros_node.hpp>
 
 // Create a static signal to catch interrupts
 static DeVivo::Junior::JrSignal exit_signal;

@@ -22,13 +22,12 @@ along with this program; or you can read the full license at
 
 
 #include <algorithm>
-#include <fkie_iop_component/ros_node.hpp>
 #include <fkie_iop_accesscontrol/RemoteComponentList.h>
 
 using namespace iop;
 
-RemoteComponentList::RemoteComponentList(int64_t default_timeout)
-: logger(iop::RosNode::get_instance().get_logger().get_child("AccessControlClient"))
+RemoteComponentList::RemoteComponentList(rclcpp::Logger& logger, int64_t default_timeout)
+: logger(logger)
   //p_timer(std::chrono::seconds(1), std::bind(&RemoteComponentList::timeouted, this), false)
 {
 	p_default_timeout = default_timeout;
@@ -43,7 +42,7 @@ bool RemoteComponentList::create(JausAddress address, jUnsignedByte authority)
 {
 	lock_type lock(p_mutex);
 	if (!isin(address)) {
-		std::shared_ptr<iop::RemoteComponent> component(std::make_shared<iop::RemoteComponent>(address, authority, p_default_timeout));
+		std::shared_ptr<iop::RemoteComponent> component(std::make_shared<iop::RemoteComponent>(logger, address, authority, p_default_timeout));
 		p_components[address] = component;
 		return true;
 	}

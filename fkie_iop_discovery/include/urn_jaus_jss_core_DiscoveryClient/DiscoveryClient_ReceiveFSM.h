@@ -34,15 +34,15 @@ along with this program; or you can read the full license at
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
 
-#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
+#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
 
 #include "DiscoveryClient_ReceiveFSM_sm.h"
-#include "urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h"
+#include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 #include <mutex>
-#include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_discovery/DiscoveryServiceDef.h>
 #include <fkie_iop_discovery/DiscoveryRosInterface.h>
 #include <fkie_iop_component/timer.hpp>
@@ -56,7 +56,7 @@ const int TYPE_SUBSYSTEM = 2;
 const int TYPE_NODE = 3;
 const int TYPE_COMPONENT = 4;
 
-using namespace urn_jaus_jss_core_Discovery;
+//using namespace urn_jaus_jss_core_Discovery;
 
 //typedef RegisterServices::RegisterServicesBody::ServiceList::ServiceRec ServiceDef;
 
@@ -65,11 +65,12 @@ class DllExport DiscoveryClient_ReceiveFSM : public JTS::StateMachine
 public:
 	int TIMEOUT_DISCOVER;
 	int TIMEOUT_STANDBY;
-	DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM);
+	DiscoveryClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
 	virtual ~DiscoveryClient_ReceiveFSM();
 
 	/// Handle notifications on parent state changes
 	virtual void setupNotifications();
+	virtual void setupIopConfiguration();
 
 	/// Action Methods
 	virtual void handleQueryIdentificationAction(QueryIdentification msg, Receive::Body::ReceiveRec transportData);
@@ -87,8 +88,9 @@ public:
 	virtual bool isRegistered();
 	virtual bool onRegistration();
 
-	void setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm);
-	void appendServiceUri(std::string service_uri, unsigned char major_version=1, unsigned char minor_version=0);
+	//void setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm);
+	//void appendServiceUri(std::string service_uri, unsigned char major_version=1, unsigned char minor_version=0);
+	void registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address);
 	template<class T>
 	void discover(std::string service_uri, void(T::*handler)(const std::string &, JausAddress &), T*obj, unsigned char major_version=1, unsigned char minor_version=255, unsigned short subsystem=65535)
 	{
@@ -139,10 +141,11 @@ protected:
 		}
 	};
 
-    /// References to parent FSMs
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
+	/// References to parent FSMs
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
+	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 
+	std::shared_ptr<iop::Component> cmp;
 	rclcpp::Logger logger;
 	typedef std::recursive_mutex mutex_type;
 	typedef std::unique_lock<mutex_type> lock_type;
@@ -150,10 +153,10 @@ protected:
 
 	// ros parameter
 	// 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 - 255: Reserved
-	int system_id;
+	uint8_t system_id;
 	/** Variables used for registration by subsystem or node **/
 	bool register_own_services;
-	Discovery_ReceiveFSM *p_discovery_fsm;
+	//Discovery_ReceiveFSM *p_discovery_fsm;
 	int64_t p_current_timeout;
 	bool p_first_ready;
 	bool p_is_registered;
@@ -184,7 +187,7 @@ protected:
 	std::map<unsigned short, unsigned int> p_discovery_srvs_stamps;  // subsystem ID, seconds of last update
 
 	void pDiscover(std::string service_uri, unsigned char major_version=1, unsigned char minor_version=0, unsigned short subsystem=65535);
-	std::map<int, std::string> p_system_id_map();
+	std::map<uint8_t, std::string> p_system_id_map();
 	void p_check_for_timeout_discovery_service();
 	ServiceRequests& p_get_service_request(JausAddress &discovery_service);
 };

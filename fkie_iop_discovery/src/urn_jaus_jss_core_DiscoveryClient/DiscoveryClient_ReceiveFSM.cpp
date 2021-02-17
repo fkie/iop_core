@@ -24,21 +24,22 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_DiscoveryClient/DiscoveryClient_ReceiveFSM.h"
 
 #include <algorithm>
-#include <fkie_iop_component/iop_component.h>
-#include <fkie_iop_component/iop_config.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
+#include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_component/string.hpp>
 #include <fkie_iop_component/time.hpp>
 
 
 using namespace JTS;
-using namespace urn_jaus_jss_core_Discovery;
 
 namespace urn_jaus_jss_core_DiscoveryClient
 {
 
-DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("DiscoveryClient")),
-  p_timer(std::chrono::seconds(15), std::bind(&DiscoveryClient_ReceiveFSM::pTimeoutCallback, this), false)
+
+DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("DiscoveryClient")),
+  p_timer(std::chrono::seconds(15), std::bind(&DiscoveryClient_ReceiveFSM::pTimeoutCallback, this), false),
+  p_ros_interface(cmp)
 {
 
 	/*
@@ -47,14 +48,15 @@ DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transpo
 	 * statemachine needs them.
 	 */
 	context = new DiscoveryClient_ReceiveFSMContext(*this);
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
 	this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	system_id = 4;
 	register_own_services = true;
 	TIMEOUT_DISCOVER = 5;
 	TIMEOUT_STANDBY = 15;
 	p_current_timeout = TIMEOUT_STANDBY;
-	p_discovery_fsm = NULL;
+	// p_discovery_fsm = NULL;
 	p_first_ready = true;
 	p_is_registered = false;
 	p_on_registration = false;
@@ -80,8 +82,33 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 	pEventsClient_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_DiscoveryClient_ReceiveFSM_Receiving_Ready", "EventsClient_ReceiveFSM");
 	registerNotification("Receiving_Ready", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving_Ready", "DiscoveryClient_ReceiveFSM");
 	registerNotification("Receiving", pEventsClient_ReceiveFSM->getHandler(), "InternalStateChange_To_EventsClient_ReceiveFSM_Receiving", "DiscoveryClient_ReceiveFSM");
-	iop::Config cfg("DiscoveryClient");
-	cfg.param("system_id", system_id, system_id, true, "", p_system_id_map());
+
+}
+
+void DiscoveryClient_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "DiscoveryClient");
+	cfg.declare_param<uint8_t>("system_id", system_id, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"ID of the system.",
+		"0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 – 255: Reserved");
+	cfg.declare_param<bool>("register_own_services", register_own_services, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"Register own services on DiscoveryService. If using with OCU this parameter should be set to false.",
+		"Default: true");
+	cfg.declare_param<int64_t>("timeout_discover_service", p_timeout_discover_service, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"DiscoveryService was not seen for this time all own services are registered again.",
+		"Default: 300 sec");
+	cfg.declare_param<int64_t>("query_timeout_discover", TIMEOUT_DISCOVER, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Send QueryIdentification while DiscoveryService was not discovered.",
+		"Default: 5 sec");
+	cfg.declare_param<int64_t>("query_timeout_standby", TIMEOUT_STANDBY, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Send QueryIdentification after DiscoveryService was discovered and services are registered.",
+		"Default: 15 sec");
+	cfg.param<uint8_t>("system_id", system_id, system_id, p_system_id_map(), true, "");//, p_system_id_map());
 	cfg.param("register_own_services", register_own_services, register_own_services, true);
 	cfg.param("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service);
 	cfg.param("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER);
@@ -94,12 +121,12 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 		RCLCPP_WARN(logger, "query_timeout_standby is configured to zero, increase to 15");
 		TIMEOUT_STANDBY = 15;
 	}
-	p_ros_interface.setup(*this);
+	p_ros_interface.setup(cmp, *this);
 	p_ros_interface.set_discovery_timeout(p_timeout_discover_service);
 	std::vector<std::string> v;
-	cfg.param("unicast_subsystems", v, v);
+	// TODO: cfg.param<std::vector<std::string>>("unicast_subsystems", v, v, true);
 	for(unsigned int i = 0; i < v.size(); i++) {
-		std::string jaus_addr_str = v[i];
+		std::string jaus_addr_str = iop::trim(v[i]);
 		// parsce jaus address
 		int p1, p2, p3;
 		int scan_result = std::sscanf(jaus_addr_str.c_str(), "%d.%d.%d", &p1, &p2, &p3);
@@ -120,13 +147,13 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 		pRegistrationFinished();
 	}
 	if (!p_is_registered) {
-		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Register services");
+		cmp->send_diagnostic(3, "Register services");
 	}
 }
 
-std::map<int, std::string> DiscoveryClient_ReceiveFSM::p_system_id_map()
+std::map<uint8_t, std::string> DiscoveryClient_ReceiveFSM::p_system_id_map()
 {
-	std::map<int, std::string> result;
+	std::map<uint8_t, std::string> result;
 	result[1] = "System";
 	result[2] = "Subsystem";
 	result[3] = "Node";
@@ -134,38 +161,40 @@ std::map<int, std::string> DiscoveryClient_ReceiveFSM::p_system_id_map()
 	return result;
 }
 
-void DiscoveryClient_ReceiveFSM::setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm)
-{
-	if (discovery_fsm != NULL) {
-		if (discovery_fsm->getSystemID() == TYPE_SUBSYSTEM) {
-			// only uses if it is defined as SUBSYSTEM
-			p_discovery_fsm = discovery_fsm;
-			for (unsigned int i = 0; i < p_own_uri_services.size(); i++) {
-				iop::DiscoveryServiceDef &service = p_own_uri_services[i];
-				p_discovery_fsm->registerService(service.minor_version,
-						service.major_version,
-						service.service_uri,
-						*jausRouter->getJausAddress());
-			}
-			pRegistrationFinished();
-		}
-	}
-}
+// void DiscoveryClient_ReceiveFSM::setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm)
+// {
+// 	if (discovery_fsm != NULL) {
+// 		if (discovery_fsm->getSystemID() == TYPE_SUBSYSTEM) {
+// 			// only uses if it is defined as SUBSYSTEM
+// 			p_discovery_fsm = discovery_fsm;
+// 			for (unsigned int i = 0; i < p_own_uri_services.size(); i++) {
+// 				iop::DiscoveryServiceDef &service = p_own_uri_services[i];
+// 				p_discovery_fsm->registerService(
+// 						service.service_uri,
+// 						service.minor_version,
+// 						service.major_version,
+// 						*jausRouter->getJausAddress());
+// 			}
+// 			pRegistrationFinished();
+// 		}
+// 	}
+// }
 
 void DiscoveryClient_ReceiveFSM::handleQueryIdentificationAction(QueryIdentification msg, Receive::Body::ReceiveRec transportData)
 {
-	if (p_discovery_fsm != NULL) {
-		throw std::runtime_error("we have a discovery service, it should respond");
-		RCLCPP_WARN(logger, "QueryIdentification received although discovery service defined!");
-		// TODO forward to discovery service
-		//p_discovery_fsm->sendReportIdentificationAction(msg, transportData);
-	} else if (register_own_services) {
+	// if (p_discovery_fsm != NULL) {
+	// 	throw std::runtime_error("we have a discovery service, it should respond");
+	// 	RCLCPP_WARN(logger, "QueryIdentification received although discovery service defined!");
+	// 	// TODO forward to discovery service
+	// 	//p_discovery_fsm->sendReportIdentificationAction(msg, transportData);
+	// } else
+	if (register_own_services) {
 		// reply with component name
 		int query_type = msg.getBody()->getQueryIdentificationRec()->getQueryType();
 		if (query_type == TYPE_COMPONENT) { // COMPONENT
 			JausAddress sender = transportData.getAddress();
 			ReportIdentification report_msg;
-			std::string name = iop::RosNode::get_instance().get_name();
+			std::string name = cmp->get_name();
 			std::size_t pos = name.find_last_of("/");
 			if (pos != std::string::npos) {
 				name.replace(0, pos+1, "");
@@ -186,7 +215,7 @@ void DiscoveryClient_ReceiveFSM::pRegistrationFinished()
 	p_is_registered = true;
 	RCLCPP_INFO(logger, "Service registration by discovery service finished!");
 	p_current_diagnostic_level = 0;
-	dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "Registration finished");
+	cmp->send_diagnostic(0, "Registration finished");
 	pCheckTimer();
 }
 
@@ -201,7 +230,7 @@ void DiscoveryClient_ReceiveFSM::pCheckTimer()
 				RCLCPP_DEBUG(logger, "max tries for discovery services reached, increase timeout");
 				timeoutts = TIMEOUT_STANDBY;
 				p_current_diagnostic_level = 1;
-				dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Not all services discovered");
+				cmp->send_diagnostic(1, "Not all services discovered");
 			}
 		}
 		in_discover = true;
@@ -210,7 +239,7 @@ void DiscoveryClient_ReceiveFSM::pCheckTimer()
 	if (p_current_timeout != timeoutts) {
 		if (!in_discover) {
 			p_current_diagnostic_level = 0;
-			dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "All services discovered");
+			cmp->send_diagnostic(0, "All services discovered");
 		}
 		if (p_current_timeout > timeoutts) {
 			RCLCPP_INFO(logger, "reduce timeout to %d sec", timeoutts);
@@ -282,16 +311,16 @@ std::vector<JausAddress> DiscoveryClient_ReceiveFSM::pGetServices(ReportServiceL
 	return result;
 }
 
-void DiscoveryClient_ReceiveFSM::appendServiceUri(std::string service_uri, unsigned char major_version, unsigned char minor_version)
+void DiscoveryClient_ReceiveFSM::registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address)
 {
 	iop::DiscoveryServiceDef service;
-	service.service_uri = service_uri;
-	service.minor_version = minor_version;
-	service.major_version = major_version;
+	service.service_uri = serviceuri;
+	service.minor_version = minver;
+	service.major_version = maxver;
 	if ( std::find(p_own_uri_services.begin(), p_own_uri_services.end(), service) != p_own_uri_services.end() ) {
-		RCLCPP_INFO(logger, "	%s already known", service_uri.c_str());
+		RCLCPP_INFO(logger, "	%s already known", serviceuri.c_str());
 	} else {
-		RCLCPP_DEBUG(logger, "appendServiceUri: %s for registration", service_uri.c_str());
+		RCLCPP_DEBUG(logger, "append service URI: %s for registration", serviceuri.c_str());
 		p_own_uri_services.push_back(service);
 		if (register_own_services) {
 			p_is_registered = false;
@@ -305,7 +334,7 @@ void DiscoveryClient_ReceiveFSM::appendServiceUri(std::string service_uri, unsig
 			ssid = addr.getSubsystemID();
 		}
 		if (ssid == addr.getSubsystemID()) {
-			if (p_discover_services[i].service.service_uri.compare(service_uri) == 0) {
+			if (p_discover_services[i].service.service_uri.compare(serviceuri) == 0) {
 				// the service was found, forward the address to the callback
 				iop::DiscoveryServiceDef service = p_discover_services[i].service;
 				RCLCPP_DEBUG(logger, "local service '%s' discovered @%s", service.service_uri.c_str(), addr.str().c_str());
@@ -732,9 +761,9 @@ void DiscoveryClient_ReceiveFSM::sendRegisterServicesAction(ReportIdentification
 		}
 	} else if (query_type == TYPE_SYSTEM) {
 		// add a discovery service for ReportSubsystemLIst
-		if (p_discovery_fsm != NULL) {
-			p_discovery_fsm->registerSubsystem(transportData.getAddress());
-		}
+		// if (p_discovery_fsm != NULL) {
+		// 	p_discovery_fsm->registerSubsystem(transportData.getAddress());
+		// }
 	}
 }
 
@@ -847,7 +876,7 @@ void DiscoveryClient_ReceiveFSM::query_identification(int query_type, jUnsignedS
 	RCLCPP_DEBUG(logger, "send QueryIdentification to subsystem.node.comp: %i.%d.%d of type %d, next query in %i sec",
 			subsystem, (int)node, (int)component, query_type, p_current_timeout);
 	if ((p_current_diagnostic_level == 0 || p_current_diagnostic_level == 3) && (!p_is_registered || pHasToDiscover(65535))) {
-		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Discover services");
+		cmp->send_diagnostic(3, "Discover services");
 	}
 	sendJausMessage(msg,JausAddress(subsystem, node, component)); //0xFFFF, 0xFF, 0xFF
 }

@@ -46,6 +46,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collections;
 
 /**
  * 
@@ -243,32 +244,53 @@ public class ServiceDefGenerator
                     StringBuffer smArguments = new StringBuffer();
 					StringBuffer smParentList = new StringBuffer();
                     StringBuffer smFSMList = new StringBuffer();
+                    StringBuffer smAssignmentServiceList = new StringBuffer();
 
                     // Get the list of parent services
                     Vector<Reference> parentList = new Vector<Reference>();
                     org.jts.codegenerator.support.InheritanceHelper.getParentServiceList( 
                                        codeType, sSet, sDef, parentList);
                                        
+                    String parentServiceType = "";
+                    String parentServiceVar = "";
                     // For each parent reference, add an include and constructor pointer
+                    Collections.reverse(parentList);
                     for (Reference ref : parentList)
-                    {                   
+                    {
+                        if (parentServiceType.isEmpty()) {
+                            parentServiceType = ref.namespace + "::" + ref.name + "*";
+                            parentServiceVar = "p" + ref.name;
+                            smAssignmentList.append("\t\tpParentService = static_cast<" + parentServiceType + ">(parentService);");
+                            smAssignmentList.append(System.getProperty("line.separator"));
+                        }
 						// Add this service to the constructor and include list
 						smParentList.append(", " + ref.namespace + "::" + ref.name + "* p" + ref.name);
 						smIncludeList.append("#include \"" + ref.namespace + "/" + ref.name + ".h\"");
 						smIncludeList.append(System.getProperty("line.separator"));
 					}
+                    if (parentServiceType.isEmpty()) {
+                        parentServiceType = "JTS::Service*";
+                    }
 
                     for (String smName : pbGen.getStateMachineNames())
                     {
+                        StringBuffer getParentStr = new StringBuffer();
+                        getParentStr.append("this");
                         // Get any parent FSMs and restructure into a parameter list
 						Vector<Reference> fsmList = new Vector<Reference>();
 						org.jts.codegenerator.support.InheritanceHelper.getParentFSMList( 
 															codeType, smName, sSet, sDef, fsmList);
 				        StringBuffer fsmParameters = new StringBuffer();
+                        // IOP: add component parameter to creation list
+                        if (smName.contains("_ReceiveFSM")) {
+                            fsmParameters.append("cmp");
+                        }
+                        Collections.reverse(fsmList);
                         for (Reference ref : fsmList)
                         {
+                            getParentStr.append("->getParent()");
                             if (fsmParameters.length() != 0) fsmParameters.append(", ");
-                            fsmParameters.append("p" + ref.owner + "->p" + ref.name);
+                            fsmParameters.append(getParentStr.toString() + "->p" + ref.name);
                         }
 															
 				        // Each FSM is stored as a member variable for the service
@@ -276,16 +298,48 @@ public class ServiceDefGenerator
                         smVariableList.append(System.getProperty("line.separator"));
                         smIncludeList.append("#include \"" + smName + ".h\"");
                         smIncludeList.append(System.getProperty("line.separator"));
-                        smDestructorList.append("\tdelete p" + smName + ";" );
+                        smDestructorList.append("\t\tdelete p" + smName + ";" );
                         smDestructorList.append(System.getProperty("line.separator"));
                         
                         // When constructing each FSM, we also need to pass a pointer to all parent FSMs
-                        smAssignmentList.append("\tp" + smName + " = new " + smName + "(" + fsmParameters + ");");
+                        smAssignmentList.append("\t\tp" + smName + " = new " + smName + "(" + fsmParameters + ");");
                         smAssignmentList.append(System.getProperty("line.separator"));
-                        smAssignmentList.append("\tp" + smName + "->setHandlers(ieHandler, jausRouter);");
+                        smAssignmentList.append("\t\tp" + smName + "->setHandlers(ieHandler, jausRouter);");
                         smAssignmentList.append(System.getProperty("line.separator"));
-                        smAssignmentList.append("\tp" + smName + "->setupNotifications();");
+                        smAssignmentList.append("\t\tp" + smName + "->setupNotifications();");
                         smAssignmentList.append(System.getProperty("line.separator"));
+                        // IOP: only _ReceiveFSM has setupIopConfiguration()
+                        if (smName.contains("_ReceiveFSM")) {
+                            smAssignmentList.append("\t\tp" + smName + "->setupIopConfiguration();");
+                            smAssignmentList.append(System.getProperty("line.separator"));
+                        }
+                    }
+
+                    // IOP: setup service information
+                    smAssignmentServiceList.append("\tthis->m_URN = \"" + sDef.getId() + "\";");
+                    smAssignmentServiceList.append(System.getProperty("line.separator"));
+                    smAssignmentServiceList.append("\tthis->m_name = \"" + Util.upperCaseFirstLetter(serviceName) + "\";");
+                    smAssignmentServiceList.append(System.getProperty("line.separator"));
+                    String[] versionArray = sDef.getVersion().split(".");
+                    if (versionArray.length == 2) {
+                        smAssignmentServiceList.append("\tthis->m_version_manjor = " + Integer.parseInt(versionArray[0]) + ";");
+                        smAssignmentServiceList.append(System.getProperty("line.separator"));
+                        smAssignmentServiceList.append("\tthis->m_version_minor = " + Integer.parseInt(versionArray[1]) + ";");
+                        smAssignmentServiceList.append(System.getProperty("line.separator"));
+                    }
+                    if (sDef.getReferences() != null && sDef.getReferences().getInheritsFrom() != null) {
+                        smAssignmentServiceList.append("\tthis->m_uri_inherits_from = \"" + sDef.getReferences().getInheritsFrom().getId() + "\";");
+                        smAssignmentServiceList.append(System.getProperty("line.separator"));
+                        smAssignmentServiceList.append("\tthis->m_name_inherits_from = \"" + Util.upperCaseFirstLetter(sDef.getReferences().getInheritsFrom().getName()) + "\";");
+                        smAssignmentServiceList.append(System.getProperty("line.separator"));
+                    
+                        String[] versionInhArray = sDef.getReferences().getInheritsFrom().getVersion().split(".");
+                        if (versionInhArray.length == 2) {
+                            smAssignmentServiceList.append("\tthis->m_inherits_from_version_manjor = " + Integer.parseInt(versionInhArray[0]) + ";");
+                            smAssignmentServiceList.append(System.getProperty("line.separator"));
+                            smAssignmentServiceList.append("\tthis->m_inherits_from_min_version_minor = " + Integer.parseInt(versionInhArray[1]) + ";");
+                            smAssignmentServiceList.append(System.getProperty("line.separator"));
+                        }
                     }
 
                     // Specify the transport type...
@@ -293,7 +347,7 @@ public class ServiceDefGenerator
 
                     // Set-up the template replacement hash table.
                     replaceTable.put("%statemachine_variable_list%", smVariableList.toString());
-					replaceTable.put("%parent_service_list%", smParentList.toString());
+					//replaceTable.put("%parent_service_list%", smParentList.toString());
                     replaceTable.put("%statemachine_args%", smArguments.toString());
                     replaceTable.put("%statemachine_include_list%", smIncludeList.toString());
                     replaceTable.put("%statemachine_destruction_list%", smDestructorList.toString());
@@ -301,6 +355,8 @@ public class ServiceDefGenerator
                     replaceTable.put("%start_state_actions%", pbGen.entryActionCalls.toString());
                     replaceTable.put("%transition_calls%", getTransitionCallsWithParameters(pbGen, srcDir));
 					replaceTable.put("%default_transition_calls%", pbGen.defaultCalls.toString());
+                    replaceTable.put("%service_assignment_list%", smAssignmentServiceList.toString());
+                    replaceTable.put("%parent_service_type%", parentServiceType);
 
                     svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));;
                     for (String msg : msgInputList)
@@ -316,6 +372,8 @@ public class ServiceDefGenerator
                         svcMsgList.append(System.getProperty("line.separator"));
                     }
                     replaceTable.put("%service_message_list%", svcMsgList.toString());
+                    // IOP: add service name prefix
+                    replaceTable.put("%statemachine_name_prefix%", sDef.getName() + "Service");
                 }
                 catch (Exception e)
                 {
@@ -404,7 +462,8 @@ public class ServiceDefGenerator
 					libs.add( parentList.get(i-1).namespace + "/lib/" + parentList.get(i-1).name );
 				
                 /// Generate the Sconstruct File
-                Util.writeContents(new File(srcDir + "/Sconstruct"), sconGen.generateLibrary(new File(srcDir), Util.upperCaseFirstLetter(serviceName), libs));
+                // IOP: we need no sconstruct in ROS environment
+                // Util.writeContents(new File(srcDir + "/Sconstruct"), sconGen.generateLibrary(new File(srcDir), Util.upperCaseFirstLetter(serviceName), libs));
             }
             catch (Exception e)
             {

@@ -42,11 +42,17 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <set>
 #include <queue>
+#include <memory>
 
 #include "JausUtils.h"
 #include "EventReceiver.h"
+#include "Transport/JausTransport.h"
 #include "Transport/OS.h"
 #include "InternalEvents/InternalEvent.h"
+
+namespace iop{
+	class Component;
+}
 
 namespace JTS
 {
@@ -56,12 +62,23 @@ class DllExport Service : public EventReceiver
 public:
 	Service();
   	virtual ~Service();
+	bool isInitialized();
 
 	virtual bool processTransitions(JTS::InternalEvent* ie) = 0;
 	virtual bool defaultTransitions(JTS::InternalEvent* ie) = 0;
+	virtual void init_service(std::shared_ptr<iop::Component>, JTS::JausRouter* jausRouter, JTS::Service* parentService) = 0;
+	// The registerService() will be overwritten by Discovery service
+	virtual void registerService(std::string /*serviceuri*/, unsigned char /*minver*/, unsigned char /*maxver*/, JausAddress /*address*/) {}
 
 	const std::string getURN() const;
-	
+	const std::string getName() const;
+	unsigned char getVersionManjor() const;
+	unsigned char getVersionMinor() const;
+	const std::string getURNInheritsFrom() const;
+	const std::string getNameInheritsFrom() const;
+	unsigned char getVersionManjorInheritsFrom() const;
+	unsigned char getVersionMinorInheritsFrom() const;
+
 	const std::set<jUnsignedShortInteger> &getInputMessageList() const;
 	const std::set<jUnsignedShortInteger> &getOutputMessageList() const;
 
@@ -70,9 +87,17 @@ protected:
 
 	std::set<jUnsignedShortInteger> m_InputMessageList;
 	std::set<jUnsignedShortInteger> m_OutputMessageList;
-	
-	std::string m_URN;
+
 	DeVivo::Junior::JrMutex mutex;
+	bool p_initialized;
+	std::string m_name;  // <service_def name<=
+	std::string m_URN;  //  <service_def id<=
+	unsigned char m_version_manjor;  //  <service_def version<=
+	unsigned char m_version_minor;    //  <service_def version<=
+	std::string m_uri_inherits_from;  //  <inherits_from id<=
+	std::string m_name_inherits_from;  //  <inherits_from name<=
+	unsigned char m_inherits_from_version_manjor;  //  <inherits_from version<=
+	unsigned char m_inherits_from_min_version_minor;  //  <inherits_from version<=
 };
 
 }

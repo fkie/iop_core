@@ -34,18 +34,20 @@ along with this program; or you can read the full license at
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
 
-#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
+#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
 
+#include "AccessControlClient_ReceiveFSM_sm.h"
 #include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/iop_component.hpp>
+
 #include <functional>
 #include <fkie_iop_msgs/msg/jaus_address.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include "fkie_iop_accesscontrol/RemoteComponent.h"
 #include "fkie_iop_accesscontrol/RemoteComponentList.h"
 #include <fkie_iop_component/timer.hpp>
-#include "AccessControlClient_ReceiveFSM_sm.h"
 
 namespace urn_jaus_jss_core_AccessControlClient
 {
@@ -60,11 +62,12 @@ public:
 	static unsigned char ACCESS_STATE_TIMEOUT;
 	static unsigned char ACCESS_STATE_INSUFFICIENT_AUTHORITY;
 
-	AccessControlClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM);
+	AccessControlClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
 	virtual ~AccessControlClient_ReceiveFSM();
 
 	/// Handle notifications on parent state changes
 	virtual void setupNotifications();
+	virtual void setupIopConfiguration();
 
 	/// Action Methods
 	virtual void handleConfirmControlAction(ConfirmControl msg, Receive::Body::ReceiveRec transportData);
@@ -110,17 +113,18 @@ public:
 
 protected:
 	/// References to parent FSMs
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
+	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 
+	std::shared_ptr<iop::Component> cmp;
 	rclcpp::Logger logger;
+	iop::Timer p_timer;
+	iop::RemoteComponentList p_remote_components;
 	std::vector<std::function<void (JausAddress &, unsigned char code)> > p_reply_handler;
 	std::map <unsigned int, std::vector<std::function<void (JausAddress &, unsigned char code)> > > p_reply_callbacks;  // unsigned int -> JausAddress::get(), list with callbacks to this address
 	std::function<void (JausAddress &, unsigned char code)> p_class_access_reply_callback;
 	JausAddress p_emergency_address;
 	jUnsignedByte p_default_timeout;
-	iop::RemoteComponentList p_remote_components;
-	iop::Timer p_timer;
 	JTS::InternalEvent *p_timeout_event;
 	QueryControl p_query_control;
 	rclcpp::Publisher<fkie_iop_msgs::msg::JausAddress>::SharedPtr p_pub_current_controller;

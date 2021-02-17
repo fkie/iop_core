@@ -14,7 +14,7 @@ iop_init()
 ```
 
 ####  : COMPONENT_ID is set to 0 by default
-This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. This ID is also hard coded in the `main.cpp` and generated path of the component. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `fkie_iop_primitive_driver` it is `build/iop/urn.jaus.jss.mobility/fkie_iop_primitive_driver/jaus/Fkie_iop_primitive_driver_0`
+This ID is used by JTS to create a component. We use the sources of this component to create our ROS/IOP-Bridge plugin. The auto-generated source-code files of a component are located in the `build` folder of the ROS workspace. For `fkie_iop_primitive_driver` it is `build/fkie_iop_primitive_driver/jaus/fkie_iop_primitive_driver`
 
 
 ### `iop_export_service` Parameter description
@@ -47,6 +47,7 @@ set(dependencies
 ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
+pluginlib_export_plugin_description_file(fkie_iop_component plugin_iop.xml)
 
 ament_package()
 ```
@@ -69,7 +70,6 @@ iop_code_generator(
   OVERRIDES
     include/urn_jaus_jss_mobility_PrimitiveDriver/PrimitiveDriver_ReceiveFSM.h
     src/urn_jaus_jss_mobility_PrimitiveDriver/PrimitiveDriver_ReceiveFSM.cpp
-    src/main.cpp
   EXTERN_SERVICES
     urn_jaus_jss_core_AccessControl
     urn_jaus_jss_core_DiscoveryClient

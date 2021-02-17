@@ -22,9 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_ListManager/ListManager_ReceiveFSM.h"
-#include <fkie_iop_component/iop_config.h>
-#include <fkie_iop_component/ros_node.hpp>
-
+#include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 
 
 using namespace JTS;
@@ -34,8 +33,9 @@ namespace urn_jaus_jss_core_ListManager
 
 
 
-ListManager_ReceiveFSM::ListManager_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Management::Management_ReceiveFSM* pManagement_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("ListManager"))
+ListManager_ReceiveFSM::ListManager_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Management::Management_ReceiveFSM* pManagement_ReceiveFSM, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("ListManager")),
+  p_list(logger)
 {
 
 	/*
@@ -45,10 +45,11 @@ ListManager_ReceiveFSM::ListManager_ReceiveFSM(urn_jaus_jss_core_Transport::Tran
 	 */
 	context = new ListManager_ReceiveFSMContext(*this);
 
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
-	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
-	this->pAccessControl_ReceiveFSM = pAccessControl_ReceiveFSM;
 	this->pManagement_ReceiveFSM = pManagement_ReceiveFSM;
+	this->pAccessControl_ReceiveFSM = pAccessControl_ReceiveFSM;
+	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 }
 
 
@@ -85,7 +86,12 @@ void ListManager_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pManagement_ReceiveFSM->getHandler(), "InternalStateChange_To_Management_ReceiveFSM_Receiving_Ready", "ListManager_ReceiveFSM");
 	registerNotification("Receiving", pManagement_ReceiveFSM->getHandler(), "InternalStateChange_To_Management_ReceiveFSM_Receiving", "ListManager_ReceiveFSM");
 
-	iop::Config cfg("ListManager");
+}
+
+
+void ListManager_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "ListManager");
 }
 
 void ListManager_ReceiveFSM::deleteElementAction(DeleteElement msg)

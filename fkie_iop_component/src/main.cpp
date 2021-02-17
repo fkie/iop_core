@@ -25,30 +25,25 @@ along with this program; or you can read the full license at
 #include <signal.h>
 #include <rclcpp/rclcpp.hpp>
 #include "Transport/OS.h"
-#include "fkie_iop_component/ros_node.hpp"
-#include "fkie_iop_component/iop_component.h"
+#include "fkie_iop_component/iop_component.hpp"
 
 
-int main(int /* argc */, char* /*argv*/ [] )
+int main(int argc, char* argv [] )
 {
     // Instantiate the component and start it.
-//     try
-//     {
-        auto rosnode = std::make_shared<iop::RosNode>("iop_component_default", "");
-        rosnode->init_component(126, 0x40, 81);
-
-        // Wait until signaled to exit
-        //    exit_signal.wait();
-        rclcpp::spin(rosnode);
-        //ros::spin();
+    try
+    {
+        rclcpp::init(argc, argv);
+        auto component = std::make_shared<iop::Component>("iop_component_default", "");
+        component->init(126, 0x40, 81);
+        rclcpp::spin(component);
         // Shutdown the component and threads
-        rosnode->get_component()->shutdown_component();
+        component->shutdown_component();
         rclcpp::shutdown();
-
         // Give a little time for proper shutdown
         DeVivo::Junior::JrSleep(100);
-//     } catch (std::runtime_error &e) {
-//         RCLCPP_ERROR("Failed to start IOP component: %s", e.what());
-//         exit(1);
-//     }
+    } catch (std::runtime_error &e) {
+        std::cerr << "Failed to start IOP component: " << e.what() << std::endl;
+        exit(1);
+    }
 }

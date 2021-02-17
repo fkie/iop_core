@@ -46,9 +46,49 @@ Service::~Service()
 {
 }
 
+bool Service::isInitialized()
+{
+	return p_initialized;
+}
+
 const std::string Service::getURN() const
 {
 	return m_URN;
+}
+
+const std::string Service::getName() const
+{
+	return m_name;
+}
+
+unsigned char Service::getVersionManjor() const
+{
+	return m_version_manjor;
+}
+
+unsigned char Service::getVersionMinor() const
+{
+	return m_version_minor;
+}
+
+const std::string Service::getURNInheritsFrom() const
+{
+	return m_uri_inherits_from;
+}
+
+const std::string Service::getNameInheritsFrom() const
+{
+	return m_name_inherits_from;
+}
+
+unsigned char Service::getVersionManjorInheritsFrom() const
+{
+	return m_inherits_from_version_manjor;
+}
+
+unsigned char Service::getVersionMinorInheritsFrom() const
+{
+	return m_inherits_from_min_version_minor;
 }
 
 const std::set<jUnsignedShortInteger> &Service::getInputMessageList() const

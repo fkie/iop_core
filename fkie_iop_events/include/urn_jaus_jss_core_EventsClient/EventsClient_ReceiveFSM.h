@@ -42,6 +42,8 @@ along with this program; or you can read the full license at
 #include <fkie_iop_events/InternalEventClient.h>
 #include <fkie_iop_events/EventHandlerInterface.h>
 #include "EventsClient_ReceiveFSM_sm.h"
+#include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 namespace urn_jaus_jss_core_EventsClient
 {
@@ -49,11 +51,12 @@ namespace urn_jaus_jss_core_EventsClient
 class DllExport EventsClient_ReceiveFSM : public JTS::StateMachine
 {
 public:
-	EventsClient_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
+	EventsClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
 	~EventsClient_ReceiveFSM();
 
 	/// Handle notifications on parent state changes
 	virtual void setupNotifications();
+	virtual void setupIopConfiguration();
 
 	/// Action Methods
 	virtual void handleCommandEventAction(CommandEvent msg, Receive::Body::ReceiveRec transportData);
@@ -102,8 +105,9 @@ protected:
 
     /// References to parent FSMs
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
+	std::shared_ptr<iop::Component> cmp;
+	rclcpp::Logger logger;
 	std::vector<iop::InternalEventClient *> p_events;
-	rclcpp::Logger events_logger;
 	jUnsignedByte p_request_id_idx;
 	typedef std::recursive_mutex mutex_type;
 	typedef std::unique_lock<mutex_type> lock_type;

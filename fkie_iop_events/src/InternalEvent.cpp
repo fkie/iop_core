@@ -23,14 +23,14 @@ along with this program; or you can read the full license at
 
 #include <fkie_iop_events/InternalEvent.h>
 #include <fkie_iop_events/InternalEventList.h>
-#include <fkie_iop_component/ros_node.hpp>
 
 using namespace iop;
 
-InternalEvent::InternalEvent(InternalEventList* event_list)
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list)
+: logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
+	std::cout << "IE setup" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -45,13 +45,15 @@ InternalEvent::InternalEvent(InternalEventList* event_list)
 	p_error_msg = "Event was not initialized";
 	p_initialized = false;
 	p_last_report = NULL;
+	std::cout << "IE setup end" << std::endl;
 }
 
-InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate)
+InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate)
 // : InternalEvent(event_list)  warning: delegating constructors only available with -std=c++11 or -std=gnu++11
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+: logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
+	std::cout << "IE setup2" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -73,13 +75,15 @@ InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte reques
 	p_last_report = NULL;
 	p_timer.set_rate(event_rate);
 	p_is_event_supported(query_msg_id, event_type, event_rate);
+	std::cout << "IE setup2 end" << std::endl;
 }
 
-InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor)
+InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor)
 //: InternalEvent(event_list, request_id, query_msg_id) warning: delegating constructors only available with -std=c++11 or -std=gnu++11
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("Events")),
+: logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
+	std::cout << "IE setup3" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -113,6 +117,7 @@ InternalEvent::InternalEvent(InternalEventList* event_list, jUnsignedByte event_
 		update(event_id, p_query_msg, query_msg_id, requestor, request_id, event_type, event_rate);
 		p_initialized = true;
 	}
+	std::cout << "IE setup3 end" << std::endl;
 }
 
 InternalEvent::~InternalEvent()
@@ -156,7 +161,7 @@ void InternalEvent::new_report_available(JTS::Message *report, bool send_if_poss
 void InternalEvent::send_last_report(){
 	if (p_last_report != NULL) {
 		if (p_event_type == 1) {
-			RCLCPP_DEBUG(events_logger, "  send available report: %#x", p_last_report->getID());
+			RCLCPP_DEBUG(logger, "  send available report: %#x", p_last_report->getID());
 			p_send_as_event(*p_last_report, requestor);
 			p_last_report = NULL;
 		}
@@ -245,7 +250,7 @@ void InternalEvent::p_send_as_event(JTS::Message &report, JausAddress &address)
 {
 	const jUnsignedInteger len = report.getSize();
 	if (len > 65536) {
-		RCLCPP_WARN(events_logger, "large message detected, size: %d", len);
+		RCLCPP_WARN(logger, "large message detected, size: %d", len);
 	}
 	unsigned char* bytes = new unsigned char[len];
 	report.encode(bytes);
@@ -271,7 +276,7 @@ void InternalEvent::timeout()
 void InternalEvent::p_timer_stop()
 {
 	if (p_timer.is_running()) {
-		RCLCPP_DEBUG(events_logger, "stop event timer for report %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
+		RCLCPP_DEBUG(logger, "stop event timer for report %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
 		p_timer.stop();
 	}
 }
@@ -280,7 +285,7 @@ void InternalEvent::p_timer_start()
 {
 	if (p_event_list->get_report(p_query_msg_id) != NULL) {
 		if (p_event_rate > 0) {
-			RCLCPP_DEBUG(events_logger, "start event timer for %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
+			RCLCPP_DEBUG(logger, "start event timer for %#x with rate %.2f to %s", p_query_msg_id, p_event_rate, requestor.str().c_str());
 			p_timer.start();
 		}
 	}

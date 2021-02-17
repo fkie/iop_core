@@ -33,11 +33,13 @@ along with this program; or you can read the full license at
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
 
-#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 #include "urn_jaus_jss_core_Events/Events_ReceiveFSM.h"
+#include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
 
 #include "AccessControl_ReceiveFSM_sm.h"
+#include <rclcpp/rclcpp.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 #include <std_msgs/msg/bool.hpp>
 #include <fkie_iop_component/timer.hpp>
@@ -48,11 +50,12 @@ namespace urn_jaus_jss_core_AccessControl
 class DllExport AccessControl_ReceiveFSM : public JTS::StateMachine
 {
 public:
-	AccessControl_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM);
+	AccessControl_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
 	virtual ~AccessControl_ReceiveFSM();
 
 	/// Handle notifications on parent state changes
 	virtual void setupNotifications();
+	virtual void setupIopConfiguration();
 
 	/// Action Methods
 	virtual void initAction();
@@ -87,20 +90,22 @@ public:
 	AccessControl_ReceiveFSMContext *context;
 
 protected:
+	/// References to parent FSMs
+	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
+	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
+
+	std::shared_ptr<iop::Component> cmp;
 	rclcpp::Logger logger;
 	iop::Timer p_timer;
 	JausAddress p_current_controller;
-	jUnsignedByte p_current_authority;
-	jUnsignedByte p_default_authority;
-	int p_default_timeout;
+	uint8_t p_current_authority;
+	uint8_t p_default_authority;
+	int64_t p_default_timeout;
 	bool p_ros_available;
 	std::set<unsigned int> p_emergency_address;
 	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_is_controlled_publisher;
 	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_is_control_available;
 	rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr p_sub_control_available;
-    /// References to parent FSMs
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
-	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
 
 	JTS::InternalEvent* p_timeout_event;
 

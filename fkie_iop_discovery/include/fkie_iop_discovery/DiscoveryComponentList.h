@@ -35,7 +35,7 @@ class DiscoveryComponentList {
 public:
 	/**
 	 * :param timeout: after this timeout a component will be removed on access or update. Zero disables timeout. */
-	DiscoveryComponentList(int64_t timeout=60);
+	DiscoveryComponentList(rclcpp::Logger logger, int64_t timeout=60);
 	void set_timeout(int64_t timeout);
 
 	bool add_service(JausAddress discovery_service, JausAddress component, std::string service_uri, unsigned char major_version, unsigned char minor_version=255);

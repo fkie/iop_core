@@ -38,7 +38,7 @@ namespace iop
 
 class RemoteComponentList {
 public:
-	RemoteComponentList(int64_t default_timeout=5);
+	RemoteComponentList(rclcpp::Logger& logger, int64_t default_timeout=5);
 	~RemoteComponentList();
 
 	bool create(JausAddress address, jUnsignedByte authority);

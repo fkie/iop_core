@@ -37,7 +37,7 @@ class RemoteComponent {
 
 public:
 	/** A */
-	RemoteComponent(JausAddress address, jUnsignedByte authority, int64_t timeout);
+	RemoteComponent(rclcpp::Logger& logger, JausAddress address, jUnsignedByte authority, int64_t timeout);
 	~RemoteComponent();
 
 	bool operator==(RemoteComponent &value);

@@ -20,6 +20,5 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <fkie_iop_component plugin="${prefix}/plugin_iop.xml" />
   </export>
 </package>

@@ -33,7 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef ADDRESS_H
 #define ADDRESS_H
 
-#include <stdio.h>
 #include "JausUtils.h"
 #include "Transport/OS.h"
 

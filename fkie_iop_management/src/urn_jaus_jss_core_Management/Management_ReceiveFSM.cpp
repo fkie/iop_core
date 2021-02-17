@@ -22,9 +22,8 @@ along with this program; or you can read the full license at
 
 
 #include "urn_jaus_jss_core_Management/Management_ReceiveFSM.h"
-
-#include <fkie_iop_component/iop_config.h>
-
+#include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_component/iop_config.hpp>
 
 using namespace JTS;
 
@@ -33,8 +32,8 @@ namespace urn_jaus_jss_core_Management
 
 
 
-Management_ReceiveFSM::Management_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("Management"))
+Management_ReceiveFSM::Management_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("Management"))
 {
 
 	/*
@@ -45,9 +44,10 @@ Management_ReceiveFSM::Management_ReceiveFSM(urn_jaus_jss_core_Transport::Transp
 	context = new Management_ReceiveFSMContext(*this);
 //	context->setDebugFlag(true);
 
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
-	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
 	this->pAccessControl_ReceiveFSM = pAccessControl_ReceiveFSM;
+	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	p_state = 0;
 }
 
@@ -78,7 +78,11 @@ void Management_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving_Ready", pAccessControl_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControl_ReceiveFSM_Receiving_Ready", "Management_ReceiveFSM");
 	registerNotification("Receiving", pAccessControl_ReceiveFSM->getHandler(), "InternalStateChange_To_AccessControl_ReceiveFSM_Receiving", "Management_ReceiveFSM");
 
-	iop::Config cfg("Management");
+}
+
+void Management_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "Management");
 	p_pub_emergency = cfg.create_publisher<std_msgs::msg::Bool>("is_emergency", 5);
 	p_pub_ready = cfg.create_publisher<std_msgs::msg::Bool>("is_ready", 5);
 	pEvents_ReceiveFSM->get_event_handler().register_query(QueryStatus::ID);

@@ -239,12 +239,12 @@ class ServiceSet(object):
 
 outfile = argv[1]
 service_set_name = argv[2]
-service_set_id = argv[3]
+service_set_id = '0'
 ref_dissolver = RefDissolver()
 service_set = ServiceSet(service_set_name, service_set_id, ref_dissolver)
-for srcfile in argv[4:]:
+for srcfile in argv[3:]:
   ref_dissolver.add_message_set(srcfile)
-for srcfile in argv[4:]:
+for srcfile in argv[3:]:
   if os.path.isfile(srcfile):
       service_set.append(srcfile)
 service_set.write(outfile)

@@ -24,14 +24,14 @@ along with this program; or you can read the full license at
 
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
 #include <fkie_iop_events/InternalEventClient.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_EventsClient;
 
 
-InternalEventClient::InternalEventClient(urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM& parent, iop::EventHandlerInterface& handler, jUnsignedByte request_id, JTS::Message &query_msg, JausAddress address, jUnsignedByte event_type, double rate)
-: events_logger(iop::RosNode::get_instance().get_logger().get_child("EventsClient")),
+InternalEventClient::InternalEventClient(rclcpp::Logger& logger, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM& parent, iop::EventHandlerInterface& handler, jUnsignedByte request_id, JTS::Message &query_msg, JausAddress address, jUnsignedByte event_type, double rate)
+: logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEventClient::timeout, this), false)
 {
 	p_parent = &parent;
@@ -49,7 +49,7 @@ InternalEventClient::InternalEventClient(urn_jaus_jss_core_EventsClient::EventsC
 	p_canceled = false;
 	p_handler.push_back(&handler);
 
-	RCLCPP_DEBUG(events_logger, "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)event_type, query_msg.getID(), p_remote.str().c_str(), rate, p_request_id);
+	RCLCPP_DEBUG(logger, "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)event_type, query_msg.getID(), p_remote.str().c_str(), rate, p_request_id);
 	QueryEventTimeout query_timeout;
 	p_parent->sendJausMessage(query_timeout, p_remote);
 	jUnsignedInteger len = query_msg.getSize();
@@ -107,7 +107,7 @@ void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEven
 {
 	if (reporter == p_remote) {
 		jUnsignedByte timeout = msg.getBody()->getReportTimoutRec()->getTimeout();
-		RCLCPP_DEBUG(events_logger, "update timeout %d min for event %d with query=%#x to %s, request_id: %d", timeout, p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		RCLCPP_DEBUG(logger, "update timeout %d min for event %d with query=%#x to %s, request_id: %d", timeout, p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		if (timeout != p_timeout) {
 			if (p_timer.is_running()) {
 				p_timer.stop();
@@ -124,7 +124,7 @@ void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEven
 bool InternalEventClient::handle_event(urn_jaus_jss_core_EventsClient::Event &msg, JausAddress &reporter)
 {
 	if (reporter == p_remote && p_event_id == msg.getBody()->getEventRec()->getEventID()) {
-		RCLCPP_DEBUG(events_logger, "received event %d for query=%#x from %s", p_event_id, p_query_msg_id, p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "received event %d for query=%#x from %s", p_event_id, p_query_msg_id, p_remote.str().c_str());
 		for (unsigned int i = 0; i < p_handler.size(); i++) {
 			p_handler[i]->event(reporter, p_query_msg_id, msg.getBody()->getEventRec()->getReportMessage()->getLength(), msg.getBody()->getEventRec()->getReportMessage()->getData());
 		}
@@ -137,7 +137,7 @@ bool InternalEventClient::handle_confirm(urn_jaus_jss_core_EventsClient::Confirm
 {
 	if (reporter == p_remote && p_request_id == msg.getBody()->getConfirmEventRequestRec()->getRequestID()) {
 		p_event_id = msg.getBody()->getConfirmEventRequestRec()->getEventID();
-		RCLCPP_DEBUG(events_logger, "event %d confirmed with query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		RCLCPP_DEBUG(logger, "event %d confirmed with query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		p_timer_start();
 		if (p_wait_for_cancel) {
 			p_canceled = true;
@@ -157,7 +157,7 @@ bool InternalEventClient::handle_reject(urn_jaus_jss_core_EventsClient::RejectEv
 		if (msg.getBody()->getRejectEventRequestRec()->isErrorMessageValid()) {
 			p_error_msg = std::string(msg.getBody()->getRejectEventRequestRec()->getErrorMessage().c_str());
 		}
-		RCLCPP_DEBUG(events_logger, "received reject for event %d with query=%#x to %s, request_id: %d, error: %d, err_msg: %s",
+		RCLCPP_DEBUG(logger, "received reject for event %d with query=%#x to %s, request_id: %d, error: %d, err_msg: %s",
 			     p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id, p_error_code, p_error_msg.c_str());
 		p_timer_stop();
 		for (unsigned int i = 0; i < p_handler.size(); i++) {
@@ -173,7 +173,7 @@ void InternalEventClient::p_send_cancel_event()
 {
 	if (p_event_id != 255) {
 		CancelEvent cancel_event;
-		RCLCPP_DEBUG(events_logger, "Send cancel event %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		RCLCPP_DEBUG(logger, "Send cancel event %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		cancel_event.getBody()->getCancelEventRec()->setEventID(p_event_id);
 		cancel_event.getBody()->getCancelEventRec()->setRequestID(p_request_id);
 		p_wait_for_cancel = true;
@@ -190,7 +190,7 @@ void InternalEventClient::set_error(jUnsignedByte code, std::string msg)
 void InternalEventClient::p_send_update_event()
 {
 	if (p_event_id != 255) {
-		RCLCPP_DEBUG(events_logger, "Send update event %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		RCLCPP_DEBUG(logger, "Send update event %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		jUnsignedInteger len = p_query_msg->getSize();
 		unsigned char* bytes = new unsigned char[len];
 		p_query_msg->encode(bytes);
@@ -213,7 +213,7 @@ void InternalEventClient::timeout()
 void InternalEventClient::p_timer_stop()
 {
 	if (p_timer.is_running()) {
-		RCLCPP_DEBUG(events_logger, "stop timeout timer for report %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "stop timeout timer for report %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timer.stop();
 	}
 }
@@ -221,7 +221,7 @@ void InternalEventClient::p_timer_stop()
 void InternalEventClient::p_timer_start()
 {
 	if (p_event_id != 255 && p_timeout > 0) {
-		RCLCPP_DEBUG(events_logger, "start timeout timer for %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "start timeout timer for %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timer.start();
 	}
 }

@@ -48,7 +48,6 @@ add_executable(iop_component
                src/iop_component.cpp
                src/iop_config.cpp
                src/main.cpp
-               src/ros_node.cpp
                src/time.cpp
                src/timer.cpp
 )
@@ -58,7 +57,6 @@ ament_target_dependencies(iop_component ${dependencies})
 add_library(${PROJECT_NAME} SHARED
             src/iop_component.cpp
             src/iop_config.cpp
-            src/ros_node.cpp
             src/time.cpp
             src/timer.cpp
 )
@@ -79,17 +77,10 @@ install(
 
 # Mark executables and/or libraries for installation
 install(
-    TARGETS iop_component
+    TARGETS iop_component ${PROJECT_NAME}
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
-
-install(
-    TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include)

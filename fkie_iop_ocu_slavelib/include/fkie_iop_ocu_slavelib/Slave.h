@@ -42,16 +42,7 @@ namespace ocu {
 	class Slave
 	{
 	public:
-		static Slave& get_instance(JausAddress own_address)
-		{
-			if (global_ptr == 0) {
-				global_ptr = new Slave(own_address);
-//				throw std::runtime_error("Slave was not initialized!");
-			}
-			return *global_ptr;
-		}
-
-		Slave(JausAddress own_address);
+		Slave(std::shared_ptr<iop::Component> cmp, JausAddress own_address);
 		~Slave(void);
 
 		void add_supported_service(SlaveHandlerInterface &handler, std::string service_uri, jUnsignedByte major_version=1, jUnsignedByte minor_version=0);
@@ -62,11 +53,11 @@ namespace ocu {
 		void release_access(JausAddress &address, bool wait_for_reply=true);
 
 	protected:
-		static Slave* global_ptr;
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *p_discovery_client;
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
 		rclcpp::Logger logger;
+		std::shared_ptr<iop::Component> cmp;
 		int p_subsystem_restricted;
 		int p_controlled_component_nr;
 		bool p_only_monitor;

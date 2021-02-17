@@ -22,14 +22,14 @@ along with this program; or you can read the full license at
 
 #include <string>
 #include <fkie_iop_list_manager/InternalElementList.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_ListManager;
 
 
-InternalElementList::InternalElementList()
-: logger(iop::RosNode::get_instance().get_logger().get_child("InternalElementList"))
+InternalElementList::InternalElementList(rclcpp::Logger& logger)
+: logger(logger)
 {
 	p_error_code = 0;
 	p_error_msg = "";

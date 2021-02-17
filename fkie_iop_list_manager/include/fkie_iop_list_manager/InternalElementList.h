@@ -39,7 +39,7 @@ namespace iop
 
 class InternalElementList {
 public:
-	InternalElementList();
+	InternalElementList(rclcpp::Logger& logger);
 	~InternalElementList();
 
 	void register_supported_element(jUnsignedShortInteger report_id, ListManagerListenerInterface *handler);
@@ -109,7 +109,7 @@ protected:
 	jUnsignedShortInteger p_current_element;
 	bool p_loop;
 
-	void set_error(jUnsignedByte code, std::string msg="");
+	void set_error(jUnsignedByte code, std::string msg=std::string());
 };
 
 }

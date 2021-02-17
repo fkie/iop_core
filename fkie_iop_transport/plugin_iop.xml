@@ -1,8 +1,5 @@
-<library path="libfkie_iop_transport">
-  <class name="Transport" type="iop::TransportPlugin" base_class_type="iop::PluginInterface">
-    <description>
-      Transport Service Plugin
-    </description>
-    <iop_service name="Transport" id="urn:jaus:jss:core:Transport" version="1.1" />
-  </class>
+<library path="fkie_iop_transport">
+	<class name="Transport" type="urn_jaus_jss_core_Transport::TransportService" base_class_type="JTS::Service"
+		id="urn:jaus:jss:core:Transport" version="1.1">
+	</class>
 </library>

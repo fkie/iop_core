@@ -34,6 +34,7 @@ package org.jts.codegenerator;
 
 import org.jts.jsidl.binding.*;
 import org.jts.codegenerator.support.*;
+import java.util.Collections;
 import java.util.Vector;
 import java.io.File;
 import java.util.Hashtable;
@@ -69,7 +70,7 @@ public class ComponentGenerator
 	 * @param cmptName
 	 * @param sSet
 	 */
-	public void run(String outDirName, String cmptName, String cmptId, ServiceSet sSet) throws CodeGeneratorException
+	public void run(String outDirName, String cmptName, String cmptId, ServiceSet sSet, String pluginList) throws CodeGeneratorException
 	{
 		if (codeType == CodeLines.CodeType.C_PLUS_PLUS)
 		{
@@ -80,8 +81,9 @@ public class ComponentGenerator
 			StringBuffer serviceIncludeList = new StringBuffer();
 			StringBuffer serviceConstructorList = new StringBuffer();
 			
-			cmptName = Util.upperCaseFirstLetter(cmptName);
-			outDirName += "/" + cmptName + "_" + cmptId;
+			// cmptName = Util.upperCaseFirstLetter(cmptName);
+			// outDirName += "/" + cmptName + "_" + cmptId;
+			outDirName += "/" + cmptName;
 						
 			replaceTable.put("%copyright%", "");
 			replaceTable.put("%namespace%", "JSIDL_v_1_0");
@@ -138,25 +140,26 @@ public class ComponentGenerator
 			 */
 		  ServiceSetResolver ssr = new ServiceSetResolver(codeType, sSet);
 		  reducedSet = ssr.run();
-					
+			ROSPluginGenerator rosPlg = new ROSPluginGenerator();
 			/*
 			 * Generate all the service definitions
 			 */ 
 			for (ServiceDef sDef : reducedSet.getServiceDef())
 			{
-			    // create service constructors                         
+			    	// create service constructors                         
 				setupServices( sDef, serviceList, serviceIncludeList, serviceNamespaceList, serviceLibs, serviceConstructorList );
 				
 				// now generate the actual services
-			    ServiceDefGenerator sdGen = new ServiceDefGenerator(codeType, sDef, reducedSet);
+			    	ServiceDefGenerator sdGen = new ServiceDefGenerator(codeType, sDef, reducedSet);
 				sdGen.run(outDirName, cmptName);
-                                        }
-
+				rosPlg.addServiceDef(sDef, pluginList);
+                        }
+			rosPlg.generateXML(outDirName, cmptName);
 			replaceTable.put("%service_list%", serviceList.toString());
 			replaceTable.put("%service_include_list%", serviceIncludeList.toString());
 			replaceTable.put("%service_namespace_list%", serviceNamespaceList.toString());
 			replaceTable.put("%service_construction_list%", serviceConstructorList.toString());
-	
+
 			/*
 			 * Generate the code and template for a component 
 			 */
@@ -231,7 +234,8 @@ public class ComponentGenerator
 				 */
 				try
 				{
-		               Util.writeContents(new File(outDirName + "/Sconstruct"), sconGen.generateProgram(new File(outDirName), cmptName + "_" + cmptId, serviceLibs));
+					// IOP: we need no sconstruct in ROS environment
+		               // Util.writeContents(new File(outDirName + "/Sconstruct"), sconGen.generateProgram(new File(outDirName), cmptName + "_" + cmptId, serviceLibs));
 	            }
 	            catch (Exception e)
 	            {
@@ -573,8 +577,8 @@ public class ComponentGenerator
             /*
              * Generate SConstruct File
              */
-			SconstructGenerator sg = new SconstructGenerator();
-            sg.generateCSharpSconstruct(new File(outDirName), cmptName, transportVersion, serviceLibs);
+	// 		SconstructGenerator sg = new SconstructGenerator();
+        //     sg.generateCSharpSconstruct(new File(outDirName), cmptName, transportVersion, serviceLibs);
             }
 	}
 
@@ -618,7 +622,8 @@ public class ComponentGenerator
 			 // Getting here means this is a new service def.  Create the constructor, including references to all parents.
 			 Vector<Reference> parentList = new Vector<Reference>();
 			 org.jts.codegenerator.support.InheritanceHelper.getParentServiceList(codeType, reducedSet, sDef, parentList);
-			 serviceConstructorList.append("\t" + sdGen.getServiceName() + "* p" + sdGen.getServiceName() + " = new " + sdGen.getServiceName() + "(jausRouter");
+			 serviceConstructorList.append("\t" + sdGen.getServiceName() + "* p" + sdGen.getServiceName() + " = new " + sdGen.getServiceName() + "(cmp, jausRouter");
+			 Collections.reverse(parentList);
 			 for (Reference ref : parentList) serviceConstructorList.append( ", p" + ref.name );
 			 serviceConstructorList.append(");");
 			 serviceConstructorList.append(System.getProperty("line.separator"));		 

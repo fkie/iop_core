@@ -26,13 +26,6 @@ if(NOT EXISTS "${IOP_BUILDER_SCRIPT_DIR}/mss.py")
   set(IOP_BUILDER_SCRIPT_DIR "@CMAKE_CURRENT_SOURCE_DIR@/cmake")
 endif()
 
-macro(_iop_capitalize_string invalue outvar)
-  string(TOUPPER "${invalue}" _iop_upper_tmp)
-  string(SUBSTRING "${_iop_upper_tmp}" 0 1 _iop_first)
-  string(SUBSTRING "${invalue}" 1 -1 _iop_last)
-  set("${outvar}" "${_iop_first}${_iop_last}")
-endmacro()
-
 macro(iop_init_paths)
   if ("${PROJECT_NAME}" STREQUAL "")
     message(FATAL_ERROR "You must call project() first")
@@ -42,16 +35,9 @@ endmacro()
 
 macro(iop_init)
   iop_init_paths()
-  # component ID is defined by configuration! set to 0
-  # cmake_parse_arguments(iop_arg "" "COMPONENT_ID" "" ${ARGN})
-  # if ("${iop_arg_COMPONENT_ID}" STREQUAL "")
-  #   message(FATAL_ERROR "Missing required argument COMPONENT_ID")
-  # endif()
-  # set(IOP_COMPONENT_ID "${iop_arg_COMPONENT_ID}")
-  set(IOP_COMPONENT_ID "0")
-  _iop_capitalize_string("${PROJECT_NAME}" IOP_COMPONENT_NAME)
-  message(STATUS "JAUS component name is ${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
-  set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}_${IOP_COMPONENT_ID}")
+  set(IOP_COMPONENT_NAME "${PROJECT_NAME}")
+  message(STATUS "JAUS component name is ${IOP_COMPONENT_NAME}")
+  set(IOP_COMPONENT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jaus/${IOP_COMPONENT_NAME}")
   message(STATUS "IOP_COMPONENT_DIR ${IOP_COMPONENT_DIR}")
   file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include")
   # we need the devel include path to avoid set the CPATH environment variable
@@ -61,6 +47,7 @@ macro(iop_init)
   set(DEVEL_LIB "${DEVEL_SPACE}/lib")
   message(STATUS "DEVEL_LIB: ${DEVEL_LIB}")
   set(IOP_COMPONENT_INCLUDE_DIRS ${IOP_COMPONENT_DIR} ${IOP_COMPONENT_DIR}/include)
+  set(IOP_NS_COMPONENTS)
   set(IOP_INIT_OK 1)
   find_program(IOP_DIFF diff)
   find_package(Java)
@@ -91,6 +78,7 @@ macro(iop_export_service)
       file(MAKE_DIRECTORY "${IOP_COMPONENT_DIR}/include/${service}")
       list(APPEND "IOP_COMPONENT_INCLUDE_DIRS" "${IOP_COMPONENT_DIR}/include/${service}")
       list(APPEND "IOP_INSTALL_INCLUDE_DIRS" "${IOP_COMPONENT_DIR}/include/${service}")
+      list(APPEND "IOP_NS_COMPONENTS" "${service}")
   endforeach()
   message(STATUS "export IOP_INSTALL_INCLUDE_DIRS: ${IOP_INSTALL_INCLUDE_DIRS}")
 endmacro()
@@ -134,7 +122,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.xml"
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" "${IOP_COMPONENT_ID}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
+    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/jaus/"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/include"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -151,13 +139,12 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.headers"
-    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_SHARE_PATH}/iop_codegenerator.jar -Djts.path=${jaustoolset_SHARE_PATH} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}"
+    COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_SHARE_PATH}/iop_codegenerator.jar -Djts.path=${jaustoolset_SHARE_PATH} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}" -p "'${IOP_NS_COMPONENTS}'"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
     COMMAND find ${CMAKE_INSTALL_PREFIX}/include -name "*.old" -type f -delete
-    # COMMAND cp -r -v -t ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME} ${IOP_INSTALL_INCLUDE_DIRS} 2>/dev/null || :
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     DEPENDS ${iop_arg_OVERRIDE_HEADERS} "jaus.overrides"
   )

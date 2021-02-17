@@ -1340,10 +1340,14 @@ public class CppCode
      * @param version
      * @return
      */
-     static public String makeNamespace(String id, String version)
+     static public String makeNamespace(String id, String version) //, boolean withVersion)
     {
-//        char[] ns = (id+"_"+version).toCharArray();
-        char[] ns = (id).toCharArray();
+	String ns_str = id;
+	boolean withVersion = false;
+	if (withVersion) {
+		ns_str = ns_str + "_" + version;
+	}
+	char[] ns = ns_str.toCharArray();
         for(int i=0; i<ns.length; i++)
         {
             if (!((ns[i]>='0' && ns[i]<='9')

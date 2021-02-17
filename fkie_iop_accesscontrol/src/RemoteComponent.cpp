@@ -22,15 +22,14 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <chrono>
-#include <fkie_iop_component/ros_node.hpp>
 #include <fkie_iop_component/time.hpp>
 #include <fkie_iop_accesscontrol/RemoteComponent.h>
 
 using namespace iop;
 
 
-RemoteComponent::RemoteComponent(JausAddress address, jUnsignedByte authority, int64_t timeout)
-: logger(iop::RosNode::get_instance().get_logger().get_child("AccessControlClient"))
+RemoteComponent::RemoteComponent(rclcpp::Logger& logger, JausAddress address, jUnsignedByte authority, int64_t timeout)
+: logger(logger)
 {
 	p_address = address;
 	p_timeout = timeout;

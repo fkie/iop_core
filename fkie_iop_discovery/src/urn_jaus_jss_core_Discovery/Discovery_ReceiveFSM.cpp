@@ -24,8 +24,8 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h"
 #include <string.h>
 #include <algorithm>
-#include <fkie_iop_component/iop_config.h>
-#include <fkie_iop_component/ros_node.hpp>
+#include <fkie_iop_component/iop_config.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 
 
 using namespace JTS;
@@ -33,8 +33,10 @@ using namespace JTS;
 namespace urn_jaus_jss_core_Discovery
 {
 
-Discovery_ReceiveFSM::Discovery_ReceiveFSM(urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM)
-: logger(iop::RosNode::get_instance().get_logger().get_child("Discovery"))
+
+Discovery_ReceiveFSM::Discovery_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
+: logger(cmp->get_logger().get_child("Discovery")),
+  p_component_list(logger)
 {
 
 	/*
@@ -43,8 +45,9 @@ Discovery_ReceiveFSM::Discovery_ReceiveFSM(urn_jaus_jss_core_Transport::Transpor
 	 * statemachine needs them.
 	 */
 	context = new Discovery_ReceiveFSMContext(*this);
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
 	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
+	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+	this->cmp = cmp;
 	system_id = 4;
 	system_type = 6001;
 	name_subsystem = "Robotname";
@@ -57,7 +60,7 @@ Discovery_ReceiveFSM::~Discovery_ReceiveFSM()
 	delete context;
 }
 
-void Discovery_ReceiveFSM::registerService(int minver, int maxver, std::string serviceuri, JausAddress address)
+void Discovery_ReceiveFSM::registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address)
 {
 	bool result = p_component_list.add_service(p_own_address, address, serviceuri, maxver, minver);
 	if (result) {
@@ -87,19 +90,42 @@ void Discovery_ReceiveFSM::setupNotifications()
 	pEvents_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_Discovery_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
 	registerNotification("Receiving_Ready", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving_Ready", "Discovery_ReceiveFSM");
 	registerNotification("Receiving", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving", "Discovery_ReceiveFSM");
-	iop::Config cfg("Discovery");
-	cfg.param("system_id", system_id, system_id, true, "", system_id_map());
-	cfg.param("system_type", system_type, system_type, true, "", system_type_map());
-	cfg.param("name_subsystem", name_subsystem, name_subsystem);
-	cfg.param("name_node", name_node, name_node);
-	cfg.param("timeout_lost", p_timeout_lost, p_timeout_lost);
+
+}
+
+void Discovery_ReceiveFSM::setupIopConfiguration()
+{
+	iop::Config cfg(cmp, "Discovery");
+	cfg.declare_param<uint8_t>("system_id", system_id, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"ID of the system.",
+		"0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 – 255: Reserved");
+	cfg.declare_param<uint16_t>("system_type", system_type, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"System type",
+		"10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT");
+	cfg.declare_param<std::string>("name_subsystem", name_subsystem, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
+		"System name", "");
+	cfg.declare_param<std::string>("name_node", name_node, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
+		"ROS Node name", "");
+	cfg.declare_param<int64_t>("timeout_lost", p_timeout_lost, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+		"Registered components are removed if they do not send a QueryIdentification within the timeout",
+		"Default: 60 sec");
+	cfg.param<uint8_t>("system_id", system_id, system_id, system_id_map(), true, "");//, system_id_map());
+	cfg.param<uint16_t>("system_type", system_type, system_type, system_type_map(), true, "");//, system_type_map());
+	cfg.param<std::string>("name_subsystem", name_subsystem, name_subsystem);
+	cfg.param<std::string>("name_node", name_node, name_node);
+	cfg.param<int64_t>("timeout_lost", p_timeout_lost, p_timeout_lost);
 	p_own_address = *(this->jausRouter->getJausAddress());
 	p_component_list.set_timeout(p_timeout_lost);
 }
 
-std::map<int, std::string> Discovery_ReceiveFSM::system_id_map()
+std::map<uint8_t, std::string> Discovery_ReceiveFSM::system_id_map()
 {
-	std::map<int, std::string> result;
+	std::map<uint8_t, std::string> result;
 	result[1] = "System";
 	result[2] = "Subsystem";
 	result[3] = "Node";
@@ -107,9 +133,9 @@ std::map<int, std::string> Discovery_ReceiveFSM::system_id_map()
 	return result;
 }
 
-std::map<int, std::string> Discovery_ReceiveFSM::system_type_map()
+std::map<uint16_t, std::string> Discovery_ReceiveFSM::system_type_map()
 {
-	std::map<int, std::string> result;
+	std::map<uint16_t, std::string> result;
 	result[10001] = "VEHICLE";
 	result[20001] = "OCU";
 	result[30001] = "OTHER_SUBSYSTEM";
@@ -200,7 +226,7 @@ void Discovery_ReceiveFSM::sendReportIdentificationAction(QueryIdentification ms
 		ReportIdentification report_msg;
 		std::string name = "InvalidName";
 		if (query_type == TYPE_COMPONENT) {
-			name = iop::RosNode::get_instance().get_name();
+			name = cmp->get_name();
 			std::size_t pos = name.find_last_of("/");
 			if (pos != std::string::npos) {
 				name.replace(0, pos+1, "");

@@ -34,7 +34,6 @@ iop_code_generator(
   OWN_IDLS
   OVERRIDES
     src/urn_jaus_jss_core_Liveness/Liveness_ReceiveFSM.cpp
-    src/main.cpp
   EXTERN_SERVICES
     urn_jaus_jss_core_Events
     urn_jaus_jss_core_Transport
@@ -54,7 +53,6 @@ include_directories(
 
 
 add_library(${PROJECT_NAME} SHARED
-            src/LivenessPlugin.cpp
             ${cppfiles}
 )
 
@@ -73,16 +71,12 @@ install(
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-install(
-   FILES ./plugin_iop.xml
-   DESTINATION share/${PROJECT_NAME}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories(${IOP_COMPONENT_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
+pluginlib_export_plugin_description_file(fkie_iop_component plugin_iop.xml)
 
 ament_package()
