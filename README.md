@@ -3,7 +3,7 @@ This repository lets your ROS software communicate with IOP services. You can fi
 | ---              | --- | --- |
 | iop_core         |  [![master](https://travis-ci.org/fkie/iop_core.svg?branch=master)](https://travis-ci.org/fkie/iop_core) | [![foxy-devel](https://github.com/fkie/iop_core/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_core/actions) |
 | [iop_msgs](https://github.com/fkie/iop_msgs) | [![Build Status](https://travis-ci.org/fkie/iop_msgs.svg?branch=master)](https://travis-ci.org/fkie/iop_msgs) | [![foxy-devel](https://github.com/fkie/iop_msgs/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_msgs/actions) |
-| [iop_platform](https://github.com/fkie/iop_platform) | [![Build Status](https://travis-ci.org/fkie/iop_platform.svg?branch=master)](https://travis-ci.org/fkie/iop_platform) ||
+| [iop_platform](https://github.com/fkie/iop_platform) | [![Build Status](https://travis-ci.org/fkie/iop_platform.svg?branch=master)](https://travis-ci.org/fkie/iop_platform) | [![foxy-devel](https://github.com/fkie/iop_platform/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_platform/actions) |
 | [iop_sensing](https://github.com/fkie/iop_sensing) | [![Build Status](https://travis-ci.org/fkie/iop_sensing.svg?branch=master)](https://travis-ci.org/fkie/iop_sensing) ||
 | [iop_sensing_clients](https://github.com/fkie/iop_sensing_clients) | [![Build Status](https://travis-ci.org/fkie/iop_sensing_clients.svg?branch=master)](https://travis-ci.org/fkie/iop_sensing_clients) ||
 | [iop_gui](https://github.com/fkie/iop_gui) | [![Build Status](https://travis-ci.org/fkie/iop_gui.svg?branch=master)](https://travis-ci.org/fkie/iop_gui) ||
@@ -16,7 +16,7 @@ This repository lets your ROS software communicate with IOP services. You can fi
 | [iop_jaus_ugv](https://github.com/fkie/iop_jaus_ugv) | [![Build Status](https://travis-ci.org/fkie/iop_jaus_ugv.svg?branch=master)](https://travis-ci.org/fkie/iop_jaus_ugv) ||
 | [iop_jaus_ugv_clients](https://github.com/fkie/iop_jaus_ugv_clients) | [![Build Status](https://travis-ci.org/fkie/iop_jaus_ugv_clients.svg?branch=master)](https://travis-ci.org/fkie/iop_jaus_ugv_clients) ||
 | [iop_examples](https://github.com/fkie/iop_examples) | [![Build Status](https://travis-ci.org/fkie/iop_examples.svg?branch=master)](https://travis-ci.org/fkie/iop_examples) ||
-| [iop_node_manager](https://github.com/fkie/iop_node_manager) | [![Build Status](https://travis-ci.org/fkie/iop_node_manager.svg?branch=master)](https://travis-ci.org/fkie/iop_node_manager) ||
+| [iop_node_manager](https://github.com/fkie/iop_node_manager) | [![Build Status](https://travis-ci.org/fkie/iop_node_manager.svg?branch=master)](https://travis-ci.org/fkie/iop_node_manager) | [![foxy-devel](https://github.com/fkie/iop_node_manager/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_node_manager/actions) |
 | [iop_wireshark_plugin](https://github.com/fkie/iop_wireshark_plugin) | [![Build Status](https://travis-ci.org/fkie/iop_wireshark_plugin.svg?branch=master)](https://travis-ci.org/fkie/iop_wireshark_plugin) ||
 
 
