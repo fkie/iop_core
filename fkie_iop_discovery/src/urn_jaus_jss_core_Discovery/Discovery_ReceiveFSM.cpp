@@ -114,8 +114,8 @@ void Discovery_ReceiveFSM::setupIopConfiguration()
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"Registered components are removed if they do not send a QueryIdentification within the timeout",
 		"Default: 60 sec");
-	cfg.param<uint8_t>("system_id", system_id, system_id, system_id_map(), true, "");//, system_id_map());
-	cfg.param<uint16_t>("system_type", system_type, system_type, system_type_map(), true, "");//, system_type_map());
+	cfg.param_named<uint8_t>("system_id", system_id, system_id, system_id_map(), true, "");
+	cfg.param_named<uint16_t>("system_type", system_type, system_type, system_type_map(), true, "");
 	cfg.param<std::string>("name_subsystem", name_subsystem, name_subsystem);
 	cfg.param<std::string>("name_node", name_node, name_node);
 	cfg.param<int64_t>("timeout_lost", p_timeout_lost, p_timeout_lost);

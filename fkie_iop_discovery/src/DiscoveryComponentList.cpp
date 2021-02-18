@@ -22,7 +22,6 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <fkie_iop_component/iop_component.hpp>
-#include <fkie_iop_component/time.hpp>
 #include <fkie_iop_discovery/DiscoveryComponentList.h>
 
 
@@ -61,7 +60,7 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, JausAddres
 	std::vector<DiscoveryComponent>& components = p_get_components(discovery_service);
 	std::vector<DiscoveryComponent>::iterator it = std::find(components.begin(), components.end(), component);
 	if (it != components.end()) {
-		int64_t now = now_secs();
+		int64_t now = iop::Component::now_secs();
 		if (it->address == discovery_service) {
 			it->ts_last_ident = now;
 			result = true;
@@ -84,7 +83,7 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, unsigned s
 	std::vector<DiscoveryComponent>& components = p_get_components(discovery_service);
 	std::vector<DiscoveryComponent>::iterator it;
 	for (it = components.begin(); it != components.end(); it++) {
-		int64_t now = now_secs();
+		int64_t now = iop::Component::now_secs();
 		if (it->address == discovery_service) {
 			it->ts_last_ident = now;
 			result = true;
@@ -108,7 +107,7 @@ std::vector<DiscoveryComponent> DiscoveryComponentList::get_components(JausAddre
 	std::vector<JausAddress> to_remove;
 	std::vector<iop::DiscoveryComponent> result;
 	std::vector<iop::DiscoveryComponent>::iterator itcmp;
-	int64_t now = now_secs();
+	int64_t now = iop::Component::now_secs();
 	for (itcmp = components.begin(); itcmp != components.end(); itcmp++) {
 		if (subsystem == 65535 || subsystem == itcmp->address.getSubsystemID()) {
 			if (node == 255 || node == itcmp->address.getNodeID()) {
@@ -172,7 +171,7 @@ bool DiscoveryComponentList::p_expired(int64_t ts, int64_t now)
 {
 	int64_t mynow = now;
 	if (mynow == 0) {
-		mynow = now_secs();
+		mynow = iop::Component::now_secs();
 	}
 	return (p_timeout != 0 && ts != 0 && ts < mynow - p_timeout);
 }

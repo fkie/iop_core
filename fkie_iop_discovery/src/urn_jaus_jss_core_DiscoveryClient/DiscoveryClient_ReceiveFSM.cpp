@@ -25,9 +25,7 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <fkie_iop_component/iop_config.hpp>
-#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/string.hpp>
-#include <fkie_iop_component/time.hpp>
 
 
 using namespace JTS;
@@ -108,7 +106,7 @@ void DiscoveryClient_ReceiveFSM::setupIopConfiguration()
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"Send QueryIdentification after DiscoveryService was discovered and services are registered.",
 		"Default: 15 sec");
-	cfg.param<uint8_t>("system_id", system_id, system_id, p_system_id_map(), true, "");//, p_system_id_map());
+	cfg.param_named<uint8_t>("system_id", system_id, system_id, p_system_id_map(), true, "");
 	cfg.param("register_own_services", register_own_services, register_own_services, true);
 	cfg.param("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service);
 	cfg.param("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER);
@@ -380,7 +378,7 @@ void DiscoveryClient_ReceiveFSM::handleReportIdentificationAction(ReportIdentifi
 			sender.str().c_str(), (int)request_type, (int)system_type, name.c_str());
 	unsigned short subsystem_id = sender.getSubsystemID();
 	if (request_type == TYPE_SUBSYSTEM) {
-		uint64_t now_sec = iop::now_secs();
+		uint64_t now_sec = iop::Component::now_secs();
 		ServiceRequests& srv_req = p_get_service_request(sender);
 		bool doupdate = request_query_srvs;
 		bool has_to_discover = pHasToDiscover(subsystem_id) && srv_req.allow_send(now_sec);
@@ -425,7 +423,7 @@ void DiscoveryClient_ReceiveFSM::handleReportIdentificationAction(ReportIdentifi
 			srv_req.count += 1;
 			srv_req.ts_last_request = now_sec;
 		}
-		p_discovery_srvs_stamps[sender.getSubsystemID()] = iop::now_secs();
+		p_discovery_srvs_stamps[sender.getSubsystemID()] = iop::Component::now_secs();
 	}
 }
 
@@ -436,7 +434,7 @@ void DiscoveryClient_ReceiveFSM::handleReportServiceListAction(ReportServiceList
 	srv_req.received_list = true;
 	srv_req.count = 0;
 	RCLCPP_DEBUG(logger, "handleReportServiceListAction from sender: %s", sender.str().c_str());
-	p_discovery_srvs_stamps[sender.getSubsystemID()] = iop::now_secs();
+	p_discovery_srvs_stamps[sender.getSubsystemID()] = iop::Component::now_secs();
 	// This message is received after own services are registered -> test is service registered?
 	// or after QueryServices was send
 	if (jausRouter->getJausAddress()->getSubsystemID() == sender.getSubsystemID()) {
@@ -772,7 +770,7 @@ void DiscoveryClient_ReceiveFSM::p_check_for_timeout_discovery_service()
 	if (p_timeout_discover_service > 0) {
 		std::vector<unsigned short> to_remove;
 		std::map<unsigned short, unsigned int>::iterator it;
-		int64_t now = iop::now_secs();
+		int64_t now = iop::Component::now_secs();
 		for (it = p_discovery_srvs_stamps.begin(); it != p_discovery_srvs_stamps.end(); it++) {
 			if (it->second > 0) {
 				if (now - it->second > p_timeout_discover_service) {

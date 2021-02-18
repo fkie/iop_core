@@ -23,7 +23,6 @@ along with this program; or you can read the full license at
 #include <fkie_iop_discovery/DiscoveryRosInterface.h>
 #include <algorithm>
 #include <fkie_iop_component/iop_config.hpp>
-#include <fkie_iop_component/time.hpp>
 
 using namespace iop;
 using namespace urn_jaus_jss_core_DiscoveryClient;
@@ -109,7 +108,7 @@ bool DiscoveryRosInterface::update_ident(JausAddress &addr, ReportIdentification
 			if (itts == p_discovery_srvs_stamps.end()) {
 				result = true;
 			} else if (p_force_component_update_after > 0) {
-				if (iop::now_secs() - itts->second > p_force_component_update_after) {
+				if (iop::Component::now_secs() - itts->second > p_force_component_update_after) {
 					result = true;
 				}
 			}
@@ -134,7 +133,7 @@ void DiscoveryRosInterface::update_services(JausAddress discovery_addr, ReportSe
 		return;
 	}
 	// Create ROS message from components
-	p_discovery_srvs_stamps[discovery_addr] = now_secs();
+	p_discovery_srvs_stamps[discovery_addr] = iop::Component::now_secs();
 	p_components.remove_discovery_service(discovery_addr);
 	// update the object with discovered system and publish it to ROS
 	ReportServiceList::Body::SubsystemList *ssys_list = msg.getBody()->getSubsystemList();
@@ -166,7 +165,7 @@ void DiscoveryRosInterface::update_services(JausAddress discovery_addr, ReportSe
 		return;
 	}
 	// Create ROS message from components
-	p_discovery_srvs_stamps[discovery_addr] = now_secs();
+	p_discovery_srvs_stamps[discovery_addr] = iop::Component::now_secs();
 	p_components.remove_discovery_service(discovery_addr);
 	// update the object with discovered system and publish it to ROS
 	ReportServices::Body::NodeList *node_list = msg.getBody()->getNodeList();

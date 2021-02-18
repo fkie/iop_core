@@ -348,6 +348,29 @@ JTS::Service* Component::get_service(std::string service_name)
 	return NULL;
 }
 
+
+std::shared_ptr<ocu::Slave> Component::get_slave()
+{
+	return p_slave;
+}
+
+void Component::set_slave(std::shared_ptr<ocu::Slave> slave)
+{
+	p_slave = slave;
+}
+
+int64_t Component::now_secs()
+{
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::seconds>(now).time_since_epoch().count();
+}
+
+int64_t Component::now_millis()
+{
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
+}
+
 void Component::processInternalEvent(InternalEvent *ie)
 {
 	bool done = false;

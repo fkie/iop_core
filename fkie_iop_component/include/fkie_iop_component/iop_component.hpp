@@ -24,11 +24,12 @@ along with this program; or you can read the full license at
 #ifndef IOP_COMPONENT_H
 #define IOP_COMPONENT_H
 
-#include <thread>
+#include <chrono>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
@@ -48,27 +49,35 @@ along with this program; or you can read the full license at
 namespace iop
 {
 
+    namespace ocu {
+        class Slave;
+    }
     class Config;
     class Component: public rclcpp::Node, public JTS::EventReceiver
     {
+        friend class ocu::Slave;
     public:
         Component(const std::string node_name, const std::string namespace_);
         void init(unsigned int subsystem, unsigned short node, unsigned short component);
         virtual ~Component();
 
-        rclcpp::Logger roslog(const std::string& suffix) { return get_logger().get_child(suffix); }
+        std::shared_ptr<ocu::Slave> get_slave();
+//        rclcpp::Logger roslog(const std::string& suffix) { return get_logger().get_child(suffix); }
         bool has_service(std::string service_uri);
         void start_component();
         void shutdown_component();
         // level: 0-OK, 1-WARNING, 2-ERROR, 3 STALE
         void send_diagnostic(int level, std::string message);
 
+        static int64_t now_secs();
+        static int64_t now_millis();
+
         JTS::Service* get_service(std::string service_name);
-        void p_connect_2_rte();
     protected:
         virtual void processInternalEvent(JTS::InternalEvent* ie);
 
         iop::Config* p_cfg;
+        std::shared_ptr<ocu::Slave> p_slave;
         JausAddress p_own_address;
         std::shared_ptr<JTS::Service> p_discovery_client;
         std::thread* p_connect_thread;
@@ -85,8 +94,10 @@ namespace iop
         bool p_iop_initialized;
 
 
+        void p_connect_2_rte();
         void load_plugins();
         std::shared_ptr<JTS::Service> p_init_plugin(std::string name, pluginlib::ClassLoader<JTS::Service>& class_loader);
+        void set_slave(std::shared_ptr<ocu::Slave> slave);
     };
 }
 #endif // IOP_COMPONENT_H

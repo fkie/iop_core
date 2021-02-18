@@ -22,7 +22,7 @@ along with this program; or you can read the full license at
 
 #include <algorithm>
 #include <chrono>
-#include <fkie_iop_component/time.hpp>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_accesscontrol/RemoteComponent.h>
 
 using namespace iop;
@@ -85,7 +85,7 @@ bool RemoteComponent::timeouted()
 
 bool RemoteComponent::time_to_send_request(int64_t deadtime)
 {
-	int64_t secs = now_secs();
+	int64_t secs = iop::Component::now_secs();
 	if (p_last_request + p_timeout < secs + deadtime) {
 		p_last_request = secs;
 		if (p_last_ack == 0) {

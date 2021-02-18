@@ -20,11 +20,9 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-//#include <boost/algorithm/string.hpp>
 #include <fkie_iop_ocu_slavelib/Slave.h>
 #include <fkie_iop_ocu_slavelib/common.h>
 #include <fkie_iop_msgs/msg/ocu_cmd_entry.hpp>
-#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/iop_config.hpp>
 #include <fkie_iop_component/string.hpp>
 
@@ -36,7 +34,7 @@ using namespace iop::ocu;
 
 
 
-Slave::Slave(std::shared_ptr<iop::Component> cmp, JausAddress own_address)
+Slave::Slave(std::shared_ptr<iop::Component> cmp)
 : logger(cmp->get_logger().get_child("Slave")),
   cmp(cmp)
 {
@@ -50,7 +48,7 @@ Slave::Slave(std::shared_ptr<iop::Component> cmp, JausAddress own_address)
 	p_use_queries = false;
 	p_default_authority = 205;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
-	p_own_address = own_address;
+	p_own_address = *(cmp->jausRouter->getJausAddress());
 	p_handoff_supported = false;
 	pInitRos();
 }
@@ -193,7 +191,7 @@ void Slave::pInitRos()
 	access_control_map[10] = "ACCESS_CONTROL_RELEASE";
 	access_control_map[11] = "ACCESS_CONTROL_MONITOR";
 	access_control_map[12] = "ACCESS_CONTROL_REQUEST";
-	cfg.param("access_control", p_default_access_control, p_default_access_control, access_control_map, true, "");//, access_control_map);
+	cfg.param_named("access_control", p_default_access_control, p_default_access_control, access_control_map, true, "");
 	cfg.param("use_queries", p_use_queries, p_use_queries);
 	cfg.param("only_monitor", p_only_monitor, p_only_monitor);
 	cfg.param("subsystem_restricted", p_subsystem_restricted, p_subsystem_restricted);

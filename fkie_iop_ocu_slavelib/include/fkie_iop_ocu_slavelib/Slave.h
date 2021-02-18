@@ -28,6 +28,7 @@ along with this program; or you can read the full license at
 #include <urn_jaus_jss_core_AccessControlClient/AccessControlClientService.h>
 #include <urn_jaus_jss_core_DiscoveryClient/DiscoveryClientService.h>
 #include <urn_jaus_jss_core_ManagementClient/ManagementClientService.h>
+#include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_msgs/msg/jaus_address.hpp>
 #include <fkie_iop_msgs/msg/ocu_cmd.hpp>
 #include <fkie_iop_msgs/msg/ocu_feedback.hpp>
@@ -42,7 +43,15 @@ namespace ocu {
 	class Slave
 	{
 	public:
-		Slave(std::shared_ptr<iop::Component> cmp, JausAddress own_address);
+		static std::shared_ptr<iop::ocu::Slave> get_instance(std::shared_ptr<iop::Component> cmp)
+		{
+			if (cmp->get_slave().get() == nullptr) {
+				cmp->set_slave(std::make_shared<Slave>(cmp));
+			}
+			return cmp->get_slave();
+		}
+
+		Slave(std::shared_ptr<iop::Component> cmp);
 		~Slave(void);
 
 		void add_supported_service(SlaveHandlerInterface &handler, std::string service_uri, jUnsignedByte major_version=1, jUnsignedByte minor_version=0);

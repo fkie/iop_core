@@ -24,7 +24,6 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_AccessControlClient/AccessControlClient_ReceiveFSM.h"
 #include <fkie_iop_component/iop_config.hpp>
 #include <fkie_iop_component/iop_component.hpp>
-#include <fkie_iop_component/time.hpp>
 
 
 using namespace JTS;
@@ -96,11 +95,11 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 			QueryTimeout rt_msg;
 			this->sendJausMessage(rt_msg, sender);
 		}
-		p_remote_components.set_ack(sender, iop::now_secs());
+		p_remote_components.set_ack(sender, iop::Component::now_secs());
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_ACCEPTED);
 	} else if (rcode == 1) {
 		RCLCPP_WARN(logger, "NOT_AVAILABLE: %s", sender.str().c_str());
-		p_remote_components.set_ack(sender, iop::now_secs());
+		p_remote_components.set_ack(sender, iop::Component::now_secs());
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
 	} else if (rcode == 2) {
 		RCLCPP_WARN(logger, "INSUFFICIENT_AUTHORITY: %s", sender.str().c_str());
@@ -115,7 +114,7 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 void AccessControlClient_ReceiveFSM::handleRejectControlAction(RejectControl msg, Receive::Body::ReceiveRec transportData)
 {
 	JausAddress sender = transportData.getAddress();
-	p_remote_components.set_ack(sender, iop::now_secs());
+	p_remote_components.set_ack(sender, iop::Component::now_secs());
 	RCLCPP_DEBUG(logger, "Control Rejected %s, code: %d", sender.str().c_str(), (int)msg.getBody()->getRejectControlRec()->getResponseCode());
 	if (msg.getBody()->getRejectControlRec()->getResponseCode() == 0) {
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_RELEASED);

@@ -67,9 +67,7 @@ namespace iop
 
         /** Wrapper for get parameter with default options **/
         template<typename T>
-        void param(std::string param_name, T& param_val, const T& default_val,
-                bool from_private=true,
-                std::string unit="")
+        std::string get_param(std::string param_name, T& param_val, const T& default_val, bool from_private=true)
         {
                 std::string got_from;
                 std::string with_ns = p_ns + "." + param_name;
@@ -81,27 +79,40 @@ namespace iop
                         param_val = default_val;
                         got_from = "default";
                 }
-                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS param: %s = %s [ns: %s]", p_ns.c_str(), param_name.c_str(), tostr(param_val, unit).c_str(), got_from.c_str());
+                return got_from;
         }
 
         /** Wrapper for get parameter with default options **/
         template<typename T>
         void param(std::string param_name, T& param_val, const T& default_val,
+                bool from_private=true,
+                std::string unit="")
+        {
+                std::string got_from = get_param<T>(param_name, param_val, default_val, from_private);
+                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS param: %s = %s [ns: %s]", p_ns.c_str(), param_name.c_str(), str_val_unit(param_val, unit).c_str(), got_from.c_str());
+        }
+
+        /** Wrapper for get parameter with default options **/
+        template<typename T>
+        void param_vector(std::string param_name, T& param_val, const T& default_val,
+                bool from_private=true,
+                std::string unit="")
+        {
+                std::string got_from = get_param<T>(param_name, param_val, default_val, from_private);
+                std::string vstr = str_vector(param_val); 
+                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS param: %s = %s [ns: %s]", p_ns.c_str(), param_name.c_str(), str_val_unit(vstr, unit).c_str(), got_from.c_str());
+        }
+
+        /** Wrapper for get parameter with default options **/
+        template<typename T>
+        void param_named(std::string param_name, T& param_val, const T& default_val,
                 std::map<T, std::string> type_map,
                 bool from_private=true,
                 std::string unit="")
         {
-                std::string got_from;
-                std::string with_ns = p_ns + "." + param_name;
-                if (p_cmp->get_parameter<T>(with_ns, param_val)) {
-                        got_from = p_ns;
-                } else if (from_private && p_cmp->get_parameter<T>(param_name, param_val)) {
-                        got_from = "~";
-                } else {
-                        param_val = default_val;
-                        got_from = "default";
-                }
-                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS param: %s = %s [ns: %s]", p_ns.c_str(), param_name.c_str(), tostr(param_val, unit, type_map).c_str(), got_from.c_str());
+                std::string got_from = get_param<T>(param_name, param_val, default_val, from_private);
+                std::string vname = str_from_map(param_val, type_map);
+                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS param: %s = %s%s[ns: %s]", p_ns.c_str(), param_name.c_str(), str_val_unit(param_val, unit).c_str(), vname.c_str(), got_from.c_str());
         }
 
         /** Wrapper for create_publisher **/
@@ -166,10 +177,9 @@ namespace iop
 
 
         template<typename T>
-        std::string tostr(T& param_val, std::string& unit, std::map<T, std::string>& type_map)
+        std::string str_from_map(T& param_val, std::map<T, std::string>& type_map)
         {
                 std::ostringstream result;
-                result << tostr(param_val, unit);
                 typename std::map<T, std::string>::const_iterator it = type_map.find(param_val);
                 if (it != type_map.end()) {
                         result << " (" << it->second << ") ";
@@ -178,7 +188,15 @@ namespace iop
         }
 
         template<typename T>
-        std::string tostr(T& param_val, std::string& unit)
+        std::string str_vector(T& param_val)
+        {
+                std::ostringstream result;
+                std::copy(param_val.cbegin(), param_val.cend(), std::ostream_iterator<typename T::value_type>(result, ", "));
+                return result.str();
+        }
+
+        template<typename T>
+        std::string str_val_unit(T& param_val, std::string& unit)
         {
                 std::ostringstream result;
                 if (std::is_same<T, int8_t>::value) {
