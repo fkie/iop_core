@@ -44,6 +44,8 @@ along with this program; or you can read the full license at
 #endif
 #include <pluginlib/class_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include "timestamp.hpp"
+#include <builtin_interfaces/msg/time.hpp>
 
 
 namespace iop
@@ -62,7 +64,6 @@ namespace iop
         virtual ~Component();
 
         std::shared_ptr<ocu::Slave> get_slave();
-//        rclcpp::Logger roslog(const std::string& suffix) { return get_logger().get_child(suffix); }
         bool has_service(std::string service_uri);
         void start_component();
         void shutdown_component();
@@ -71,6 +72,9 @@ namespace iop
 
         static int64_t now_secs();
         static int64_t now_millis();
+        Timestamp from_iop(uint64_t days, uint64_t hours, uint64_t minutes, uint64_t seconds, uint64_t milliseconds);
+        Timestamp from_ros(rclcpp::Time ros_time);
+
 
         JTS::Service* get_service(std::string service_name);
     protected:
@@ -92,6 +96,7 @@ namespace iop
         int p_id_component;
         bool p_search_for_id_params;
         bool p_iop_initialized;
+        bool p_use_remote_time;
 
 
         void p_connect_2_rte();

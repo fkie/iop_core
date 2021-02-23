@@ -47,6 +47,7 @@ Component::Component(const std::string node_name, const std::string namespace_):
 	p_id_component = 0;
 	p_search_for_id_params = true;
 	p_iop_initialized = false;
+	p_use_remote_time = false;
 }
 
 void Component::init(unsigned int subsystem, unsigned short node, unsigned short component)
@@ -105,6 +106,11 @@ void Component::init(unsigned int subsystem, unsigned short node, unsigned short
 	} else {
 		RCLCPP_INFO(this->get_logger(), "JAUS configuration file: %s", p_config_path.c_str());
 	}
+	p_cfg->declare_param<bool>("iop_use_remote_time", false, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"On false the timestamp of received messages will be overwritten by current time of local pc. Useful with if time is not synchronized and you got TF problem on local host.",
+		"Default: false");
+	this->get_parameter<bool>("iop_use_remote_time", p_use_remote_time);
 	p_class_loader = nullptr;
 	jausRouter = nullptr;
 	// spawn another thread
@@ -369,6 +375,16 @@ int64_t Component::now_millis()
 {
         auto now = std::chrono::steady_clock::now();
         return std::chrono::time_point_cast<std::chrono::milliseconds>(now).time_since_epoch().count();
+}
+
+Timestamp Component::from_iop(uint64_t days, uint64_t hours, uint64_t minutes, uint64_t seconds, uint64_t milliseconds)
+{
+	return Timestamp(days, hours, minutes, seconds, milliseconds, this->now(), p_use_remote_time);
+}
+
+Timestamp Component::from_ros(rclcpp::Time ros_time)
+{
+	return Timestamp(ros_time);
 }
 
 void Component::processInternalEvent(InternalEvent *ie)
