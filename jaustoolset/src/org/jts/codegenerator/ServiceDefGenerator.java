@@ -358,14 +358,14 @@ public class ServiceDefGenerator
                     replaceTable.put("%service_assignment_list%", smAssignmentServiceList.toString());
                     replaceTable.put("%parent_service_type%", parentServiceType);
 
-                    svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));;
+                    svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));
                     for (String msg : msgInputList)
                     {
                         svcMsgList.append("\tm_InputMessageList.insert(" + msg + "::ID);");
                         svcMsgList.append(System.getProperty("line.separator"));
                     }
                     svcMsgList.append(System.getProperty("line.separator"));
-                    svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));;
+                    svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));
                     for (String msg : msgOutputList)
                     {
                         svcMsgList.append("\tm_OutputMessageList.insert(" + msg + "::ID);");
@@ -698,14 +698,14 @@ public class ServiceDefGenerator
                             replaceTable.put("%transition_calls%", pbGen.transitionCalls.toString());
 							replaceTable.put("%default_transition_calls%", pbGen.defaultCalls.toString());
 
-                            svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));;
+                            svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));
                             for (String msg : msgInputList)
                             {
                                     svcMsgList.append("\tm_InputMessageList.add(" + msg + ".ID);");
                                     svcMsgList.append(System.getProperty("line.separator"));
                             }
                             svcMsgList.append(System.getProperty("line.separator"));
-                            svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));;
+                            svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));
                             for (String msg : msgOutputList)
                             {
                                     svcMsgList.append("\tm_OutputMessageList.add(" + msg + ".ID);");
@@ -942,14 +942,14 @@ public class ServiceDefGenerator
                             replaceTable.put("%transition_calls%", pbGen.transitionCalls.toString());
 							replaceTable.put("%default_transition_calls%", pbGen.defaultCalls.toString());
 
-                            svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));;
+                            svcMsgList.append("\t/// Input Messages").append(System.getProperty("line.separator"));
                             for (String msg : msgInputList)
                             {
                                     svcMsgList.append("\tm_InputMessageList.Add(new " + msg + "().getID());");
                                     svcMsgList.append(System.getProperty("line.separator"));
                             }
                             svcMsgList.append(System.getProperty("line.separator"));
-                            svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));;
+                            svcMsgList.append("\t/// Output Messages").append(System.getProperty("line.separator"));
                             for (String msg : msgOutputList)
                             {
                                     svcMsgList.append("\tm_OutputMessageList.Add(new " + msg + "().getID());");

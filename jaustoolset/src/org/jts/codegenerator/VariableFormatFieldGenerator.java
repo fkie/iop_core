@@ -427,7 +427,7 @@ public class VariableFormatFieldGenerator
             else if(codeType == CodeLines.CodeType.C_SHARP)
             {
                 /// Add the code for the field format
-                CSharpCode.generateDecoderLines(formatVarType, formatVarName, code.decoderLines);;
+                CSharpCode.generateDecoderLines(formatVarType, formatVarName, code.decoderLines);
 
                 /// Add the code for the field length
                 code.decoderLines.add("");

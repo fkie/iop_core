@@ -1441,7 +1441,7 @@ public class Transition {
                 messageTransitions.append("\t\t\t\t\t\t")
                 		.append("// Unique identifier used to replace previous edits upon regeneration, do not delete this comment:")
                 		.append(guid)
-                		.append(System.getProperty("line.separator"));;
+                		.append(System.getProperty("line.separator"));
 
                 messageTransitions.append("\t\t\t\t\t\t").append(param.getType()).append(" ").
                         append(param.getValue()).append(";");

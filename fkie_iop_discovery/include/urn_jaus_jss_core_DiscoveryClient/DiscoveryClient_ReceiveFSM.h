@@ -94,7 +94,7 @@ public:
 	template<class T>
 	void discover(std::string service_uri, void(T::*handler)(const std::string &, JausAddress &), T*obj, unsigned char major_version=1, unsigned char minor_version=255, unsigned short subsystem=65535)
 	{
-		std::function<void (const std::string &, JausAddress &)> callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2);;
+		std::function<void (const std::string &, JausAddress &)> callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2);
 		iop::DiscoveryServiceDef service(service_uri, major_version, minor_version);
 		p_discover_callbacks[service].push_back(callback);
 		pDiscover(service_uri, major_version, minor_version, subsystem);

@@ -61,7 +61,7 @@ protected:
 	// iop::Timer p_timer;
 	std::map<JausAddress, std::shared_ptr<iop::RemoteComponent> > p_components;
 
-	//void p_timeout(const ros::TimerEvent& event);
+	//void p_timeout(const iop::TimerEvent& event);
 };
 
 }

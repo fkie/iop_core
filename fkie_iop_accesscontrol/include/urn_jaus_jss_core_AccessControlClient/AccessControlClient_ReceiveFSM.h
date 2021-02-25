@@ -83,7 +83,7 @@ public:
 	template<class T>
 	void requestAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj, jUnsignedByte authority=255)
 	{
-		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);;
+		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
 		p_reply_callbacks[address.get()].push_back(callback);
 		pRequestAccess(address, authority);
 	}
@@ -94,7 +94,7 @@ public:
 	template<class T>
 	void releaseAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj)
 	{
-		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);;
+		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
 		p_reply_callbacks[address.get()].push_back(callback);
 		pReleaseAccess(address);
 	}
