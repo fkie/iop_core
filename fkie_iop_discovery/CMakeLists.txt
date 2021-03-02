@@ -38,7 +38,9 @@ iop_code_generator(
   OWN_IDLS
   OVERRIDES
     include/urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h
+    include/urn_jaus_jss_core_Discovery/DiscoveryService.h
     include/urn_jaus_jss_core_DiscoveryClient/DiscoveryClient_ReceiveFSM.h
+    include/urn_jaus_jss_core_DiscoveryClient/DiscoveryClientService.h
     src/urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.cpp
     src/urn_jaus_jss_core_DiscoveryClient/DiscoveryClient_ReceiveFSM.cpp
   EXTERN_SERVICES

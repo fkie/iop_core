@@ -77,8 +77,7 @@ public:
 
 	/// Guard Methods
 	/// User Methods
-	//void registerService(int minver, int maxver, std::string serviceuri, JausAddress address);
-	void registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address);
+	void registerService(std::string serviceuri, unsigned char maxver, unsigned char minver, JausAddress address);
 	void registerSubsystem(JausAddress address);
 	uint8_t getSystemID() { return system_id; }
 	std::vector<iop::DiscoveryComponent> getComponents(std::string uri);

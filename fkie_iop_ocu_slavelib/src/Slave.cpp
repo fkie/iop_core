@@ -76,7 +76,7 @@ Slave::~Slave(void)
 DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 {
 	if (p_discovery_client == NULL) {
-		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp->get_service("DiscoveryClient"));
+		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp->get_service("DiscoveryClientService"));
 		if (discovery_srv != NULL) {
 			p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
 		} else {
@@ -89,7 +89,7 @@ DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 AccessControlClient_ReceiveFSM *Slave::pGetAccesscontrolClient()
 {
 	if (p_accesscontrol_client == NULL) {
-		AccessControlClientService *accesscontrol_srv = static_cast<AccessControlClientService*>(cmp->get_service("AccessControlClient"));
+		AccessControlClientService *accesscontrol_srv = static_cast<AccessControlClientService*>(cmp->get_service("AccessControlClientService"));
 		if (accesscontrol_srv != NULL) {
 			p_accesscontrol_client = accesscontrol_srv->pAccessControlClient_ReceiveFSM;
 			p_accesscontrol_client->add_reply_handler(&Slave::pAccessControlClientReplyHandler, this);
@@ -104,7 +104,7 @@ ManagementClient_ReceiveFSM *Slave::pGetManagementClient()
 {
 	if (p_management_client == NULL && p_try_get_management) {
 		p_try_get_management = false;
-		ManagementClientService *management_srv = static_cast<ManagementClientService*>(cmp->get_service("ManagementClient"));
+		ManagementClientService *management_srv = static_cast<ManagementClientService*>(cmp->get_service("ManagementClientService"));
 		if (management_srv != NULL) {
 			p_management_client = management_srv->pManagementClient_ReceiveFSM;
 		} else {
@@ -199,11 +199,11 @@ void Slave::pInitRos()
 	if (p_controlled_component_nr == 0) {
 		p_controlled_component_nr = 1;
 	}
-//	iop::Component &cmp = iop::Component::get_instance();
-//	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
+	p_handoff_supported = cmp->has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
-	p_pub_control_feedback = cfg.create_publisher<fkie_iop_msgs::msg::OcuFeedback>("/ocu_feedback", 1);
-	p_sub_control = cfg.create_subscription<fkie_iop_msgs::msg::OcuCmd>("/ocu_cmd", 10, std::bind(&Slave::pRosControl, this, std::placeholders::_1));
+	rclcpp::QoS qos_latched(10);
+	p_pub_control_feedback = cfg.create_publisher<fkie_iop_msgs::msg::OcuFeedback>("/ocu_feedback", qos_latched.transient_local());
+	p_sub_control = cfg.create_subscription<fkie_iop_msgs::msg::OcuCmd>("/ocu_cmd", qos_latched.transient_local(), std::bind(&Slave::pRosControl, this, std::placeholders::_1));
 }
 
 void Slave::pRosControl(const fkie_iop_msgs::msg::OcuCmd::SharedPtr control)

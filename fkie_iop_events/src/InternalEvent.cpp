@@ -30,7 +30,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 : logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
-	std::cout << "IE setup" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -45,7 +44,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 	p_error_msg = "Event was not initialized";
 	p_initialized = false;
 	p_last_report = NULL;
-	std::cout << "IE setup end" << std::endl;
 }
 
 InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate)
@@ -53,7 +51,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 : logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
-	std::cout << "IE setup2" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -75,7 +72,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 	p_last_report = NULL;
 	p_timer.set_rate(event_rate);
 	p_is_event_supported(query_msg_id, event_type, event_rate);
-	std::cout << "IE setup2 end" << std::endl;
 }
 
 InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_list, jUnsignedByte event_id, jUnsignedByte request_id, jUnsignedShortInteger query_msg_id, jUnsignedByte event_type, double event_rate, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, JausAddress requestor)
@@ -83,7 +79,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 : logger(logger),
   p_timer(std::chrono::seconds(1), std::bind(&InternalEvent::timeout, this), false)
 {
-	std::cout << "IE setup3" << std::endl;
 	p_event_list = event_list;
 	p_last_update = ChronoSysTP::min();
 	p_query_msg_id = 0;
@@ -117,7 +112,6 @@ InternalEvent::InternalEvent(rclcpp::Logger& logger, InternalEventList* event_li
 		update(event_id, p_query_msg, query_msg_id, requestor, request_id, event_type, event_rate);
 		p_initialized = true;
 	}
-	std::cout << "IE setup3 end" << std::endl;
 }
 
 InternalEvent::~InternalEvent()

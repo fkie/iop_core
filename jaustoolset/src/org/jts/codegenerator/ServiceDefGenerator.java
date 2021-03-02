@@ -320,7 +320,7 @@ public class ServiceDefGenerator
                     smAssignmentServiceList.append(System.getProperty("line.separator"));
                     smAssignmentServiceList.append("\tthis->m_name = \"" + Util.upperCaseFirstLetter(serviceName) + "\";");
                     smAssignmentServiceList.append(System.getProperty("line.separator"));
-                    String[] versionArray = sDef.getVersion().split(".");
+                    String[] versionArray = sDef.getVersion().split("\\.");
                     if (versionArray.length == 2) {
                         smAssignmentServiceList.append("\tthis->m_version_manjor = " + Integer.parseInt(versionArray[0]) + ";");
                         smAssignmentServiceList.append(System.getProperty("line.separator"));

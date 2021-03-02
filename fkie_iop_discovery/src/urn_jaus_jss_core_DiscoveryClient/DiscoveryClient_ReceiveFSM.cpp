@@ -309,7 +309,7 @@ std::vector<JausAddress> DiscoveryClient_ReceiveFSM::pGetServices(ReportServiceL
 	return result;
 }
 
-void DiscoveryClient_ReceiveFSM::registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address)
+void DiscoveryClient_ReceiveFSM::registerService(std::string serviceuri, unsigned char maxver, unsigned char minver, JausAddress address)
 {
 	iop::DiscoveryServiceDef service;
 	service.service_uri = serviceuri;
@@ -318,11 +318,13 @@ void DiscoveryClient_ReceiveFSM::registerService(std::string serviceuri, unsigne
 	if ( std::find(p_own_uri_services.begin(), p_own_uri_services.end(), service) != p_own_uri_services.end() ) {
 		RCLCPP_INFO(logger, "	%s already known", serviceuri.c_str());
 	} else {
-		RCLCPP_DEBUG(logger, "append service URI: %s for registration", serviceuri.c_str());
-		p_own_uri_services.push_back(service);
+		std::string rinfo = " without registration";
 		if (register_own_services) {
 			p_is_registered = false;
+			rinfo = " for registration";
 		}
+		RCLCPP_INFO(logger, "Add service %s v%d.%d%s", serviceuri.c_str(), maxver, minver, rinfo.c_str());
+		p_own_uri_services.push_back(service);
 		pCheckTimer();
 	}
 	for (int i = 0; i < p_discover_services.size(); i++) {

@@ -53,7 +53,8 @@ void DiscoveryRosInterface::setup(std::shared_ptr<iop::Component> cmp, JTS::Stat
 	cfg.param("force_component_update_after", p_force_component_update_after, p_force_component_update_after);
 	if (p_enable_ros_interface) {
 		p_pub_identification = cfg.create_publisher<fkie_iop_msgs::msg::Identification>("/iop_identification", 10);
-		p_pub_system = cfg.create_publisher<fkie_iop_msgs::msg::System>("/iop_system", 10);
+		rclcpp::QoS qos_latched(10);
+		p_pub_system = cfg.create_publisher<fkie_iop_msgs::msg::System>("/iop_system", qos_latched.transient_local());
 		p_srv_query_ident = cfg.create_service<fkie_iop_msgs::srv::QueryIdentification>("/iop_query_identification", std::bind(&DiscoveryRosInterface::pQueryIdentificationSrv, this, std::placeholders::_1, std::placeholders::_2));
 		p_srv_update_system = cfg.create_service<std_srvs::srv::Empty>("/iop_update_discovery", std::bind(&DiscoveryRosInterface::pUpdateSystemSrv, this, std::placeholders::_1, std::placeholders::_2));
 	}

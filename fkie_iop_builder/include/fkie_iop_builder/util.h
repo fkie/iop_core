@@ -26,7 +26,7 @@ along with this program; or you can read the full license at
 #define INCLUDE_FKIE_IOP_BUILDER_UTIL_H_
 
 template<typename F>
-F pround(const F& f, unsigned int decs=4)
+F pround(const F& f, unsigned int decs=6)
 {
 	int i1 = floor(f);
 	F rmnd = f - i1;

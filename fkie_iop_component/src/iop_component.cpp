@@ -88,7 +88,7 @@ void Component::init(unsigned int subsystem, unsigned short node, unsigned short
 		throw std::runtime_error(msg.c_str());
 	}
 	RCLCPP_INFO(this->get_logger(), "Set JAUS address to: %d.%d.%d", p_id_subsystem, p_id_node, p_id_component);
-	p_own_address = JausAddress(subsystem, node, component);
+	p_own_address = JausAddress(p_id_subsystem, p_id_node, p_id_component);
 	p_publisher_diagnostics = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 	p_config_path = "nm.cfg";
 	// read configuration from private parameter
@@ -242,9 +242,10 @@ void Component::load_plugins()
 	RCLCPP_INFO(this->get_logger(), "... plugin loading complete!");
 	// register the services
 	if (p_discovery_client.get() != nullptr) {
-		RCLCPP_INFO(this->get_logger(), "Add services to register by discovery service...");
-		for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
-			p_discovery_client->registerService(it->second->getURN(), it->second->getVersionManjor(), it->second->getVersionMinor(), *this->jausRouter->getJausAddress());
+		RCLCPP_INFO(this->get_logger(), "Add %d services to register by discovery service...", p_plugins_map.size());
+		std::map<std::string, std::shared_ptr<JTS::Service> >::iterator it2;
+		for (it2 = p_plugins_map.begin(); it2 != p_plugins_map.end(); ++it2) {
+			p_discovery_client->registerService(it2->second->getURN(), it2->second->getVersionManjor(), it2->second->getVersionMinor(), *this->jausRouter->getJausAddress());
 		}
 		RCLCPP_INFO(this->get_logger(), "... all services added");
 	} else {
@@ -344,6 +345,11 @@ void Component::shutdown_component()
 
 JTS::Service* Component::get_service(std::string service_name)
 {
+	// extend if given name has no "Service" at the end
+	std::string ending = "Service";
+	if (service_name.size() < 8 || !std::equal(ending.rbegin(), ending.rend(), service_name.rbegin())) {
+		service_name += "Service";
+	}
 	std::map<std::string, std::shared_ptr<JTS::Service> >::iterator it;
 	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
 		if (it->second.get()->getName().compare(service_name) == 0

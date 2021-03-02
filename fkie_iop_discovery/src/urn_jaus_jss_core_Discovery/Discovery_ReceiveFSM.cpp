@@ -60,11 +60,11 @@ Discovery_ReceiveFSM::~Discovery_ReceiveFSM()
 	delete context;
 }
 
-void Discovery_ReceiveFSM::registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address)
+void Discovery_ReceiveFSM::registerService(std::string serviceuri, unsigned char maxver, unsigned char minver, JausAddress address)
 {
 	bool result = p_component_list.add_service(p_own_address, address, serviceuri, maxver, minver);
 	if (result) {
-		RCLCPP_INFO(logger, "registered own service '%s' [%s]", serviceuri.c_str(), address.str().c_str());
+		RCLCPP_INFO(logger, "registered own service '%s v%d.%d' [%s]", serviceuri.c_str(), (int)maxver, (int)minver, address.str().c_str());
 	} else {
 		RCLCPP_WARN(logger, "own service '%s' [%s] already exists, ignore", serviceuri.c_str(), address.str().c_str());
 	}

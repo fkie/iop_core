@@ -89,8 +89,7 @@ public:
 	virtual bool onRegistration();
 
 	//void setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm);
-	//void appendServiceUri(std::string service_uri, unsigned char major_version=1, unsigned char minor_version=0);
-	void registerService(std::string serviceuri, unsigned char minver, unsigned char maxver, JausAddress address);
+	virtual void registerService(std::string serviceuri, unsigned char maxver, unsigned char minver, JausAddress address);
 	template<class T>
 	void discover(std::string service_uri, void(T::*handler)(const std::string &, JausAddress &), T*obj, unsigned char major_version=1, unsigned char minor_version=255, unsigned short subsystem=65535)
 	{

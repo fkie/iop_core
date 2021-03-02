@@ -39,6 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SERVICE_H_
 #define SERVICE_H_
 
+#include <iostream>
 #include <string>
 #include <set>
 #include <queue>
@@ -68,7 +69,7 @@ public:
 	virtual bool defaultTransitions(JTS::InternalEvent* ie) = 0;
 	virtual void init_service(std::shared_ptr<iop::Component>, JTS::JausRouter* jausRouter, JTS::Service* parentService) = 0;
 	// The registerService() will be overwritten by Discovery service
-	virtual void registerService(std::string /*serviceuri*/, unsigned char /*minver*/, unsigned char /*maxver*/, JausAddress /*address*/) {}
+	virtual void registerService(std::string /*serviceuri*/, unsigned char /*maxver*/, unsigned char /*minver*/, JausAddress /*address*/) { std::cout << "registerService not implemented!" << std::endl; }
 
 	const std::string getURN() const;
 	const std::string getName() const;
