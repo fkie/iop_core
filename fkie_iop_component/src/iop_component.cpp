@@ -144,7 +144,6 @@ void Component::p_connect_2_rte()
 	send_diagnostic(3, "Connecting to RTE");
 	this->jausRouter = new JTS::JausRouter(p_own_address, ieHandler, p_config_path);
 	while (rclcpp::ok() && ! jausRouter->isConnected()) {
-		std::cout << "wait" << std::endl;
 		sleep(1);
 		delete this->jausRouter;
 		send_diagnostic(2, "Timeout, connecting to RTE");
