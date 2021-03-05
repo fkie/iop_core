@@ -69,13 +69,13 @@ int DllExport RunJuniorRTE(std::string config_file)
     int debug_level = 3;
     config.getValue(debug_level, "LogMsgLevel", "Log_Configuration");
 
-	// Now set-up the data logger
+    // Now set-up the data logger
     if (debug_level > (int) Logger::full) debug_level = (int) Logger::full;
     Logger::get()->setMsgLevel((enum Logger::LogMsgType) debug_level);
     if (!logfile.empty()) Logger::get()->openOutputFile(logfile);
 
-	// And now we can read the rest of the config file, with the benefit
-	// of logging....
+    // And now we can read the rest of the config file, with the benefit
+    // of logging....
     int allowRelay = 0;
     config.getValue(allowRelay, "AllowRelay", "RTE_Configuration");
     int delay = 1;
@@ -88,7 +88,7 @@ int DllExport RunJuniorRTE(std::string config_file)
     config.getValue(use_serial, "NumSerialInterfaces", "RTE_Configuration");
     int repeater_mode = 0;
     config.getValue(repeater_mode, "EnableRepeaterMode", "RTE_Configuration");
-	int use_udpLB = 0;
+    int use_udpLB = 0;
     config.getValue(use_udpLB, "EnableLoopback", "UDP_Loopback_Configuration");
 
     // For linux, we need to break from the parent's signals
@@ -113,27 +113,29 @@ int DllExport RunJuniorRTE(std::string config_file)
     // raw unsigned long, rather than the JAUS_ID, so that operator== means
     // "strictly equal to".  This allows us to detected when a message is for a local
     // client, and a local client only (it contains no wildcard characters).
-	std::list<unsigned int> _clients;
+    std::list<unsigned int> _clients;
+    std::list<unsigned int> _clients_udp;
 
     // Create a list of all supported transports.
     std::list<Transport*> _transports;
     std::list<Transport*>::iterator _iter;
     _transports.push_back(publicSocket);
 
+    JUDPTransport *udp = NULL;
     // Add UDP, if selected
     if (use_udp)
     {
-		// Create the transport object, initialize it, then add it to the list.
-		JUDPTransport *udp = new JUDPTransport;
-		if (udp != NULL)
-		{
-			if (udp->initialize(config) != Transport::Ok)
-			{
-				JrInfo << "Unable to initialize UDP communications.\n";
-			}
-			else
-				_transports.push_back(udp);
-		}
+        // Create the transport object, initialize it, then add it to the list.
+        udp = new JUDPTransport;
+        if (udp != NULL)
+        {
+            if (udp->initialize(config) != Transport::Ok)
+            {
+                JrInfo << "Unable to initialize UDP communications.\n";
+            }
+            else
+                _transports.push_back(udp);
+        }
     }
     else
     {
@@ -152,8 +154,8 @@ int DllExport RunJuniorRTE(std::string config_file)
             {
                 JrInfo << "Unable to initialize UDP Loopback communications.\n";
             }
-			else
-				_transports.push_back(udpLB);
+            else
+                _transports.push_back(udpLB);
         }
     }
     else
@@ -164,16 +166,16 @@ int DllExport RunJuniorRTE(std::string config_file)
     // Add TCP, if selected
     if (use_tcp)
     {
-		JTCPTransport *tcp = new JTCPTransport;
-		if (tcp != NULL)
-		{
-			if (tcp->initialize(config) != Transport::Ok)
-			{
-				JrInfo << "Unable to initialize TCP communications.\n";
-			}
-			else
-				_transports.push_back(tcp);
-		}
+        JTCPTransport *tcp = new JTCPTransport;
+        if (tcp != NULL)
+        {
+            if (tcp->initialize(config) != Transport::Ok)
+            {
+                JrInfo << "Unable to initialize TCP communications.\n";
+            }
+            else
+                _transports.push_back(tcp);
+        }
     }
     else
     {
@@ -181,19 +183,19 @@ int DllExport RunJuniorRTE(std::string config_file)
     }
 
     // Add Serial, if selected
-	if (use_serial == 0)
+    if (use_serial == 0)
         JrInfo << "Serial communication deactivated in configuration file\n";
     while (use_serial > 0)
     {
-		use_serial--; // decrement the count for the next loop
+        use_serial--; // decrement the count for the next loop
 
-		// instantiate a new serial transport.
-		JSerial *serial = new JSerial;
-		if (serial == NULL) continue;
+        // instantiate a new serial transport.
+        JSerial *serial = new JSerial;
+        if (serial == NULL) continue;
 
-		// Since we can support multiple serial connections, each
-		// one must have an zero-based index associated with it.
-		JrDebug << "Initializing serial interface #" << use_serial << "\n";
+        // Since we can support multiple serial connections, each
+        // one must have an zero-based index associated with it.
+        JrDebug << "Initializing serial interface #" << use_serial << "\n";
         if (serial->initialize(config, use_serial) != Transport::Ok)
         {
             JrInfo << "Unable to initialize serial communications.\n";
@@ -225,7 +227,7 @@ int DllExport RunJuniorRTE(std::string config_file)
                 (msg->getMessageCode() == Connect))
             {
                 // Connection request from client.
-				JrDebug << "RTE got connection request from " << msg->getSourceId().val << std::endl;
+                JrDebug << "RTE got connection request from " << msg->getSourceId().val << std::endl;
                 Message response;
                 response.setSourceId(0);
                 response.setDestinationId(msg->getSourceId());
@@ -237,7 +239,7 @@ int DllExport RunJuniorRTE(std::string config_file)
                      (msg->getMessageCode() == Cancel))
             {
                 // Disconnect client.
-				JrDebug << "RTE got disconnect request from " << msg->getSourceId().val << std::endl;
+                JrDebug << "RTE got disconnect request from " << msg->getSourceId().val << std::endl;
                 _clients.remove(msg->getSourceId().val);
                 publicSocket->removeDestination(msg->getSourceId());
             }
@@ -285,7 +287,7 @@ int DllExport RunJuniorRTE(std::string config_file)
                 if (msg->getDestinationId().containsWildcards() || !matchFound)
                 {
                     // Send this message to all recipients on all transports.
-					msg->setBroadcast(2);
+                    msg->setBroadcast(2);
                     for (_iter = _transports.begin(); _iter != _transports.end(); ++_iter)
                         if ((*_iter)->getName() != "JUDP-LB") (*_iter)->broadcastMsg(*msg);
                 }
@@ -306,42 +308,80 @@ int DllExport RunJuniorRTE(std::string config_file)
                 // Get the first message from the list
                 msg = msglist.front();
                 msglist.pop_front();
-
-                // In repeater mode, the Junior RTE will broadcast any incoming message
-                // on all interfaces.  THIS MODE SHOULD BE USED WITH CAUTION!!!
-                // If multiple junior instances are set to repeater mode, network traffic
-                // will continuous bounce between them until the end of time.
-                if (repeater_mode)
+                // add support for UDL local communication
+                if ((msg->getDestinationId().val == 0) &&
+                    (msg->getMessageCode() == Connect))
                 {
-                    JrDebug << "Repeating message from " << msg->getSourceId().val <<
-                        " to " << msg->getDestinationId().val << " (seq " <<
-                        msg->getSequenceNumber() << ")\n";
-
-                    for ( std::list<Transport*>::iterator tport = _transports.begin();
-                        tport != _transports.end(); ++tport)
-                        if ((*tport)->getName() != "JUDP-LB") (*tport)->broadcastMsg(*msg);
+                    // Connection request from client.
+                    JrDebug << "RTE got connection request from " << msg->getSourceId().val << std::endl;
+                    Message response;
+                    response.setSourceId(0);
+                    response.setDestinationId(msg->getSourceId());
+                    response.setMessageCode(Accept);
+                    if (use_udp) {
+                        udp->sendMsg(response);
+                        _clients_udp.push_back(msg->getSourceId().val);
+                    }
                 }
-                // If relay is off, or this message is intended for a local client (and a
-                // local client only), send it only on the socket interface.
-                else if (!allowRelay ||
-                    (std::find(_clients.begin(), _clients.end(), msg->getDestinationId().val) !=
-                    _clients.end()))
+                else if ((msg->getDestinationId().val == 0) &&
+                            (msg->getMessageCode() == Cancel))
                 {
-                    // Match found.  Send to the socket interface.
-                    publicSocket->sendMsg(*msg);
+                    // Disconnect client.
+                    JrDebug << "RTE got disconnect request from " << msg->getSourceId().val << std::endl;
+                    _clients_udp.remove(msg->getSourceId().val);
                 }
-                // Otherwise, forward this message on all channels (unless it originated locally)
-                else if (std::find(_clients.begin(), _clients.end(), msg->getSourceId().val) ==
-                          _clients.end())
+                else
                 {
-                    JrDebug << "Trying to forward message from " << msg->getSourceId().val <<
-                        " to " << msg->getDestinationId().val << " (seq " <<
-                        msg->getSequenceNumber() << ")\n";
-                    for ( std::list<Transport*>::iterator tport = _transports.begin();
-                        tport != _transports.end(); ++tport)
-                        if ((*tport)->getName() != "JUDP-LB") (*tport)->sendMsg(*msg);
-                }
+                    bool local_dst = std::find(_clients_udp.begin(), _clients_udp.end(), msg->getDestinationId().val) != _clients_udp.end();
+                    if (local_dst || msg->getDestinationId().containsWildcards())
+                    {
+                        if (use_udp) {
+                            if (local_dst) {
+                                udp->sendMsg(*msg);
+                            } else {
+                                udp->broadcastMsg(*msg);
+                            }
+                        }
+                    }
 
+                    // In repeater mode, the Junior RTE will broadcast any incoming message
+                    // on all interfaces.  THIS MODE SHOULD BE USED WITH CAUTION!!!
+                    // If multiple junior instances are set to repeater mode, network traffic
+                    // will continuous bounce between them until the end of time.
+                    if (repeater_mode)
+                    {
+                        JrDebug << "Repeating message from " << msg->getSourceId().val <<
+                            " to " << msg->getDestinationId().val << " (seq " <<
+                            msg->getSequenceNumber() << ")\n";
+
+                        for ( std::list<Transport*>::iterator tport = _transports.begin();
+                            tport != _transports.end(); ++tport)
+                            if ((*tport)->getName() != "JUDP-LB") (*tport)->broadcastMsg(*msg);
+                    }
+                    // If relay is off, or this message is intended for a local client (and a
+                    // local client only), send it only on the socket interface.
+                    // else if (!allowRelay
+                    //          || 
+                    else if (std::find(_clients.begin(), _clients.end(), msg->getDestinationId().val) != _clients.end())
+                    {
+                        // Match found.  Send to the socket interface.
+                        publicSocket->sendMsg(*msg);
+                    }
+                    // Otherwise, forward this message on all channels (unless it originated locally)
+                    else if ((std::find(_clients.begin(), _clients.end(), msg->getSourceId().val) !=
+                            _clients.end()) || (std::find(_clients_udp.begin(), _clients_udp.end(), msg->getSourceId().val) !=
+                        _clients_udp.end()))
+                    {
+                        JrDebug << "Trying to forward message from " << msg->getSourceId().val <<
+                            " to " << msg->getDestinationId().val << " (seq " <<
+                            msg->getSequenceNumber() << ")\n";
+                        for ( std::list<Transport*>::iterator tport = _transports.begin();
+                            tport != _transports.end(); ++tport)
+                            if ((*tport)->getName() != "JUDP-LB") (*tport)->sendMsg(*msg);
+                    } else if (allowRelay) {
+                        JrWarn << "Relay mode not supported!" << std::endl;
+                    }
+                }
                 // If the transport is JSerial, forword the recived msg out the loopback port
                 if ((*_iter)->getName() == "JSerial")
                 {

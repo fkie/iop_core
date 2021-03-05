@@ -333,6 +333,7 @@ void Component::shutdown_component()
 
 	this->stop();
 	jausRouter->stop();
+	delete this->jausRouter;
 
 	// remove all plugins
 	p_discovery_client = std::shared_ptr<JTS::Service>();

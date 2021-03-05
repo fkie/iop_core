@@ -109,6 +109,14 @@ ConfigData::ConfigError XmlConfig::getValue(unsigned char& value,
 	return lookupValue(value, attribute, element, index);
 }
 
+ConfigData::ConfigError XmlConfig::getValue(bool& value,
+		  					 const std::string& attribute,
+							 const std::string& element,
+							 int index)
+{
+	return lookupValue(value, attribute, element, index);
+}
+
 ConfigData::ConfigError XmlConfig::getValue(double& value,
 		  					 const std::string& attribute,
 							 const std::string& element,

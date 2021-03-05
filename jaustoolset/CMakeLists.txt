@@ -39,6 +39,7 @@ add_library(${library_name} SHARED
     src/Transport/Address.cpp
     src/Transport/ChecksumCRC.cpp
     src/Transport/JUDPTransport.cpp
+    src/Transport/JUDPTransportL.cpp
     src/Transport/JausAddress.cpp
     src/Transport/JausTransport.cpp
     src/Transport/JrLogger.cpp

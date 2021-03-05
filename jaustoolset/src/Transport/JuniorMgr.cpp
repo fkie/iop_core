@@ -33,6 +33,7 @@
 #include "Transport/JUDPTransport.h"
 #else
 #include "Transport/JrSockets.h"
+#include "Transport/JUDPTransportL.h"
 #include "Transport/XmlConfig.h"
 #endif
 
@@ -47,7 +48,8 @@ JuniorMgr::JuniorMgr():
     _message_counter = 1;
     _maxMsgHistory = 100;   // as a message count
     _oldMsgTimeout = 10;    // in seconds
-    _detectDuplicates =1;
+    _detectDuplicates = true;
+    _enableUDPforLocal = true;
     _max_retries = 3;
     _ack_timeout = 100; // in milliseconds
     _msg_count = 0;
@@ -686,70 +688,123 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     // NOTE: We assume that someone else runs NodeManager for us.
     // JrSpawnProcess("NodeManager", config_file);
 
-    // The name of our local socket is the string form of our ID.
-    std::stringstream name; name << id;
-
-    // First open a socket with the given name.
-    JrSocket* mySocket = new JrSocket(name.str());
-    if (mySocket->initialize(config) != Transport::Ok)
-    {
-        JrError << "Failed to open a local socket.  Returning error...\n";
-        delete mySocket;
-        return InitFailed;
-    }
-
-    // We only send to the RTE, so we can explicitly connect
-    mySocket->setDestination("JuniorRTE");
-
-    // Send a connection request.  This will cause the RTE
-    // to look for private traffic on a socket with the Identifier name.
+   	config.getValue(_enableUDPforLocal, "EnableUDPforLocal", "API_Configuration");
+    // connect message
     Message msg;
     msg.setSourceId(id);
     msg.setDestinationId(0);
     msg.setMessageCode(Connect);
-    mySocket->sendMsg(msg);
-    JrInfo << "Connects to Junior Run-Time Engine through " << mySocket->getDestination().c_str() << "...\n";
+    if (!_enableUDPforLocal) {
+        // The name of our local socket is the string form of our ID.
+        std::stringstream name; name << id;
 
-    // Wait for a connection accept message
-    MessageList msglist;
-    bool connected = false;
-    int counter = 0;
-    while (!connected)
-    {
-        if (counter++ > connection_timeout)
+        // First open a socket with the given name.
+        JrSocket* mySocket = new JrSocket(name.str());
+        if (mySocket->initialize(config) != Transport::Ok)
         {
-            // timeout.
+            JrError << "Failed to open a local socket.  Returning error...\n";
             delete mySocket;
-//            JrError << "Timeout waiting for response from Run-Time Engine (Timeout=" << connection_timeout << ")\n";
-            return Timeout;
+            return InitFailed;
         }
 
-        // Resend the connection request msg
-        if ((counter % 50) == 0) mySocket->sendMsg(msg);
+        // We only send to the RTE, so we can explicitly connect
+        mySocket->setDestination("JuniorRTE");
+        // Send a connection request.  This will cause the RTE
+        // to look for private traffic on a socket with the Identifier name.
+        mySocket->sendMsg(msg);
+        JrInfo << "Connects to Junior Run-Time Engine through " << mySocket->getDestination().c_str() << "...\n";
 
-        // Check for incoming messages
-        mySocket->recvMsg(msglist);
-        while (!msglist.empty())
+        // Wait for a connection accept message
+        MessageList msglist;
+        bool connected = false;
+        int counter = 0;
+        while (!connected)
         {
-            Message* response = msglist.front();
-            msglist.pop_front();
-            if (response->getSourceId().val == 0)
+            if (counter++ > connection_timeout)
             {
-                connected = true;
-                JrInfo << "Client connection to RTE accepted and open...\n";
+                // timeout.
+                delete mySocket;
+    //            JrError << "Timeout waiting for response from Run-Time Engine (Timeout=" << connection_timeout << ")\n";
+                return Timeout;
             }
-            delete response;
+
+            // Resend the connection request msg
+            if ((counter % 50) == 0) mySocket->sendMsg(msg);
+
+            // Check for incoming messages
+            mySocket->recvMsg(msglist);
+            while (!msglist.empty())
+            {
+                Message* response = msglist.front();
+                msglist.pop_front();
+                if (response->getSourceId().val == 0)
+                {
+                    connected = true;
+                    JrInfo << "Client connection to RTE accepted and open...\n";
+                }
+                delete response;
+            }
+            JrSleep(1);
         }
-        JrSleep(1);
+
+        // Switch the socket to PEND mode
+        mySocket->setWaitType(JrSocket::PEND);
+
+        // Success.  Store values
+        _transport = mySocket;
+        _id.val     = id;
+
+    } else {
+        // create UDP socket to communicate with NodeManager
+        JUDPTransportL* mySocket = new JUDPTransportL();
+        if (mySocket->initialize(config) != Transport::Ok)
+        {
+            JrError << "Failed to open a local UDP socket.  Returning error...\n";
+            delete mySocket;
+            return InitFailed;
+        }
+
+        // Send a connection request.  This will cause the RTE
+        // to look for private traffic on a socket with the Identifier name.
+        mySocket->sendMsg(msg);
+        JrInfo << "Connects to Junior Run-Time Engine through " << mySocket->getName().c_str() << "...\n";
+
+        // Wait for a connection accept message
+        MessageList msglist;
+        bool connected = false;
+        int counter = 0;
+        while (!connected)
+        {
+            if (counter++ > connection_timeout)
+            {
+                // timeout.
+                delete mySocket;
+                return Timeout;
+            }
+
+            // Resend the connection request msg
+            if ((counter % 50) == 0) mySocket->sendMsg(msg);
+
+            // Check for incoming messages
+            mySocket->recvMsg(msglist);
+            while (!msglist.empty())
+            {
+                Message* response = msglist.front();
+                msglist.pop_front();
+                if (response->getSourceId().val == 0)
+                {
+                    connected = true;
+                    JrInfo << "Client connection to RTE accepted and open...\n";
+                }
+                delete response;
+            }
+            JrSleep(1);
+        }
+        // Success.  Store values
+        _transport = mySocket;
+        _id.val     = id;
+
     }
-
-	// Switch the socket to PEND mode
-	mySocket->setWaitType(JrSocket::PEND);
-
-    // Success.  Store values
-    _transport = mySocket;
-    _id.val     = id;
-
     // Initialize config data from file
     config.getValue(_maxMsgHistory, "MaxMsgHistory", "API_Configuration");
     config.getValue(_oldMsgTimeout, "OldMsgTimeout", "API_Configuration");

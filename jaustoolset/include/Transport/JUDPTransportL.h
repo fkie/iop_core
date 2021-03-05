@@ -23,8 +23,8 @@
  *
  ************************************************************************
  */
-#ifndef __JAUS_UDP_TRANSPORT_H
-#define __JAUS_UDP_TRANSPORT_H
+#ifndef __JAUS_UDP_TRANSPORTL_H
+#define __JAUS_UDP_TRANSPORTL_H
 
 #include "Transport.h"
 #include "ConnectionList.h"
@@ -35,11 +35,11 @@ namespace DeVivo {
 namespace Junior {
 
 
-class JUDPTransport : public Transport
+class JUDPTransportL : public Transport
 {
 public:
-    JUDPTransport();
-   ~JUDPTransport();
+    JUDPTransportL();
+   ~JUDPTransportL();
 
     // All functions are abstract
     TransportError sendMsg(Message& msg);
@@ -53,7 +53,7 @@ protected:
     int                      _socket;
     IP_ADDRESS               _multicastAddr;
     std::list<unsigned int> _interfaces;
-    unsigned int            _local_addr;
+    unsigned short rte_port;
 
 };
 }} // namespace DeVivo::Junior
