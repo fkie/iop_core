@@ -48,7 +48,7 @@ JuniorMgr::JuniorMgr():
     _message_counter = 1;
     _maxMsgHistory = 100;   // as a message count
     _oldMsgTimeout = 10;    // in seconds
-    _detectDuplicates = true;
+    _detectDuplicates = false;
     _enableUDPforLocal = true;
     _max_retries = 3;
     _ack_timeout = 100; // in milliseconds
@@ -808,7 +808,8 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     // Initialize config data from file
     config.getValue(_maxMsgHistory, "MaxMsgHistory", "API_Configuration");
     config.getValue(_oldMsgTimeout, "OldMsgTimeout", "API_Configuration");
-    config.getValue(_detectDuplicates, "DropDuplicateMsgs", "API_Configuration");
+    // removed because of problems on slow machines
+    // config.getValue(_detectDuplicates, "DropDuplicateMsgs", "API_Configuration");
     // we send through domain socket, the messages should be save or we have  another problems...
     // config.getValue(_max_retries, "MaxAckNakRetries", "API_Configuration");
     // config.getValue(_ack_timeout, "AckTimeout", "API_Configuration");
