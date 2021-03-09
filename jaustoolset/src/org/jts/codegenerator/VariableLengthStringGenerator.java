@@ -502,17 +502,20 @@ public class VariableLengthStringGenerator
                 code.publicMethods.add(CppCode.createMethodDeclaration("int", "set", fieldName, methodParam, false));
 
                 // set method
-                methodCode.add("if ( value.length() > " + maxLength + ")");
-                methodCode.add("{");
-                methodCode.add("\treturn 1;");
-                methodCode.add("}");
-                methodCode.add("");
+                if (!maxLength.isEmpty()) {
+                    methodCode.add("if ( value.length() > " + maxLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\treturn 1;");
+                    methodCode.add("}");
+                    methodCode.add("");
+                }
                 methodCode.add(variableName + " = value;");
-                methodCode.add("if (" + stringLength + " < " + minLength + ")");
-                methodCode.add("{");
-                methodCode.add("\t" + variableName + ".resize(" + minLength + ");");
-                methodCode.add("}");
-
+                if (!minLength.isEmpty()) {
+                    methodCode.add("if (" + stringLength + " < " + minLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\t" + variableName + ".resize(" + minLength + ");");
+                    methodCode.add("}");
+                }
                 if (vlString.isOptional())
                 {
                     methodCode.add("setPresenceVector("+ pvIndex +");");
@@ -528,16 +531,20 @@ public class VariableLengthStringGenerator
                 methodParam.add("String value");
 
                 // set method
-                methodCode.add("if ( value.length() > " + maxLength + ")");
-                methodCode.add("{");
-                methodCode.add("\treturn;");
-                methodCode.add("}");
-                methodCode.add("");
+                if (!maxLength.isEmpty()) {
+                    methodCode.add("if ( value.length() > " + maxLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\treturn;");
+                    methodCode.add("}");
+                    methodCode.add("");
+                }
                 methodCode.add(variableName + " = value;");
-                methodCode.add("if (" + stringLength + " < " + minLength + ")");
-                methodCode.add("{");
-                methodCode.add("\t" + variableName + " = " + variableName + ".substring(0, " + minLength + ");");
-                methodCode.add("}");
+                if (!minLength.isEmpty()) {
+                    methodCode.add("if (" + stringLength + " < " + minLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\t" + variableName + " = " + variableName + ".substring(0, " + minLength + ");");
+                    methodCode.add("}");
+                }
 
                 if (vlString.isOptional())
                 {
@@ -554,17 +561,21 @@ public class VariableLengthStringGenerator
                 methodParam.add("string value");
                 
                 // set method
-                methodCode.add("if ( value.Length > " + maxLength + ")");
-                methodCode.add("{");
-                methodCode.add("\treturn;");
-                methodCode.add("}");
-                methodCode.add("");
+                if (!maxLength.isEmpty()) {
+                    methodCode.add("if ( value.Length > " + maxLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\treturn;");
+                    methodCode.add("}");
+                    methodCode.add("");
+                }
                 methodCode.add(variableName + " = value;");
-                methodCode.add("if (" + stringLength + " < " + minLength + ")");
-                methodCode.add("{");
-                methodCode.add("\t//Resizing a stiring like this is not possible in C#.");
-                //methodCode.add("\t" + variableName + " = " + variableName + ".Substring(0, " + minLength + ");");
-                methodCode.add("}");
+                if (!minLength.isEmpty()) {
+                    methodCode.add("if (" + stringLength + " < " + minLength + ")");
+                    methodCode.add("{");
+                    methodCode.add("\t//Resizing a stiring like this is not possible in C#.");
+                    //methodCode.add("\t" + variableName + " = " + variableName + ".Substring(0, " + minLength + ");");
+                    methodCode.add("}");
+                }
 
                 if (vlString.isOptional())
                 {

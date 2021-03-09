@@ -58,9 +58,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class CountField {
 
     @XmlAttribute(name = "min_count")
-    protected String minCount;
+    protected String minCount = "";
     @XmlAttribute(name = "max_count")
-    protected String maxCount;
+    protected String maxCount = "";
     @XmlAttribute(name = "interpretation")
     @XmlSchemaType(name = "anySimpleType")
     protected String interpretation;
