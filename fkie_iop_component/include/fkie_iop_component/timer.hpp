@@ -22,11 +22,11 @@ along with this program; or you can read the full license at
 
 #pragma once
 
-#include <chrono>
-#include <functional>
 #include <atomic>
-#include <thread>
+#include <chrono>
 #include <condition_variable>
+#include <functional>
+#include <thread>
 
 namespace iop {
 
@@ -46,6 +46,7 @@ class Timer
     bool is_running() const;
 
   private:
+    uint64_t m_current_id;  // Control variable to ensure that the timer has expired in the correct thread after the restart
     std::chrono::milliseconds m_interval;
     std::function<void ()> m_task;
     std::atomic_bool m_single_shot;
@@ -54,6 +55,8 @@ class Timer
     std::mutex m_mutext_run_cond;
     std::thread m_thread;
     std::mutex m_mutex_stop;
+
+    void m_timeout(uint64_t id);
 
 };
 

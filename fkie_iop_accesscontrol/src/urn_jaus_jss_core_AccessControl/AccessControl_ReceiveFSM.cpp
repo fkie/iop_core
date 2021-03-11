@@ -33,7 +33,7 @@ namespace urn_jaus_jss_core_AccessControl
 
 AccessControl_ReceiveFSM::AccessControl_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
 : logger(cmp->get_logger().get_child("AccessControl")),
-  p_timer(std::chrono::seconds(10), std::bind(&AccessControl_ReceiveFSM::pTimeout, this), false)
+  p_timer(std::chrono::seconds(10), std::bind(&AccessControl_ReceiveFSM::pTimeout, this), true)
 {
 
 	/*
@@ -117,7 +117,7 @@ void AccessControl_ReceiveFSM::initAction()
 void AccessControl_ReceiveFSM::resetTimerAction()
 {
 	/// Insert User Code HERE
-//  printf("[AccessControl] ResetTimerAction: restart timer\n");
+	RCLCPP_DEBUG(logger, "ResetTimerAction: restart timer");
 	p_timer.stop();
 	if (p_default_timeout > 0) {
 		p_timer.start();
@@ -132,9 +132,7 @@ void AccessControl_ReceiveFSM::sendConfirmControlAction(RequestControl msg, std:
 	uint8_t responseCode = 0;
 	if (arg0 == "CONTROL_ACCEPTED") {
 		responseCode = 0;
-		if (p_default_timeout > 0) {
-			p_timer.start();
-		}
+		// timer reset by internal event "ResetTimerAction"
 	} else if (arg0 == "NOT_AVAILABLE") {
 		responseCode = 1;
 	} else if (arg0 == "INSUFFICIENT_AUTHORITY") {

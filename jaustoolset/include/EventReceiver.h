@@ -48,19 +48,16 @@ public:
 	virtual ~EventReceiver();
 
 	virtual void run();
-    virtual void stop();
+	virtual void stop();
 
-		
 protected:
 	virtual void processInternalEvent(InternalEvent* ie) = 0;
 
 	DeVivo::Junior::JrSignal recvSignal;
-	DeVivo::Junior::JrSignal eventSignal;	
   	DeVivo::Junior::JrMutex runLock;
 	bool running;
-	
-	JTS::InternalEventHandler *ieHandler;
 
+	JTS::InternalEventHandler *ieHandler;
 };
 
 }

@@ -21,13 +21,15 @@ along with this program; or you can read the full license at
 /** \author Alexander Tiderko */
 
 #include "fkie_iop_component/timer.hpp"
+#include <iostream>
 
 using namespace iop;
 
 Timer::Timer(const std::chrono::milliseconds &interval,
              const std::function<void ()> &task,
              bool single_shot)
-    : m_interval(interval),
+    : m_current_id(0),
+      m_interval(interval),
       m_task(task),
       m_single_shot(single_shot),
       m_running(false)
@@ -46,22 +48,14 @@ bool Timer::is_running() const
 
 void Timer::start()
 {
-    stop();
+    if (m_running) {
+        stop();
+    }
 
     m_running = true;
-    m_thread = std::thread([this]
-    {
-        while (m_running)
-        {
-            std::unique_lock<std::mutex> lock(m_mutext_run_cond);
-            auto waitResult = m_run_condition.wait_for(lock, m_interval, [this]{ return !m_running; });
-            if (m_running && !waitResult)
-                m_task();
-
-            if(m_single_shot)
-                m_running = false;
-        }
-    });
+    m_current_id++;
+    m_thread = std::thread(&Timer::m_timeout, this, m_current_id);
+    m_thread.detach();
 }
 
 void Timer::set_interval(const std::chrono::milliseconds &interval)
@@ -86,4 +80,19 @@ void Timer::stop()
     m_run_condition.notify_all();
     if(m_thread.joinable())
         m_thread.join();
+}
+
+void Timer::m_timeout(uint64_t id)
+{
+    while (m_running && m_current_id == id)
+    {
+        std::unique_lock<std::mutex> lock(m_mutext_run_cond);
+        auto waitResult = m_run_condition.wait_for(lock, m_interval, [this]{ return !m_running; });
+        if (m_running && !waitResult && m_current_id == id) {
+            m_task();
+        }
+
+        if(m_single_shot)
+            m_running = false;
+    }
 }

@@ -404,32 +404,32 @@ void Component::processInternalEvent(InternalEvent *ie)
 	// again to the services (children first) for default transitions.
 	// A given event may only be processed by at most one service.
 	//
-	for (unsigned int i = service_list.size(); i>0; i--)
+	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
 		if (!done) {
 			if (ie == 0) {
 				RCLCPP_WARN(this->get_logger(), "Error while cast JAUS message to right transport version, result is 0");
 			} else {
-				done = service_list.at(i-1)->processTransitions(ie);
+				done = service_list.at(i)->processTransitions(ie);
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					RCLCPP_DEBUG(this->get_logger().get_child("InternalProcess"), "PROCESSED: %s - message type: %x, transition: %s", service_list.at(i-1)->getURN().c_str(), id, casted_ie->getName().c_str());
+					RCLCPP_DEBUG(this->get_logger().get_child("InternalProcess"), "PROCESSED: %s - message type: %x, transition: %s", service_list.at(i)->getURN().c_str(), id, casted_ie->getName().c_str());
 				}
 			}
 		}
 	}
-	for (unsigned int i = service_list.size(); i>0; i--)
+	for (unsigned int i = 0; i < service_list.size(); i++)
 	{
 		if (!done) {
 			if (ie == 0) {
 				RCLCPP_WARN(this->get_logger(), "Error while cast JAUS message to right transport version, result is 0");
 			} else {
-				done = service_list.at(i-1)->defaultTransitions(ie);
+				done = service_list.at(i)->defaultTransitions(ie);
 				if (done) {
 					Receive* casted_ie = (Receive*) ie;
 					unsigned short id = *((unsigned short*) casted_ie->getBody()->getReceiveRec()->getMessagePayload()->getData());
-					RCLCPP_DEBUG(this->get_logger().get_child("InternalProcess"), "PROCESSED DEFAULT: %s - message type: %x, transition: %s", service_list.at(i-1)->getURN().c_str(), id, casted_ie->getName().c_str());
+					RCLCPP_DEBUG(this->get_logger().get_child("InternalProcess"), "PROCESSED DEFAULT: %s - message type: %x, transition: %s", service_list.at(i)->getURN().c_str(), id, casted_ie->getName().c_str());
 				}
 			}
 		}
