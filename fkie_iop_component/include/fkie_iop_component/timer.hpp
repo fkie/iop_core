@@ -36,10 +36,14 @@ class Timer
     Timer(const std::chrono::milliseconds &interval,
           const std::function<void ()> &task,
           bool single_shot=false);
+    Timer(const std::chrono::seconds &interval,
+          const std::function<void ()> &task,
+          bool single_shot=false);
     ~Timer();
 
     void start();
     void stop();
+    void set_interval(const std::chrono::seconds &interval);
     void set_interval(const std::chrono::milliseconds &interval);
     void set_rate(double hz);
     void set_single_shot(bool enabled = true);
