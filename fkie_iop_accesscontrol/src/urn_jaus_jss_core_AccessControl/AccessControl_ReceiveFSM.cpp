@@ -33,7 +33,7 @@ namespace urn_jaus_jss_core_AccessControl
 
 AccessControl_ReceiveFSM::AccessControl_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
 : logger(cmp->get_logger().get_child("AccessControl")),
-  p_timer(std::chrono::seconds(10), std::bind(&AccessControl_ReceiveFSM::pTimeout, this), true)
+  p_timer(std::chrono::seconds(60), std::bind(&AccessControl_ReceiveFSM::pTimeout, this), true)
 {
 
 	/*
@@ -43,7 +43,7 @@ AccessControl_ReceiveFSM::AccessControl_ReceiveFSM(std::shared_ptr<iop::Componen
 	 */
 	p_current_authority = 0;
 	p_default_authority = 1;
-	p_default_timeout = 10;
+	p_default_timeout = 60;
 	p_ros_available = true;
 	p_timeout_event = new InternalEvent("Timedout", "ControlTimeout");
 	context = new AccessControl_ReceiveFSMContext(*this);
@@ -79,7 +79,7 @@ void AccessControl_ReceiveFSM::setupIopConfiguration()
 	cfg.declare_param<int64_t>("access_timeout", p_default_timeout, true,
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"Time period in seconds after which the exclusive control goes lost. Zero disables the timeout.",
-		"Default: 10 sec");
+		"Default: 60 sec");
 	cfg.param("access_timeout", p_default_timeout, p_default_timeout);
 	uint8_t da = p_default_authority;
 	cfg.declare_param<uint8_t>("default_authority", p_default_authority, true,

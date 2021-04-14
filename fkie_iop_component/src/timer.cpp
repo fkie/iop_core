@@ -36,6 +36,17 @@ Timer::Timer(const std::chrono::milliseconds &interval,
 {
 }
 
+Timer::Timer(const std::chrono::seconds &interval,
+             const std::function<void ()> &task,
+             bool single_shot)
+    : m_current_id(0),
+      m_interval(std::chrono::duration_cast<std::chrono::milliseconds>(interval)),
+      m_task(task),
+      m_single_shot(single_shot),
+      m_running(false)
+{
+}
+
 Timer::~Timer()
 {
     stop();
@@ -61,6 +72,11 @@ void Timer::start()
 void Timer::set_interval(const std::chrono::milliseconds &interval)
 {
     m_interval = interval;
+}
+
+void Timer::set_interval(const std::chrono::seconds &interval)
+{
+    m_interval = std::chrono::duration_cast<std::chrono::milliseconds>(interval);
 }
 
 void Timer::set_rate(double hz)

@@ -7,7 +7,7 @@ Implements the functionality for exclusive control. By default a timeout of 10 s
 
 #### Parameter:
 
-_access_timeout (int_, (Default: 10)
+_access_timeout (int_, (Default: 60)
 
 > Time period in seconds after which the exclusive control goes lost. Zero disables the timeout.
 
