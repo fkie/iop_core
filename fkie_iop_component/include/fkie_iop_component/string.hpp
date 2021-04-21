@@ -28,36 +28,38 @@ along with this program; or you can read the full license at
 namespace iop {
 
 template <typename Separator>
-auto split_aux(const std::string& value, Separator&& separator)
+auto split_aux(const std::string& value, Separator&& separator, std::string::size_type max_count=0)
     -> std::vector<std::string>
 {
     std::vector<std::string> result;
     std::string::size_type p = 0;
     std::string::size_type q;
-    while ((q = separator(value, p)) != std::string::npos) {
+    std::string::size_type count = 0;
+    while ((q = separator(value, p)) != std::string::npos && (max_count == 0 || count <= max_count)) {
         result.emplace_back(value, p, q - p);
         p = q + 1;
+        count++;
     }
     result.emplace_back(value, p);
     return result;
 }
 
-auto split(const std::string& value, char separator)
+auto split(const std::string& value, char separator, std::string::size_type max_count=0)
     -> std::vector<std::string>
 {
     return split_aux(value,
         [=](const std::string& v, std::string::size_type p) {
             return v.find(separator, p);
-        });
+        }, max_count);
 }
 
-auto split(const std::string& value, const std::string& separators)
+auto split(const std::string& value, const std::string& separators, std::string::size_type max_count=0)
     -> std::vector<std::string>
 {
     return split_aux(value,
         [&](const std::string& v, std::string::size_type p) {
             return v.find_first_of(separators, p);
-        });
+        }, max_count);
 }
 
 std::string& ltrim(std::string& str, const std::string& chars="\t\n\v\f\r ")
@@ -78,4 +80,11 @@ std::string& trim(std::string& str, const std::string& chars="\t\n\v\f\r ")
 }
 
 
+}
+
+bool stob(const std::string& v)
+{
+    return !v.empty () &&
+        (strcasecmp (v.c_str (), "true") == 0 ||
+         atoi (v.c_str ()) != 0);
 }

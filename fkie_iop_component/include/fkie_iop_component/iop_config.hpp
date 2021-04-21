@@ -62,7 +62,11 @@ namespace iop
 	        descriptor.description = description;
 	        descriptor.read_only = read_only;
 	        descriptor.additional_constraints = additional_constraints;
-                p_cmp->declare_parameter<T>(pname, default_value, descriptor);
+                try {
+                        p_cmp->declare_parameter<T>(pname, default_value, descriptor);
+                } catch (const std::exception & ex) {
+                        std::cout << "ERR param:" << ex.what() << std::endl;
+                }
         }
 
         /** Wrapper for get parameter with default options **/

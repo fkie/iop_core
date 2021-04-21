@@ -170,7 +170,7 @@ void Slave::pInitRos()
 	cfg.param("control_addr", control_addr, control_addr);
 	if (!control_addr.empty()) {
 		// try to get the address of the component specified for this slave to avoid discovering
-		auto strs = iop::split(control_addr, ".:");
+		auto strs = iop::split(control_addr, std::string(".:"));
 		if (strs.size() > 3) {
 			throw new std::string("Invalid control_addr parameter: "+ control_addr + "\n");
 		} else {

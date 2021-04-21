@@ -80,7 +80,7 @@ void AccessControl_ReceiveFSM::setupIopConfiguration()
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"Time period in seconds after which the exclusive control goes lost. Zero disables the timeout.",
 		"Default: 60 sec");
-	cfg.param("access_timeout", p_default_timeout, p_default_timeout);
+	cfg.param<int64_t>("access_timeout", p_default_timeout, p_default_timeout);
 	uint8_t da = p_default_authority;
 	cfg.declare_param<uint8_t>("default_authority", p_default_authority, true,
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
