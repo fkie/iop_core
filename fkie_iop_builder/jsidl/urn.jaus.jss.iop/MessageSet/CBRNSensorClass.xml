@@ -1,0 +1,1771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set name="CBRNSensorClass" id="urn:jaus:jss:iop:MessageSet:CBRNSensorClass" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+	<declared_type_set_ref name="basicTypes"
+		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.1" />
+
+	<message_def name="QueryCBRN4" message_id="F920" is_command="false">
+		<description xml:space="preserve">This message queries the last CBRN4 message with ATP-45 payload or the message with specified report id.</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="CBRN4ReportID" field_type="unsigned integer" field_units="one" optional="false"
+					interpretation="The report reference is an identifier associated with the CBRN Detection. 0=Last report">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryCBRNDetection" message_id="F921" is_command="false">
+		<description xml:space="preserve">This message is used to query for CBRNDetection (Message #F931).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryRNDetailedMeasurement" message_id="F922" is_command="false">
+		<description xml:space="preserve">This message is used to query for RNDetailedMeasurement (Message #F932).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryCBDetailedMeasurement" message_id="F923" is_command="false">
+		<description xml:space="preserve">This message is used to query for CBDetailedMeasurement (Message #F933).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryCBRNOperatingState" message_id="F924" is_command="false">
+		<description xml:space="preserve">This message is used to query for CBRNOperatingState (Message #F934).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryCBRNConfiguration" message_id="F925" is_command="false">
+		<description xml:space="preserve">This message is used to query for CBRNConfiguration (Message #F935).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="QueryCBRNScanWindowOperatingState" message_id="F926" is_command="false">
+		<description xml:space="preserve">This message is used to query for CBRNScanWindowOperatingState (Message #F936).</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="QueryRec" optional="false">
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNCommand" message_id="F927" is_command="true">
+		<description xml:space="preserve">
+			The CBRN Payload Command (Message #F927) shall be sent by the OCU to
+			instruct a payload station to perform a given operation or function such as
+			to start sampling.
+			Note that it will only be logical to make one command per request message
+			since the commands are mutually exclusive.
+			Based on STANAG 4586; Message #0208.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="CommandRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="SetPowerMode" optional="true"
+					interpretation="Allows for powering on or off the CBRN sensor at the given station number."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="On"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetOperatingMode" optional="true"
+					interpretation="Places the CBRN payload in a given operational mode.
+					Note that 'Standby' typically means that agent detection is not possible."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Operate"/>
+						<value_enum enum_index="1" enum_const="Standby"/>
+						<value_enum enum_index="2" enum_const="Training"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="Reboot" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to cycle into a powering down immediately followed by a powering up of the sensor."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal Operation"/>
+						<value_enum enum_index="1" enum_const="Reboot"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="OperatingResetType" optional="true"
+					interpretation="Indicates the reset type that will be acted upon in OperatingResetState."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Operating Reset Type"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="OperatingResetState" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to reset its operating state which is specifically identified in OperatingResetType Operating Reset Type (e.g., Reset Sieve Pack). This is not a reset of the configuration parameters."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal Operation"/>
+						<value_enum enum_index="1" enum_const="Reset"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ResetConfigurationState" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to reset its configuration state to the OEM defaults (ex. Display mode)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal Operation"/>
+						<value_enum enum_index="1" enum_const="Reset"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetSamplingMode" optional="true"
+					interpretation="In the case of point detectors, commands the CBRN sensor at the given station number to start or stop sampling. In the case of standoff detectors, commands the CBRN sensor at the given station number to start or stop scanning as well as start or stop tracking."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Stop Sampling"/>
+						<value_enum enum_index="1" enum_const="Start Sampling"/>
+						<value_enum enum_index="2" enum_const="Stop Scanning"/>
+						<value_enum enum_index="3" enum_const="Start Scanning"/>
+						<value_enum enum_index="4" enum_const="Stop Tracking"/>
+						<value_enum enum_index="5" enum_const="Start Tracking"/>
+						<value_range lower_limit="6" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="TestType" optional="true"
+					interpretation="Indicates the test type that will be acted upon in SetTestMode"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Self Test (all Payload Components)"/>
+						<value_enum enum_index="1" enum_const="Audio Test"/>
+						<value_enum enum_index="2" enum_const="Control Component Test"/>
+						<value_enum enum_index="3" enum_const="Power Distribution and Interface Logic Component Test"/>
+						<value_enum enum_index="4" enum_const="Sensing Component Test (Confidence Test)"/>
+						<value_enum enum_index="5" enum_const="Wireless Comms Component Test"/>
+						<value_enum enum_index="6" enum_const="Dismounted Power Component Test"/>
+						<value_enum enum_index="7" enum_const="User Interface Component Test (Display Test)"/>
+						<value_range lower_limit="8" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetTestMode" optional="true"
+					interpretation="Commands the payload at the given station number to start or stop the test indicated in TestType."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Stop Test"/>
+						<value_enum enum_index="1" enum_const="Start Test"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetLocalAlarmEnunciation" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to silence or activate local alarm (local enunciation)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Silence Alarm"/>
+						<value_enum enum_index="1" enum_const="Activate Alarm"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetKeyguard" optional="true"
+					interpretation="Sets the keyguard on the payload’s input device."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Unlocked"/>
+						<value_enum enum_index="1" enum_const="Locked"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetClock" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNConfigurationCommand" message_id="F928" is_command="true">
+		<description xml:space="preserve">
+			The CBRN Payload Configuration Command (Message #F928) shall be sent by the
+			OCU to instruct a given CBRN payload station to configure its parameters such
+			as setting the payload sensitivity level.
+			Based on STANAG 4586; Message #0209.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="ConfigurationRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<variable_length_string name="SetExerOperName" optional="true"
+					interpretation="Sets the Exercise or Operation name. Based on the CBRN 4 (STANAG 2103) field EXER 1 or OPER 1 plus the null character.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="57"/>
+				</variable_length_string>				
+				<fixed_field name="SetExerOperFlag" optional="true"
+					interpretation="Identifies if the Name set in ExerOperName is for an exercise or an operation."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Exercise"/>
+						<value_enum enum_index="1" enum_const="Operation"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="SetCallSign" optional="true"
+					interpretation="Sets the call sign given for a CBRN sensor at the given station number. Based on the CBRN 4 (STANAG 2103) field ALFA 2 plus the null character.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="31"/>
+				</variable_length_string>				
+				<fixed_field name="SetPositioningMode" optional="true"
+					interpretation="Sets the mode for determining the location of the payload."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Manual"/>
+						<value_enum enum_index="1" enum_const="GPS"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetPayloadLatitude" field_type="long float" field_units="radian" optional="true">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-1.57079632679" upper_limit="1.57079632679" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetPayloadLongitude" field_type="long float" field_units="radian" optional="true">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetPayloadAltitude" field_type="float" field_units="meter" optional="true">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-10000" upper_limit="100000" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetPayloadSensitivity" optional="true"
+					interpretation="Sets the payload sensitivity."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal"/>
+						<value_enum enum_index="1" enum_const="High"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetBackgroundLevelSubtractMode" optional="true"
+					interpretation="Indicates whether the defined background value should be subtracted from any payload reading values or not."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Do Not Subtract"/>
+						<value_enum enum_index="1" enum_const="Subtract"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetBackgroundLevelMode" optional="true"
+					interpretation="Sets the mode for determining the background level."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Automatic"/>
+						<value_enum enum_index="1" enum_const="Manual"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetBackgroundLevel" field_type="float" field_units="one" optional="true"
+					interpretation="Sets the background level when background level mode is set to manual." >
+				</fixed_field>
+				<fixed_field name="SetDetectionMode" optional="true"
+					interpretation="Sets the detection mode. Note that 'Standby' typically means that agent detection is not possible."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Automatic"/>
+						<value_enum enum_index="1" enum_const="Manual"/>
+						<value_enum enum_index="2" enum_const="Standby"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetDetectionLevel" optional="true"
+					interpretation="Sets the detection level for the payload. (applicable to CHEM)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Standard"/>
+						<value_enum enum_index="1" enum_const="Miosis"/>
+						<value_enum enum_index="2" enum_const="ICT5"/>
+						<value_enum enum_index="3" enum_const="ICT50"/>
+						<value_enum enum_index="4" enum_const="Operational"/>
+						<value_enum enum_index="5" enum_const="Low"/>
+						<value_range lower_limit="6" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetDetectionOperationalThresholdLevel" field_type="long float" field_units="one" optional="true"
+					interpretation="Sets the detection threshold level value when the 'Detection Level = Operational Level'.
+					This is a custom threshold level that will be applied against either field Contamination Level or
+					Contamination Severity Level (Message: CBRN Detection) as selected by OCU and declared in ContaminationThresholdField.">
+				</fixed_field>
+				<fixed_field name="SetDetectionLowThresholdLevel" field_type="long float" field_units="one" optional="true"
+					interpretation="Sets the detection threshold level value when the 'Detection Level = Low Level'.
+					This is a custom threshold level that will be applied against either field Contamination Level or
+					Contamination Severity Level (Message: CBRN Detection) as selected by OCU and declared in ContaminationThresholdField.">
+				</fixed_field>
+				<fixed_field name="SetDetectionThresholdDelay" field_type="float" field_units="second" optional="true"
+					interpretation="Sets the threshold delay which defines how long the detection value must be equal to or greater than the threshold (as declared in ContaminationThresholdField) before the payload would alarm. This can be used to reduce false alarms.">
+				</fixed_field>
+				<fixed_field name="SetSamplingInterval" field_type="unsigned integer" field_units="minute" optional="true"
+					interpretation="Sets the payload sampling interval. The interval is defined as 'start of sampling period to next start'. For example, if a 10 min sample is taken 'on the hour' then the interval is set to 60 minutes. 0 = Not Set">
+				</fixed_field>
+				<fixed_field name="SetSamplingDuration" field_type="unsigned integer" field_units="minute" optional="true"
+					interpretation="Sets the payload sampling duration. 0 = Not Set">
+				</fixed_field>
+				<fixed_field name="SetSamplingVolume" field_type="long float" field_units="cubic meter" optional="true"
+					interpretation="Sets the payload sampling volume.">
+				</fixed_field>
+				<fixed_field name="SetAudioLevel" optional="true"
+					interpretation="Sets the audio level for the alarm enunciation."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="High"/>
+						<value_enum enum_index="1" enum_const="Medium"/>
+						<value_enum enum_index="2" enum_const="Low"/>
+						<value_enum enum_index="3" enum_const="Off"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetDetectionAboveThresholdUpdateFrequency" optional="true"
+					field_type="float" field_units="hertz"
+					interpretation="Determines the frequency at which the payload will send updated CBRN4 while in an alarm state for a given threat. If the frequency is set to zero then the payload will send the CBRN4, for a given threat, based on sensor determined logic.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="SetLocationLabel" optional="true"
+					interpretation="Sets a user friendly location label.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="16"/>
+				</variable_length_string>				
+				<variable_length_string name="SetGroupLocationLabel" optional="true"
+					interpretation="Sets a user friendly label for the location of a group of sensors.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="16"/>
+				</variable_length_string>				
+				<fixed_field name="SetCBRN4DeliveryMode" optional="false"
+					interpretation="Configures whether a CBRN4 product will be sent with every CBRNDetection Message or only those related to threats (above threshold, above threshold update and NIL measurements)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Threat Related"/>
+						<value_enum enum_index="1" enum_const="Continuous"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetLanguage" optional="true"
+					interpretation="Sets the payload interface language."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="English"/>
+						<value_enum enum_index="1" enum_const="French"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<!-- <message_def name="CBRNDetailedInfoRequest" message_id="F927" is_command="false">
+		<description xml:space="preserve">
+			The CBRN Payload Detailed Info Request (Message #F927) shall be sent by the OCU
+			to request available stored information such as logs, detailed sensor
+			measurements (spectra), etc. from a given payload station. When requesting
+			expected size of information, the OCU shall use the CommandType
+			of type 'Estimate'. This allows the OCU or the operator to adjust the query to
+			modify the request to something manageable for the system/network to handle before making
+			a CBRN Payload Detailed Info Request (Message #F933) with the CommandType
+			set to type 'Download' to command the actual download of the information.
+
+			Based on STANAG 4586; Message #0210.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="RequestRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<bit_field name="StationNumber" field_type_unsigned="unsigned integer" optional="false"
+					interpretation="Bitwise station number from #1 to #32. 0=All stations.">
+				</bit_field>
+				<fixed_field name="InstanceID" field_type="unsigned integer" field_units="one" optional="false"
+					interpretation="ID used as reference for response.">
+				</fixed_field>
+				<fixed_field name="InformationType" optional="false"
+					interpretation="Defines the type of information requested."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Logs"/>
+						<value_enum enum_index="1" enum_const="Above Threshold CBRN Detailed Sensor Measurements"/>
+						<value_enum enum_index="2" enum_const="Above Threshold CBRN4s"/>
+						<value_enum enum_index="3" enum_const="Below Threshold CBRN4s"/>
+						<value_enum enum_index="4" enum_const="Below Threshold CBRN Detailed Sensor Measurements"/>
+						<value_enum enum_index="5" enum_const="Logs (for Above Threshold CBRN Measurements)"/>
+						<value_enum enum_index="6" enum_const="NIL CBRN4s"/>
+						<value_enum enum_index="7" enum_const="NIL CBRN Detailed Measurements"/>
+						<value_range lower_limit="8" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="RequestMode" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to retrieve the most recent log or the log files in a certain date/time range."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Most Recent"/>
+						<value_enum enum_index="1" enum_const="Date/Time Range"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CommandType" optional="false"
+					interpretation="Defines the command type."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Estimate"/>
+						<value_enum enum_index="1" enum_const="Download"/>
+						<value_enum enum_index="2" enum_const="Archive"/>
+						<value_enum enum_index="3" enum_const="Delete"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="StartTimeRange" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="EndTimeRange" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def> -->
+
+	<message_def name="CBRNDisplayConfigurationCommand" message_id="F929" is_command="true">
+		<description xml:space="preserve">
+			The CBRN Payload Display Configuration Command (Message #F929) shall be sent by
+			the OCU to instruct a given CBRN payload station to configure its display
+			parameters such as setting the display contrast.
+
+			The service shall reply with the CBRNConfigurationState (Message #F933).
+			Based on STANAG 4586; Message #0212.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="ConfigurationRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="SetDisplayBrightnessLevel" optional="true"
+					interpretation="Sets the brightness of the display."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="Low"/>
+						<value_enum enum_index="2" enum_const="Medium"/>
+						<value_enum enum_index="3" enum_const="High"/>
+						<value_enum enum_index="4" enum_const="Night Vision"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetDisplayMode" optional="true"
+					interpretation="Sets the display mode."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Power Save"/>
+						<value_enum enum_index="1" enum_const="Continuous"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetDisplayContrast" field_type="float" field_units="one" optional="true"
+					interpretation="Sets the percentage of the display contrast.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetOtherVisualIndicatorsBrightnessLevel" optional="true"
+					interpretation="Sets the brightness of other visual indicators (e.g., LED lamps)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="Low"/>
+						<value_enum enum_index="2" enum_const="Medium"/>
+						<value_enum enum_index="3" enum_const="High"/>
+						<value_enum enum_index="4" enum_const="Night Vision"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNScanWindowConfigurationCommand" message_id="F92A" is_command="true">
+		<description xml:space="preserve">
+			The Payload Scan Window Configuration Command (Message #F92A) shall be sent by
+			the OCU to instruct a given payload station to configure its scan window parameters.
+			Based on STANAG 4586; Message #0213.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="ConfigurationRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="SetStartScanWindowAzimuth" field_type="float" field_units="radian" optional="true"
+					interpretation="Sets the payload’s start scan azimuth. Relative to true north.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="6.28318530718" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetEndScanWindowAzimuth" field_type="float" field_units="radian" optional="true"
+					interpretation="Sets the payload’s end scan azimuth. Relative to true north.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="6.28318530718" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetScanWindowMinElevation" field_type="float" field_units="radian" optional="true"
+					interpretation="Sets the payload's minimum elevation. Relative to local horizontal.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SetScanWindowMaxElevation" field_type="float" field_units="radian" optional="true"
+					interpretation="Sets the payload's maximum elevation. Relative to local horizontal.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+
+				<fixed_field name="SetAzimuthScanRate" field_type="float" field_units="radian per second" optional="true"
+					interpretation="Sets the payload's azimuth scan rate.">
+				</fixed_field>
+				<fixed_field name="SetElevationScanRate" field_type="float" field_units="radian per second" optional="true"
+					interpretation="Sets the payload's elevation scan rate.">
+				</fixed_field>
+
+				<fixed_field name="SetScanMode" optional="true"
+					interpretation="Sets the payload's scan mode."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Horizontal"/>
+						<value_range lower_limit="1" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRN4" message_id="F930" is_command="false">
+		<description xml:space="preserve">
+		This message shall be sent by a service containing the payload product
+		in this case an ATP-45 (E) CBRN Textual Report.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="CBRN4Rec" optional="false">
+				<presence_vector field_type_unsigned="unsigned byte"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="DetectionType" optional="true"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Below Threshold"/>
+						<value_enum enum_index="1" enum_const="Above Threshold"/>
+						<value_enum enum_index="2" enum_const="Above Threshold Update"/>
+						<value_enum enum_index="3" enum_const="NIL (Detection Cleared)"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CBRN4ReportID" field_type="unsigned integer" field_units="one" optional="true"
+					interpretation="The report reference is an identifier associated with the CBRN Detection. 0=Not Assigned.">
+				</fixed_field>
+				<variable_length_string name="CBRN4"
+					optional="false"
+					interpretation="The payload product (i.e., the detection data) is compiled in accordance with ATP-45 (E), STANAG 2103 as a CBRN 4 Report.">
+					<count_field field_type_unsigned="unsigned short integer"/>
+				</variable_length_string>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNDetection" message_id="F931" is_command="false">
+		<description xml:space="preserve">
+		The CBRN Detection (Message #F931) shall be used to report basic
+		contamination related measurements from a given CBRN payload station.
+		CBRN4ReportReference, shall provide a reference to retrieve the actual
+		payload product. The payload product (i.e., the detection data) is compiled in
+		accordance with ATP-45 (E), STANAG 2103 as a CBRN 4 Report. Detailed measurements
+		such as spectra data can be requested from the payload using
+		CBRNDetailedInfoRequest.
+		If an above threshold (or NIL) measurement is detected and no OCU is connected,
+		then the service shall send this message (unsolicited) to a multicast group.
+		A CBRN payload that detects more than one agent shall send a separate CBRNDetection
+		for each agent detected.
+		A CBRN payload with meteorological capability shall provide meteorological data as
+		part of the CBRN4.
+		CBRN detectors must report the detection location related fields (Latitude,
+		Longitude and Altitude) and/or the area related fields.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="CBRNRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned byte"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="DetectionType" optional="false"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Below Threshold"/>
+						<value_enum enum_index="1" enum_const="Above Threshold"/>
+						<value_enum enum_index="2" enum_const="Above Threshold Update"/>
+						<value_enum enum_index="3" enum_const="NIL (Detection Cleared)"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="SubstanceDetected" optional="true"
+					interpretation="Indicates the substance that was detected by the payload. Based on the CBRN 4 fields INDIA 2 (Substance Definition) or INDIAR 2 (Identification of the Material).">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="9"/>
+				</variable_length_string>
+				<fixed_field name="ContaminationLevel" field_type="long float" field_units="second" optional="true"
+					interpretation="Indicates the level of contamination detected.
+					Based on the CBRN 4 field ROMEO 1 (Contamination, Dose and Doserate/Dosage). Please Refer to STANAG 2103 for Applicable Range for Dose Rate and Contamination or Dose Level.
+					Note that the ATP-45 use of Miosis is not applicable here for payloads. Payloads capable of Miosis mode are to declare it in fields with 'DetectionOperationalThresholdLevel' in  CBRNConfigurationCommand and CBRNConfigurationState.">
+				</fixed_field>
+				<fixed_field name="ContaminationLevelUoM" optional="true"
+					field_units="one" field_type="unsigned byte"
+					interpretation="Indicates the units of measurement for the level of contamination detected. Based on the CBRN 4 field ROMEO 1 (Contamination, Dose and Doserate/Dosage).">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Unspecified"/>
+						<value_enum enum_index="1" enum_const="ACPL (Agent Containing Particles Per Litre)"/>
+						<value_enum enum_index="2" enum_const="BQM2 (Becquerel Per Square Meter)"/>
+						<value_enum enum_index="3" enum_const="BQM3 (Becquerel Per Cubic Meter)"/>
+						<value_enum enum_index="4" enum_const="XXX"/>
+						<value_enum enum_index="5" enum_const="XXX"/>
+						<value_enum enum_index="6" enum_const="XXX"/>
+						<value_enum enum_index="7" enum_const="XXX"/>
+						<value_enum enum_index="8" enum_const="XXX"/>
+						<value_enum enum_index="9" enum_const="XXX"/>
+						<value_enum enum_index="10" enum_const="XXX"/>
+						<value_enum enum_index="11" enum_const="XXX"/>
+						<value_enum enum_index="12" enum_const="XXX"/>
+						<value_enum enum_index="13" enum_const="XXX"/>
+						<value_enum enum_index="14" enum_const="XXX"/>
+						<value_enum enum_index="15" enum_const="XXX"/>
+						<value_enum enum_index="16" enum_const="XXX"/>
+						<value_enum enum_index="17" enum_const="XXX"/>
+						<value_enum enum_index="18" enum_const="XXX"/>
+						<value_enum enum_index="19" enum_const="XXX"/>
+						<value_enum enum_index="20" enum_const="XXX"/>
+						<value_enum enum_index="21" enum_const="XXX"/>
+						<value_enum enum_index="22" enum_const="XXX"/>
+						<value_enum enum_index="23" enum_const="XXX"/>
+						<value_range lower_limit="24" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionTimestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="CBRN4ReportReference" field_type="unsigned integer" field_units="one" optional="true"
+					interpretation="The report reference is an identifier associated with the CBRN payload product (i.e., CBRN 4 Report). The CBRN Detection will be provided as a CBRN 4 Report in accordance with ATP-45 (E), STANAG 2103.
+					0 = No More Information Available.">
+				</fixed_field>
+				<fixed_field name="DistanceToCloud" field_type="unsigned integer" field_units="meter" optional="true"
+					interpretation="Indicates the estimated distance from payload to cloud. Based on the CBRN 4 field QUEBEC 6.">
+				</fixed_field>
+				<fixed_field name="LeftRadialLine" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the orientation of the left radial line. Based on the CBRN 4 field QUEBEC 7.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="RightRadialLine" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the orientation of the right radial line. Based on the CBRN 4 field QUEBEC 8.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CloudTopAngle" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the cloud top angle. Based on the CBRN 4 field QUEBEC 9.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CloudBottomAngle" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the cloud top angle. Based on the CBRN 4 field QUEBEC 10.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionLatitude" field_type="long float" field_units="radian" optional="true"
+					interpretation="Indicates the latitude of the detection.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-1.57079632679" upper_limit="1.57079632679" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionLongitude" field_type="long float" field_units="radian" optional="true"
+					interpretation="Indicates the longitude of the detection.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionAltitude" field_type="float" field_units="meter" optional="true"
+					interpretation="Indicates the altitude of the detection. Distance above (+) or below (-) the WGS-84 reference geoid.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-1000" upper_limit="100000" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="RNDetailedMeasurement" message_id="F932" is_command="false">
+		<description xml:space="preserve">
+		This message shall be sent to a OCU containing the Radiological/Nuclear payload detailed sensor measurement.
+		Based on STANAG 4586; Message #1743.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="MeasurementRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned byte"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="DetectionType" optional="true"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Below Threshold"/>
+						<value_enum enum_index="1" enum_const="Above Threshold"/>
+						<value_enum enum_index="2" enum_const="Above Threshold Update"/>
+						<value_enum enum_index="3" enum_const="NIL (Detection Cleared)"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="Measurement"
+					optional="false"
+					interpretation="The payload product.">
+					<count_field field_type_unsigned="unsigned short integer"/>
+				</variable_length_string>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBDetailedMeasurement" message_id="F932" is_command="false">
+		<description xml:space="preserve">
+		This message shall be sent to a OCU containing the Chemical/Biological payload detailed sensor measurement.
+		Based on STANAG 4586; Message #1744.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="MeasurementRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned byte"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="DetectionType" optional="true"
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Below Threshold"/>
+						<value_enum enum_index="1" enum_const="Above Threshold"/>
+						<value_enum enum_index="2" enum_const="Above Threshold Update"/>
+						<value_enum enum_index="3" enum_const="NIL (Detection Cleared)"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="Measurement"
+					optional="false"
+					interpretation="The payload product.">
+					<count_field field_type_unsigned="unsigned short integer"/>
+				</variable_length_string>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNOperatingState" message_id="F934" is_command="false">
+		<description xml:space="preserve">
+			The CBRN Payload Operating State (Message #F934) shall be sent OCU to report
+			on the operating state for a given CBRN payload station such as current
+			battery life or current GPS location.
+			This message shall be sent as a response to the QueryCBRNOperatingState or
+			after CBRNCommand.
+			Based on STANAG 4586; Message #0311.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="StateRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="GPSFix" optional="true"
+					interpretation="Indicates whether the payload is currently locked or not to a satellite."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Not Locked"/>
+						<value_enum enum_index="1" enum_const="Locked"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PowerSource" optional="true"
+					interpretation="Indicates the payload's current power source."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="AC/DC"/>
+						<value_enum enum_index="1" enum_const="Battery"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="BatteryRemaining" field_type="float" field_units="one" optional="true"
+					interpretation="Indicates the remaining battery life.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="BatteryVoltage" field_type="float" field_units="volt" optional="true"
+					interpretation="Indicates the voltage of the battery.">
+					<!-- <value_range lower_limit="0" upper_limit="360" lower_limit_type="inclusive" upper_limit_type="inclusive"/> -->
+				</fixed_field>
+				<fixed_field name="Uptime" field_type="unsigned integer" field_units="minute" optional="true"
+					interpretation="Indicates the total time since the sensor has been powered on.">
+				</fixed_field>
+				<fixed_field name="PayloadState" optional="true"
+					interpretation="Indicates the payload state."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Has Faults"/>
+						<value_enum enum_index="1" enum_const="Has Warnings"/>
+						<value_enum enum_index="2" enum_const="Above Threshold"/>
+						<value_enum enum_index="3" enum_const="Operating"/>
+						<value_enum enum_index="4" enum_const="Powered Off"/>
+						<value_enum enum_index="5" enum_const="Starting Up"/>
+						<value_enum enum_index="6" enum_const="Calibrating"/>
+						<value_enum enum_index="7" enum_const="Testing"/>
+						<value_range lower_limit="8" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PayloadLatitude" field_type="long float" field_units="radian" optional="true"
+					interpretation="Indicates the latitude of the payload.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-1.57079632679" upper_limit="1.57079632679" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PayloadLongitude" field_type="long float" field_units="radian" optional="true"
+					interpretation="Indicates the longitude of the payload.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PayloadAltitude" field_type="float" field_units="meter" optional="true">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-1000" upper_limit="100000" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="BackgroundLevel" field_type="long float" field_units="one" optional="true"
+					interpretation="Indicates the background level in mSv that was either automatically detected by the payload or was manually set using CBRN payload configuration state command.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="1000000000" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CommunicationMethod" optional="true"
+					interpretation="Indicates the current communication method used by the payload."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Wireless"/>
+						<value_enum enum_index="1" enum_const="Wired"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CommunicationSignalStrength" field_type="unsigned byte" field_units="one" optional="true"
+					interpretation="Where applicable (e.g., Wireless) it indicates the signal strength of the communication method 'CommunicationMethod' used by the payload.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="TemperatureState" optional="true"
+					interpretation="Commands the CBRN sensor at the given station number to reset its configuration state to the OEM defaults (ex. Display mode)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal"/>
+						<value_enum enum_index="1" enum_const="Warming Up"/>
+						<value_enum enum_index="2" enum_const="Cooling Down"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="LocalAlarmEnunciationState" optional="true"
+					interpretation="Indicated the local alarm enunciation state."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Alarm Silenced"/>
+						<value_enum enum_index="1" enum_const="Alarm Activated"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="InternalTime" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="OperatingMode" optional="true"
+					interpretation="Indicates the payload operating mode. Note that 'Standby' typically means that agent detection is not possible."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Operating"/>
+						<value_enum enum_index="1" enum_const="Standby"/>
+						<value_enum enum_index="2" enum_const="Training"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="SamplingState" optional="true"
+					interpretation="Indicates the payload sampling state."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Idle"/>
+						<value_enum enum_index="1" enum_const="Sampling"/>
+						<value_enum enum_index="2" enum_const="Sensing Component Test (Confidence Test)"/>
+						<value_enum enum_index="3" enum_const="Scanning"/>
+						<value_enum enum_index="4" enum_const="Tracking"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="TestingState" optional="true"
+					interpretation="Indicates the testing state of the payload."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Not Testing"/>
+						<value_enum enum_index="1" enum_const="Self Testing (All Payload Components)"/>
+						<value_enum enum_index="2" enum_const="Audio Testing"/>
+						<value_enum enum_index="3" enum_const="Control Component Testing"/>
+						<value_enum enum_index="4" enum_const="Power Distribution and Interface Logic Component Testing"/>
+						<value_enum enum_index="5" enum_const="Sensing Component Test (Confidence Test)"/>
+						<value_enum enum_index="6" enum_const="Wireless Comms Component Testing"/>
+						<value_enum enum_index="7" enum_const="Dismounted Power Component Testing"/>
+						<value_enum enum_index="8" enum_const="User Interface Component Testing (Display Testing)"/>
+						<value_range lower_limit="9" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="CBRNConfigurationState" message_id="F935" is_command="false">
+		<description xml:space="preserve">
+			The CBRN Payload Configuration State (Message #F935) shall be sent 
+			to report on a given CBRN payload station configuration state.
+			This message shall also be sent every time the configuration changes.
+			This message shall otherwise be sent as a response to the CBRN Payload Configuration Command.
+			If the 'Detection Level' is set to 'Operational Level' then the payload shall alarm
+			when the 'Detection Operational Threshold Level' threshold is crossed.
+			If the 'Detection Level' is set to 'Low Level' then the payload shall
+			alarm when the 'Detection Low Threshold Level' threshold is crossed.
+			The 'Detection Above Threshold Update Frequency' indicates the frequency at which
+			the payload shall send CBRN4 while in an alarm state for a given threat. If the
+			frequency is set to zero then the payload shall send the CBRN4, for a given
+			threat, based on sensor determined logic.
+			Based on STANAG 4586; Message #0310.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="ConfigurationRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<variable_length_string name="ExerOperName" optional="true"
+					interpretation="Indicates the Exercise or Operation name. Based on the CBRN 4 (STANAG 2103) field EXER 1 or OPER 1 plus the null character.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="57"/>
+				</variable_length_string>				
+				<fixed_field name="ExerOperFlag" optional="true"
+					interpretation="Identifies if the Name set in 'ExerOperName' is for an exercise or an operation."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Exercise"/>
+						<value_enum enum_index="1" enum_const="Operation"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="CallSign" optional="true"
+					interpretation="Indicates the call sign given for the payload at the given station number. Maps to CBRN 4 (STANAG 2103) field ORGIDFT 1 plus the null character.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="31"/>
+				</variable_length_string>				
+				<fixed_field name="PositioningMode" optional="true"
+					interpretation="Identifies if the Name set in 'ExerOperName' is for an exercise or an operation."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Manual"/>
+						<value_enum enum_index="1" enum_const="GPS"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PayloadSensitivity" optional="true"
+					interpretation="Indicates the payload sensitivity."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Normal"/>
+						<value_enum enum_index="1" enum_const="High"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="BackgroundLevelSubtractMode" optional="true"
+					interpretation="Indicates whether the defined background value is subtracted from any sensor reading values or not."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Do Not Subtract"/>
+						<value_enum enum_index="1" enum_const="Subtract"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="BackgroundLevelMode" optional="true"
+					interpretation="Indicates the mode for determining the background level."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Automatic"/>
+						<value_enum enum_index="1" enum_const="Manual"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionMode" optional="true"
+					interpretation="Indicates the detection mode. Note that 'Standby' typically means that agent detection is not possible."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Automatic"/>
+						<value_enum enum_index="1" enum_const="Manual"/>
+						<value_enum enum_index="2" enum_const="Standby"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionLevel" optional="true"
+					interpretation="Indicates the detection level (applicable to CHEM)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Standard"/>
+						<value_enum enum_index="1" enum_const="Miosis"/>
+						<value_enum enum_index="2" enum_const="ICT5"/>
+						<value_enum enum_index="3" enum_const="ICT50"/>
+						<value_enum enum_index="4" enum_const="Operational"/>
+						<value_enum enum_index="5" enum_const="Low"/>
+						<value_range lower_limit="6" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionOperationalThresholdLevel" field_type="long float" field_units="one" optional="true"
+					interpretation="Indicates the detection threshold level value when the 'Detection Level = Operational Level'.
+					This is a custom threshold level that will be applied against either field Contamination Level or
+					Contamination Severity Level (Message: CBRN Detection) as selected by OCU and declared in ContaminationThresholdField.">
+				</fixed_field>
+				<fixed_field name="DetectionLowThresholdLevel" field_type="long float" field_units="one" optional="true"
+					interpretation="Indicates the detection threshold level value when the 'Detection Level = Low Level'.
+					This is a custom threshold level that will be applied against either field Contamination Level or
+					Contamination Severity Level (Message: CBRN Detection) as selected by OCU and declared in ContaminationThresholdField.">
+				</fixed_field>
+				<fixed_field name="DetectionThresholdDelay" field_type="unsigned short integer" field_units="second" optional="true"
+					interpretation="Indicates the threshold delay which defines how long the detection value must be equal to or greater than the threshold (as declared in ContaminationThresholdField) before the payload would alarm. This can be used to reduce false alarms.">
+				</fixed_field>
+				<fixed_field name="SamplingInterval" field_type="unsigned integer" field_units="minute" optional="true"
+					interpretation="Indicates the payload sampling interval. The interval is defined as 'start of sampling period to next start'. For example, if a 10 min sample is taken 'on the hour' then the interval is set to 60 minutes. 0 = Not Set">
+				</fixed_field>
+				<fixed_field name="SamplingDuration" field_type="unsigned integer" field_units="minute" optional="true"
+					interpretation="Indicates the payload sampling duration. 0 = Not Set">
+				</fixed_field>
+				<fixed_field name="SamplingVolume" field_type="long float" field_units="cubic meter" optional="true"
+					interpretation="Indicates the payload sampling volume.">
+				</fixed_field>
+				<fixed_field name="AudioLevel" optional="true"
+					interpretation="Indicates the audio level for the alarm enunciation."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="High"/>
+						<value_enum enum_index="1" enum_const="Medium"/>
+						<value_enum enum_index="2" enum_const="Low"/>
+						<value_enum enum_index="3" enum_const="Off"/>
+						<value_range lower_limit="4" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DisplayBrightnessLevel" optional="true"
+					interpretation="Indicates the brightness of the display."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="Low"/>
+						<value_enum enum_index="2" enum_const="Medium"/>
+						<value_enum enum_index="3" enum_const="High"/>
+						<value_enum enum_index="4" enum_const="Night Vision"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="ProductName" optional="false"
+					interpretation="Indicates the payload product name (ex. FSD, VPBio).">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="30"/>
+				</variable_length_string>				
+				<variable_length_string name="Identifier" optional="false"
+					interpretation="Indicates an OEM specific identifier such as serial number. Maps to CBRN 4 (STANAG 2103) field MSGID 4 plus the null character.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="30"/>
+				</variable_length_string>				
+				<variable_length_string name="SWFirmwareVersion" optional="false"
+					interpretation="Indicates the payload software or firmware version.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="30"/>
+				</variable_length_string>				
+				<fixed_field name="PayloadCBRNType" optional="false"
+					interpretation="Indicates the payload CBRN type."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Chemical"/>
+						<value_enum enum_index="1" enum_const="Biological"/>
+						<value_enum enum_index="2" enum_const="Radiological"/>
+						<value_enum enum_index="3" enum_const="Nuclear"/>
+						<value_enum enum_index="4" enum_const="Chemical Standoff"/>
+						<value_enum enum_index="5" enum_const="Biological Standoff"/>
+						<value_enum enum_index="6" enum_const="Radiological Standoff"/>
+						<value_enum enum_index="7" enum_const="Nuclear Standoff"/>
+						<value_range lower_limit="8" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="PowerMode" optional="false"
+					interpretation="Indicates whether the payload is powered on or off."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="On"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DetectionAboveThresholdUpdateFrequency" optional="true"
+					field_type="float" field_units="hertz"
+					interpretation="Indicates the frequency at which the payload will send CBRN4 while in an alarm state for a given threat. If the frequency is set to zero then the payload will send the CBRN4, for a given threat, based on sensor determined logic.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="StorageUtilisation" optional="true"
+					field_type="unsigned byte" field_units="one"
+					interpretation="Indicates the percentage of utilised storage space.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DisplayMode" optional="true"
+					interpretation="Indicates the display mode."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Power Save"/>
+						<value_enum enum_index="1" enum_const="Continuous"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="DisplayContrast" optional="true"
+					field_type="unsigned byte" field_units="one"
+					interpretation="Indicates percentage of the display contrast.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="100" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="Language" optional="true"
+					interpretation="Indicates the payload interface language."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="English"/>
+						<value_enum enum_index="1" enum_const="French"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="Keyguard" optional="true"
+					interpretation="Indicates the keyguard state on the payload’s input device."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Unlocked"/>
+						<value_enum enum_index="1" enum_const="Locked"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="LocationLabel" optional="true"
+					interpretation="A user friendly location label.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="16"/>
+				</variable_length_string>				
+				<variable_length_string name="GroupLocationLabel" optional="true"
+					interpretation="A user friendly label for the location of a group of sensors.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="16"/>
+				</variable_length_string>				
+				<fixed_field name="ContaminationThresholdField" optional="true"
+					interpretation="Indicates which contamination level field is to be used for warning and caution levels."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Contamination"/>
+						<value_enum enum_index="1" enum_const="Severity"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="OtherVisualIndicatorsBrightnessLevel" optional="true"
+					interpretation="Indicates the brightness of other visual indicators (e.g., LED lamps)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Off"/>
+						<value_enum enum_index="1" enum_const="Low"/>
+						<value_enum enum_index="2" enum_const="Medium"/>
+						<value_enum enum_index="3" enum_const="High"/>
+						<value_enum enum_index="4" enum_const="Night Vision"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="CBRN4DeliveryMode" optional="true"
+					interpretation="Identifies whether a CBRN4 product will be sent with every CBRNDetection Message or only those related to threats (above threshold, above threshold update and NIL measurements)."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Threat Related"/>
+						<value_enum enum_index="1" enum_const="Continuous"/>
+						<value_range lower_limit="2" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<!-- <message_def name="CBRNDetailedInfoResponse" message_id="F937" is_command="false">
+		<description xml:space="preserve">
+			The CBRN Payload Detailed Info Response (Message #F937) shall be sent to the
+			OCU as a response to CBRN Payload Detailed Info Request (Message #F927)
+			providing the requested information such as logs, and detailed sensor measurements.
+
+			Based on STANAG 4586; Cobination of Message #0313 and #0314.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="InfoRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<bit_field name="StationNumber" field_type_unsigned="unsigned integer" optional="false"
+					interpretation="Bitwise station number from #1 to #32. 0=All stations.">
+				</bit_field>
+				<fixed_field name="InstanceID" field_type="unsigned integer" field_units="one" optional="false"
+					interpretation="The Instance ID provides a reference to the original CBRN Payload Detailed Info Request">
+				</fixed_field>
+				<fixed_field name="Result" optional="true"
+					interpretation="Result of the request referenced by InstanceID."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Failed"/>
+						<value_enum enum_index="1" enum_const="Estimated"/>
+						<value_enum enum_index="2" enum_const="Prepared to Download"/>
+						<value_enum enum_index="3" enum_const="Archived"/>
+						<value_enum enum_index="4" enum_const="Deleted"/>
+						<value_range lower_limit="5" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ExpectedTotalSize" field_type="unsigned integer" field_units="one" optional="true"
+					interpretation="Indicates the rough estimate for the total size of all files to be transmitted (rounded up or down as needed). Zero is used if no files could be found that match the criteria">
+				</fixed_field>
+				<fixed_field name="ExpectedTotalSizeUoM" optional="true"
+					interpretation="Indicates the unit of measurement for the previous field."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Byte"/>
+						<value_enum enum_index="1" enum_const="Kilobyte"/>
+						<value_enum enum_index="2" enum_const="Megabyte"/>
+						<value_range lower_limit="3" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="URI" optional="true"
+					interpretation="Uniform Resource Identifier where to download the file.">
+					<count_field field_type_unsigned="unsigned byte" min_count="0" max_count="255"/>
+				</variable_length_string>				
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def> -->
+
+	<message_def name="CBRNScanWindowOperatingState" message_id="F936" is_command="false">
+		<description xml:space="preserve">
+			The CBRN Payload Scan Window Operating State (Message #F936) send every time the
+			scan operating state changes. This message shall otherwise be sent as a
+			response to the CBRNScanWindowConfigurationCommand.
+
+			Based on STANAG 4586; Message #0312.
+		</description>
+		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
+		<body name="Body">
+			<record name="ConfigurationRec" optional="false">
+				<presence_vector field_type_unsigned="unsigned short integer"/>
+				<fixed_field name="Timestamp" optional="true"
+					field_units="second" field_type="long float"
+					interpretation="UTC POSIX-style time in seconds since 1 January 1970">
+				</fixed_field>
+				<fixed_field name="StationNumber" optional="false"
+					field_units="one" field_type="unsigned integer"
+					interpretation="Bitwise station number: 0x00000001 = Stn #1 ... 0x80000000 = Stn #32; 0=All stations">
+				</fixed_field>
+				<fixed_field name="StartScanWindowAzimuth" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's start scan azimuth. Relative to true north.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="6.28318530718" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="EndScanWindowAzimuth" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's end scan azimuth. Relative to true north.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="6.28318530718" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ScanWindowMinElevation" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's minimum elevation. Relative to local horizontal.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ScanWindowMaxElevation" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's maximum elevation. Relative to local horizontal.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+
+				<fixed_field name="AzimuthScanRate" field_type="float" field_units="radian per second" optional="true"
+					interpretation="The payload's elevation scan rate.">
+				</fixed_field>
+				<fixed_field name="ElevationScanRate" field_type="float" field_units="radian per second" optional="true"
+					interpretation="The payload's elevation scan rate.">
+				</fixed_field>
+
+				<fixed_field name="ScanMode" optional="true"
+					interpretation="The payload's scan mode."
+					field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="Horizontal"/>
+						<value_range lower_limit="1" upper_limit="85"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Reserved"/>
+						<value_range lower_limit="86" upper_limit="255"
+							lower_limit_type="inclusive" upper_limit_type="inclusive"
+							interpretation="Payload Specific"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ActualAzimuth" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's actual azimuth.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" upper_limit="6.28318530718" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ActualElevation" field_type="float" field_units="radian" optional="true"
+					interpretation="Indicates the payload's actual elevation.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="-3.14159265358979323846" upper_limit="3.14159265358979323846" lower_limit_type="inclusive" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ScanRadius" field_type="float" field_units="meter" optional="true"
+					interpretation="Indicates the payload's scan radius. A value of 0 indicates that the information is not available.">
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+</declared_type_set>

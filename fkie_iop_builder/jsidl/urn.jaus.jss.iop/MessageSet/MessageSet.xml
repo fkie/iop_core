@@ -5,7 +5,7 @@
 	<declared_type_set_ref name="digitalResourceClass" id="urn:jaus:jss:iop:MessageSet:DigitalResourceClass" version="1.1"/>
 	<declared_type_set_ref name="HandoffClass" id="urn:jaus:jss:iop:MessageSet:HandoffClass" version="1.1"/>
 	<declared_type_set_ref name="HealthClass" id="urn:jaus:jss:iop:MessageSet:HealthClass" version="1.4"/>
-	<declared_type_set_ref name="MeasurementClass" id="urn:jaus:jss:iop:MessageSet:MeasurementClass" version="1.1"/>
+	<declared_type_set_ref name="CBRNSensorClass" id="urn:jaus:jss:iop:MessageSet:CBRNSensorClass" version="1.1"/>
 	<declared_type_set_ref name="PathReporterClass" id="urn:jaus:jss:iop:MessageSet:PathReporterClass" version="1.1"/>
 	<declared_type_set_ref name="platformClass" id="urn:jaus:jss:iop:MessageSet:PlatformClass" version="1.1"/>
 </declared_type_set>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="CBRNSensor" id="urn:jaus:jss:iop:CBRNSensor" version="1.1"
+	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">The CBRNSensor service reports single measurement values of different sensors.
+         The sensors can be types of weather, nuclear, biological or chemical. The type of the measurement is specified in the report.
+        </description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="accessControl" id="urn:jaus:jss:core:AccessControl" version="1.1" />
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="core" id="urn:jaus:jss:iop:MessageSet" version="1.1"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="QueryCBRN4" declared_type_ref="core.CBRNSensorClass.QueryCBRN4"/>
+			<declared_message_def name="QueryCBRNDetection" declared_type_ref="core.CBRNSensorClass.QueryCBRNDetection"/>
+			<declared_message_def name="QueryRNDetailedMeasurement" declared_type_ref="core.CBRNSensorClass.QueryRNDetailedMeasurement"/>
+			<declared_message_def name="QueryCBDetailedMeasurement" declared_type_ref="core.CBRNSensorClass.QueryCBDetailedMeasurement"/>
+			<declared_message_def name="QueryCBRNOperatingState" declared_type_ref="core.CBRNSensorClass.QueryCBRNOperatingState"/>
+			<declared_message_def name="QueryCBRNConfiguration" declared_type_ref="core.CBRNSensorClass.QueryCBRNConfiguration"/>
+			<declared_message_def name="QueryCBRNScanWindowOperatingState" declared_type_ref="core.CBRNSensorClass.QueryCBRNScanWindowOperatingState"/>
+			<declared_message_def name="CBRNCommand" declared_type_ref="core.CBRNSensorClass.CBRNCommand"/>
+			<declared_message_def name="CBRNConfigurationCommand" declared_type_ref="core.CBRNSensorClass.CBRNConfigurationCommand"/>
+			<declared_message_def name="CBRNDisplayConfigurationCommand" declared_type_ref="core.CBRNSensorClass.CBRNDisplayConfigurationCommand"/>
+			<declared_message_def name="CBRNScanWindowConfigurationCommand" declared_type_ref="core.CBRNSensorClass.CBRNScanWindowConfigurationCommand"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="CBRN4" declared_type_ref="core.CBRNSensorClass.CBRN4"/>
+			<declared_message_def name="CBRNDetection" declared_type_ref="core.CBRNSensorClass.CBRNDetection"/>
+			<declared_message_def name="RNDetailedMeasurement" declared_type_ref="core.CBRNSensorClass.RNDetailedMeasurement"/>
+			<declared_message_def name="CBDetailedMeasurement" declared_type_ref="core.CBRNSensorClass.CBDetailedMeasurement"/>
+			<declared_message_def name="CBRNOperatingState" declared_type_ref="core.CBRNSensorClass.CBRNOperatingState"/>
+			<declared_message_def name="CBRNConfigurationState" declared_type_ref="core.CBRNSensorClass.CBRNConfigurationState"/>
+			<declared_message_def name="CBRNScanWindowOperatingState" declared_type_ref="core.CBRNSensorClass.CBRNScanWindowOperatingState"/>
+		</output_set>
+	</message_set>
+	<internal_events_set>
+	</internal_events_set>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+			<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+				<state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+					<state name="NotControlled">
+						<default_state>
+							<!-- A -->
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRN4" value="msg" interpretation="enveloped QueryCBRN4 message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRN4" interpretation="send the last available measurement report to requester">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNDetection" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNDetection">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryRNDetailedMeasurement" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendRNDetailedMeasurement">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBDetailedMeasurement" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBDetailedMeasurement">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNConfiguration" value="msg" interpretation="enveloped QueryCBRNConfiguration message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNConfiguration">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNOperatingState" value="msg" interpretation="enveloped QueryCBRNOperatingState message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNDisplayConfiguration">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNScanWindowOperatingState" value="msg" interpretation="enveloped QueryCBRNScanWindowOperatingState message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNScanWindowOperatingState">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+						</default_state>
+					</state>
+					<state name="Controlled">
+						<default_state>
+							<!-- A -->
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRN4" value="msg" interpretation="enveloped QueryCBRN4 message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRN4" interpretation="send the last available measurement report to requester">
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNDetection" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNDetection">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryRNDetailedMeasurement" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendRNDetailedMeasurement">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBDetailedMeasurement" value="msg" interpretation="enveloped QueryCBRNDetection message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBDetailedMeasurement">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNConfiguration" value="msg" interpretation="enveloped QueryCBRNConfiguration message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNConfiguration">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNOperatingState" value="msg" interpretation="enveloped QueryCBRNOperatingState message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNOperatingState">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+							<transition name="events.Transport.Receive">
+								<parameter type="QueryCBRNScanWindowOperatingState" value="msg" interpretation="enveloped QueryCBRNScanWindowOperatingState message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData" />
+								<simple />
+								<action name="sendCBRNScanWindowOperatingState">
+									<argument value="msg"/>
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<!-- B -->
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="CBRNCommand" value="msg"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+								<guard condition="isControllingClient( transportData ) &amp;&amp; isSupported( msg )" 
+									interpretation="True if requestor currently holds access control of the Component 
+									enclosing the Service AND the request is supported by the implementation."/>
+								<simple/>
+								<action name="applyCBRNCommand" interpretation="Execute the commands send by messages.">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+								<action name="sendCBRNOperatingState" interpretation="Send response with current operating state.">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="CBRNConfigurationCommand" value="msg"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+								<guard condition="isControllingClient( transportData ) &amp;&amp; !isSupported( msg )" 
+									interpretation="True if requestor currently holds access control of the Component 
+									enclosing the Service AND the request is NOT supported by the implementation."/>
+								<simple/>
+								<action name="applyCBRNConfiguration" interpretation="Apply new configuration.">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+								<action name="sendCBRNConfigurationState" interpretation="Send response with current configuration">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="CBRNDisplayConfigurationCommand" value="msg"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+								<guard condition="isControllingClient( transportData ) &amp;&amp; !isSupported( msg )" 
+									interpretation="True if requestor currently holds access control of the Component 
+									enclosing the Service AND the request is NOT supported by the implementation."/>
+								<simple/>
+								<action name="applyCBRNDisplayConfiguration" interpretation="Apply new display configuration.">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+								<action name="sendCBRNConfigurationState" interpretation="Send response with current configuration">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="CBRNScanWindowConfigurationCommand" value="msg"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+								<guard condition="isControllingClient( transportData ) &amp;&amp; !isSupported( msg )" 
+									interpretation="True if requestor currently holds access control of the Component 
+									enclosing the Service AND the request is NOT supported by the implementation."/>
+								<simple/>
+								<action name="applyCBRNScanWindowConfiguration" interpretation="Apply new scan window configuration.">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+								<action name="sendCBRNScanWindowOperatingState" interpretation="Send response">
+									<argument value="msg"/>
+									<argument value="transportData"/>
+								</action>
+							</transition>
+
+						</default_state>
+					</state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
+</service_def>
