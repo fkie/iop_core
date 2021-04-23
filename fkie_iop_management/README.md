@@ -11,11 +11,11 @@ Implements rudimentary management functions.
 
 #### Publisher:
 
-_is_emergency (std_msgs::Bool)_, latched
+_is_emergency (std_msgs::msg::Bool)_, latched
 
 > Publishes __true__ if the component changes into emergency state settled  by client.
 
-_is_ready (std_msgs::Bool)_, latched
+_is_ready (std_msgs::msg::Bool)_, latched
 
 > Publishes __true__ if the component changes in the ready state.
 
@@ -40,7 +40,7 @@ _by_query (bool_, (Default: false)
 
 #### Publisher:
 
-_mgmt_emergency (std_msgs::Bool)_, latched
+_mgmt_emergency (std_msgs::msg::Bool)_, latched
 
 > Publishes __true__ if the component is in the emergency state.
 
@@ -51,11 +51,11 @@ _mgmt_status (std_msgs::String)_, latched
 
 #### Subscriber:
 
-_cmd_mgmt_emergency (std_msgs::Bool)_
+_cmd_mgmt_emergency (std_msgs::msg::Bool)_
 
 > Command to set the controlled component into emergency state.
 
-_cmd_mgmt_reset (std_msgs::Bool)_
+_cmd_mgmt_reset (std_msgs::msg::Bool)_
 
 > Command to set the controlled component into ready state.
 

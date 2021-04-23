@@ -17,17 +17,17 @@ _default_authority (int_, (Default: 1)
 
 #### Publisher:
 
-_is_controlled (std_msgs::Bool)_, latched
+_is_controlled (std_msgs::msg::Bool)_, latched
 
 > Publishes True or False if the service is controlled by someone or not
 
-_is_control_available (std_msgs::Bool)_, latched
+_is_control_available (std_msgs::msg::Bool)_, latched
 
 > Publishes the state of control allowed from ROS side.
 
 #### Subscriber:
 
-_set_control_available (std_msgs::Bool)_
+_set_control_available (std_msgs::msg::Bool)_
 
 > If you set to False, all access control requests will be rejected.
 
