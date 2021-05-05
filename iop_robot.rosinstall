@@ -1,24 +1,32 @@
 - git:
     local-name: iop_msgs
     uri: https://github.com/fkie/iop_msgs
+    version: foxy-devel
 - git:
     local-name: iop_core
     uri: https://github.com/fkie/iop_core
+    version: foxy-devel
 - git:
     local-name: iop_platform
     uri: https://github.com/fkie/iop_platform
+    version: foxy-devel
 - git:
     local-name: iop_sensing
     uri: https://github.com/fkie/iop_sensing
-- git:
-    local-name: iop_jaus_manipulator
-    uri: https://github.com/fkie/iop_jaus_manipulator
+    version: foxy-devel
+#- git:
+#    local-name: iop_jaus_manipulator
+#    uri: https://github.com/fkie/iop_jaus_manipulator
+#    version: foxy-devel
 - git:
     local-name: iop_jaus_mobility
     uri: https://github.com/fkie/iop_jaus_mobility
+    version: foxy-devel
 - git:
     local-name: iop_jaus_sensing
     uri: https://github.com/fkie/iop_jaus_sensing
+    version: foxy-devel
 - git:
     local-name: iop_jaus_ugv
     uri: https://github.com/fkie/iop_jaus_ugv
+    version: foxy-devel
