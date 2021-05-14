@@ -379,7 +379,7 @@ void Component::shutdown_component()
 	}
 
 	this->stop();
-	jausRouter->stop();
+	//jausRouter->stop();
 }
 
 

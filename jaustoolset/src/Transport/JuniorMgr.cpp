@@ -92,7 +92,7 @@ JuniorMgr::~JuniorMgr()
 
 void JuniorMgr::stop()
 {
-	printf("STOP MNAGER\n");
+	printf("STOP MANAGER\n");
 	isRunning = false;
 	_signal_queue_send.signal();
 }
@@ -118,7 +118,9 @@ void JuniorMgr::run()
 			sendOrBroadcast(value);
 		} else {
 			_lock_queue_send.unlock();
-			_signal_queue_send.wait();
+            if (isRunning) {
+			    _signal_queue_send.wait();
+            }
 		}
 	}
 }
@@ -714,7 +716,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     MessageList msglist;
     bool connected = false;
     int counter = 0;
-    while (!connected)
+    while (!connected && isRunning)
     {
         if (counter++ > connection_timeout)
         {
@@ -741,6 +743,9 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
             delete response;
         }
         JrSleep(1);
+
+    if (!isRunning) {
+        return NotInitialized;
     }
 
 	// Switch the socket to PEND mode

@@ -109,9 +109,11 @@ void JausRouter::stop()
 	isRunning = false;
 	runLock.unlock();
 
-	// Send a message to ourselves to wake-up the thread
-	unsigned short msg_id = 0;
-	JrSend(jrHandle, jausAddress.get(), 2, (char*) &msg_id);
+	if (pIsConnected) {
+		// Send a message to ourselves to wake-up the thread
+		unsigned short msg_id = 0;
+		JrSend(jrHandle, jausAddress.get(), 2, (char*) &msg_id);
+	}
 }
 
 
