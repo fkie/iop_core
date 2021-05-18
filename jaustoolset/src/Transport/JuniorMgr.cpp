@@ -742,7 +742,10 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
             }
             delete response;
         }
-        JrSleep(1);
+        if (isRunning) {
+            JrSleep(1);
+        }
+    }
 
     if (!isRunning) {
         return NotInitialized;
