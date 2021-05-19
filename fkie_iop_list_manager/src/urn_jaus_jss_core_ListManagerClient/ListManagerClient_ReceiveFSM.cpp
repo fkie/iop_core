@@ -145,16 +145,23 @@ void ListManagerClient_ReceiveFSM::handleReportElementListAction(ReportElementLi
 	}
 }
 
-void ListManagerClient_ReceiveFSM::push_back(Element &msg)
+void ListManagerClient_ReceiveFSM::push_back(Element &msg, bool send)
 {
 	lock_type lock(p_mutex);
 	if (p_remote.get() != 0) {
 		p_msgs_2_add.push_back(msg);
-		if (p_request_id_in_process == 0) {
+		if (p_request_id_in_process == 0 && send) {
 			pSendCurrentList2Remote();
 		}
 	} else {
 		RCLCPP_WARN(logger, "push_back(Element &) called without set_remote(JausAddress). This call will be ignored!");
+	}
+}
+
+void ListManagerClient_ReceiveFSM::send_list()
+{
+	if (p_request_id_in_process == 0) {
+		pSendCurrentList2Remote();
 	}
 }
 
