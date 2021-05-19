@@ -52,7 +52,8 @@ public:
 	void set_remote(JausAddress &address);
 	void release_remote();
 
-	void push_back(Element &msg);
+	void push_back(Element &msg, bool send);
+	void send_list();
 	void clear();
 	template<class T>
 	void add_state_handler(void(T::*handler)(bool success, unsigned int count), T*obj) {
