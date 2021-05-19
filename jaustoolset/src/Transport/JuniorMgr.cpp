@@ -412,8 +412,8 @@ JrErrorCode JuniorMgr::sendto( unsigned int destination,
 
     // If we're not trying to detect duplicate messages, we follow JAUS 5669, v1.
     // As a result, the sequence number must start at zero for large data sets.
-    if ((size > _max_msg_size) && (!_detectDuplicates))
-        _message_counter = 0;
+    // if ((size > _max_msg_size) && (!_detectDuplicates))
+    //    _message_counter = 0;
 
     // We can never send more than 4079 bytes in a single
     // message, so break up large data sets.
