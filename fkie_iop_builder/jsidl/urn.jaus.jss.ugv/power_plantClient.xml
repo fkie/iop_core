@@ -6,7 +6,7 @@
     <description xml:space="preserve">The powerplant driver provides the means to control vehicle power plants</description>
     <assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
     <references>
-        <inherits_from name="accessControl" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+        <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
     </references>
     <declared_type_set name="types">
         <declared_type_set_ref name="power_plant" id="urn:jaus:jss:ugv:PowerPlantSet" version="1.1" />
