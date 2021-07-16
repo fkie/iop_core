@@ -131,6 +131,7 @@ bool InternalEvent::operator!=(InternalEvent &value)
 
 void InternalEvent::new_report_available(JTS::Message *report, bool send_if_possible)
 {
+	lock_type lock(p_mutex);
 	if (report != NULL) {
 		if (p_event_type == 1) {
 			// send on change
@@ -153,6 +154,7 @@ void InternalEvent::new_report_available(JTS::Message *report, bool send_if_poss
 }
 
 void InternalEvent::send_last_report(){
+	lock_type lock(p_mutex);
 	if (p_last_report != NULL) {
 		if (p_event_type == 1) {
 			RCLCPP_DEBUG(logger, "  send available report: %#x", p_last_report->getID());
@@ -169,6 +171,7 @@ urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage &Inter
 
 void InternalEvent::send_report(JTS::Message &report, unsigned short id)
 {
+	lock_type lock(p_mutex);
 	if (p_event_type == 1) {
 		// send on change
 		p_send_as_event(report, requestor);
@@ -183,6 +186,7 @@ void InternalEvent::send_report(JTS::Message &report, unsigned short id)
 
 void InternalEvent::update(jUnsignedByte event_id, urn_jaus_jss_core_Events::CreateEvent::Body::CreateEventRec::QueryMessage query_msg, jUnsignedShortInteger query_msg_id, JausAddress /* requestor */, jUnsignedByte request_id, jUnsignedByte event_type, double event_rate)
 {
+	lock_type lock(p_mutex);
 	if (p_event_id == event_id) {
 		p_last_update = std::chrono::steady_clock::now();
 		p_request_id = request_id;
@@ -259,6 +263,7 @@ void InternalEvent::p_send_as_event(JTS::Message &report, JausAddress &address)
 
 void InternalEvent::timeout()
 {
+	lock_type lock(p_mutex);
 	JTS::Message* report = p_event_list->get_report(p_query_msg_id);
 	if (report != NULL) {
 		p_send_as_event(*report, requestor);

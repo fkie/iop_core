@@ -17,6 +17,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(fkie_iop_transport REQUIRED)
+find_package(rclcpp REQUIRED)
 
 ###############
 ## setup IOP ##
@@ -47,6 +48,7 @@ iop_code_generator(
 ###########
 set(dependencies
   fkie_iop_transport
+  rclcpp
 )
 
 include_directories(

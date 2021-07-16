@@ -31,6 +31,7 @@ along with this program; or you can read the full license at
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <chrono>
+#include <mutex>
 #include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_component/timer.hpp>
 
@@ -93,6 +94,9 @@ public:
 	ChronoSysTP get_last_update_time() { return p_last_update; }
 
 protected:
+	typedef std::recursive_mutex mutex_type;
+	typedef std::unique_lock<mutex_type> lock_type;
+	mutable mutex_type p_mutex;
 	rclcpp::Logger logger;
 	iop::Timer p_timer;
 	InternalEventList *p_event_list;
