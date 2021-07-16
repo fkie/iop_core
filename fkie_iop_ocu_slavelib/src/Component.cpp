@@ -82,7 +82,7 @@ JausAddress Component::get_address() const
 
 bool Component::match(JausAddress expr)
 {
-	return match_address(p_address, expr);
+	return p_address.match(expr);
 }
 
 bool Component::operator==(const Component &other)

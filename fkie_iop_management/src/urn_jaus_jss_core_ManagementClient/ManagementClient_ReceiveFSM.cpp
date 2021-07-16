@@ -147,31 +147,34 @@ void ManagementClient_ReceiveFSM::resume(JausAddress address)
 void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 {
 	if (p_current_client != client) {
-		if (p_current_client.get() != 0) {
-			if (by_query) {
-				p_query_timer.stop();
-			} else {
-				RCLCPP_INFO(logger, "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
-				pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
-			}
-			p_status = 255;
-			auto ros_msg = std_msgs::msg::String();
-			ros_msg.data = p_status_to_str(p_status);
-			p_pub_status->publish(ros_msg);
-		}
-		p_current_client = client;
-		if (p_current_client.get() != 0) {
-			if (by_query) {
-				if (p_hz > 0) {
-					RCLCPP_INFO(logger, "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
-					p_query_timer.set_rate(p_hz);
-					p_query_timer.start();
+		bool is_new_address = !p_current_client.match(client);
+		if (is_new_address) {
+			if (p_current_client.get() != 0) {
+				if (by_query) {
+					p_query_timer.stop();
 				} else {
-					RCLCPP_WARN(logger, "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
+					RCLCPP_INFO(logger, "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
+					pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
 				}
-			} else {
-				RCLCPP_INFO(logger, "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
-				pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
+				p_status = 255;
+				auto ros_msg = std_msgs::msg::String();
+				ros_msg.data = p_status_to_str(p_status);
+				p_pub_status->publish(ros_msg);
+			}
+			p_current_client = client;
+			if (p_current_client.get() != 0) {
+				if (by_query) {
+					if (p_hz > 0) {
+						RCLCPP_INFO(logger, "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
+						p_query_timer.set_rate(p_hz);
+						p_query_timer.start();
+					} else {
+						RCLCPP_WARN(logger, "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
+					}
+				} else {
+					RCLCPP_INFO(logger, "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
+					pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
+				}
 			}
 		}
 	}

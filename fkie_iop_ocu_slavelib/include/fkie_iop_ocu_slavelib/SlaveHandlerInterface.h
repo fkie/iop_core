@@ -57,6 +57,7 @@ namespace ocu
 		virtual ~SlaveHandlerInterface();
 		bool has_access();
 		bool has_remote_addr();
+		JausAddress remote_addr() { return p_remote_addr; }
 		void set_rate(double hz);
 		void set_supported_service(SlaveHandlerInterface &handler, std::string service_uri, jUnsignedByte major_version, jUnsignedByte minor_version);
 		void set_event_name(std::string event_name);

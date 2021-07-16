@@ -31,19 +31,13 @@ along with this program; or you can read the full license at
 int main(int argc, char* argv [] )
 {
     // Instantiate the component and start it.
-    try
-    {
-        rclcpp::init(argc, argv);
-        auto component = std::make_shared<iop::Component>("iop_component_default", "");
-        component->init(126, 0x40, 81);
-        rclcpp::spin(component);
-        // Shutdown the component and threads
-        component->shutdown_component();
-        rclcpp::shutdown();
-        // Give a little time for proper shutdown
-        DeVivo::Junior::JrSleep(100);
-    } catch (std::runtime_error &e) {
-        std::cerr << "Failed to start IOP component: " << e.what() << std::endl;
-        exit(1);
-    }
+    rclcpp::init(argc, argv);
+    auto component = std::make_shared<iop::Component>("iop_component_default", "");
+    component->init(126, 0x40, 81);
+    rclcpp::spin(component);
+    // Shutdown the component and threads
+    component->shutdown_component();
+    rclcpp::shutdown();
+    // Give a little time for proper shutdown
+    DeVivo::Junior::JrSleep(100);
 }

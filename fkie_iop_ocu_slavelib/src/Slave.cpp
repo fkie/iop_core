@@ -221,7 +221,7 @@ void Slave::pRosControl(const fkie_iop_msgs::msg::OcuCmd::SharedPtr control)
 		}
 		// TODO: read services from discover client service
 		for(std::vector<ServiceInfo>::iterator it_srv = p_services.begin(); it_srv != p_services.end(); ++it_srv) {
-			bool apply_cmd = match_address(it_srv->get_own_address(), ocu_client_addr);
+			bool apply_cmd = it_srv->get_own_address().match(ocu_client_addr);
 			if (p_only_monitor && cmd.access_control > Component::ACCESS_CONTROL_MONITOR) {
 				apply_cmd = false;
 			}
@@ -232,12 +232,15 @@ void Slave::pRosControl(const fkie_iop_msgs::msg::OcuCmd::SharedPtr control)
 				JausAddress emergency_addr = pGetManagementClient()->get_emergency_client();
 				if (emergency_addr.get() != 0 && control_addr.get() != 0 && emergency_addr.getSubsystemID() != control_addr.getSubsystemID()) {
 					apply_cmd = false;
+				} else if (control_addr.get() != 0) {
+					p_management_client->set_current_client(control_addr);
 				}
 			}
 			if (apply_cmd) {
-				JausAddress cmp = it_srv->get_dicovered_address(control_addr, p_controlled_component_nr);
-				if (cmp.get() != 0) {
-					commands[cmp.get()] = std::make_pair(cmd.access_control, cmd.authority);
+				commands[control_addr.get()] = std::make_pair(cmd.access_control, cmd.authority);
+				if (cmd.access_control != Component::ACCESS_CONTROL_REQUEST) {
+					// create events after request control was confirmed. The request is performed in pApplyCommands()
+					pApplyToService(control_addr, cmd.access_control);
 				}
 			}
 		}
@@ -291,7 +294,6 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 				switch (it->second.first) {
 				case Component::ACCESS_CONTROL_RELEASE:
 					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_RELEASE to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
-					pApplyToService(addr, it->second.first);
 					release_access(addr);
 					if (cmp->get_state() == Component::ACCESS_STATE_MONITORING) {
 						cmp->set_state(Component::ACCESS_STATE_NOT_CONTROLLED);
@@ -300,7 +302,6 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 				case Component::ACCESS_CONTROL_MONITOR:
 					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 					cmp->set_state(Component::ACCESS_STATE_MONITORING);
-					pApplyToService(addr, it->second.first);
 					break;
 				case Component::ACCESS_CONTROL_REQUEST:
 					RCLCPP_DEBUG(logger, "apply command ACCESS_CONTROL_REQUEST to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
@@ -311,47 +312,40 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 					} else {
 						RCLCPP_WARN(logger, "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %d.%d.%d", (int)addr.getSubsystemID(), (int)addr.getNodeID(), (int)addr.getComponentID());
 						cmp->set_state(Component::ACCESS_STATE_MONITORING);
-						pApplyToService(addr, it->second.first);
 					}
 					break;
 				}
 			}
 		}
 	}
-
 }
 
 void Slave::pApplyToService(JausAddress &address, unsigned char control_state, unsigned char authority)
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
-		if (it->has_component(address)) {
+		JausAddress discovered_addr = it->get_dicovered_address(address);
+		if (discovered_addr.get() != 0) {
 			switch (control_state) {
 			case Component::ACCESS_CONTROL_RELEASE:
-				RCLCPP_DEBUG(logger, "  inform %s about access_deactivated", it->get_uri().c_str());
-				it->handler().access_deactivated(it->get_uri(), address);
-				it->set_address(address);
-				it->handler().cancel_events(it->get_uri(), address, p_use_queries);
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->set_current_client(JausAddress(0));
+				if (it->handler().remote_addr() == discovered_addr) {
+					RCLCPP_DEBUG(logger, "  inform %s about access_deactivated", it->get_uri().c_str());
+					it->handler().access_deactivated(it->get_uri(), discovered_addr);
+					it->set_address(discovered_addr);
+					it->handler().cancel_events(it->get_uri(), discovered_addr, p_use_queries);
+
 				}
 				break;
 			case Component::ACCESS_CONTROL_MONITOR:
 				RCLCPP_DEBUG(logger, "  inform %s about enable_monitoring_only", it->get_uri().c_str());
-				it->handler().enable_monitoring_only(it->get_uri(), address);
-				it->set_address(address);
-				it->handler().create_events(it->get_uri(), address, p_use_queries);
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->set_current_client(address);
-				}
+				it->handler().enable_monitoring_only(it->get_uri(), discovered_addr);
+				it->set_address(discovered_addr);
+				it->handler().create_events(it->get_uri(), discovered_addr, p_use_queries);
 				break;
 			case Component::ACCESS_CONTROL_REQUEST:
-				RCLCPP_DEBUG(logger, "  inform %s about control_allowed", it->get_uri().c_str());
-				it->handler().control_allowed(it->get_uri(), address, authority);
-				it->set_address(address);
-				it->handler().create_events(it->get_uri(), address, p_use_queries);
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->set_current_client(address);
-				}
+				RCLCPP_INFO(logger, "  inform %s about control_allowed", it->get_uri().c_str());
+				it->handler().control_allowed(it->get_uri(), discovered_addr, authority);
+				it->set_address(discovered_addr);
+				it->handler().create_events(it->get_uri(), discovered_addr, p_use_queries);
 				break;
 			}
 		}
@@ -377,15 +371,17 @@ void Slave::request_access(JausAddress &address, unsigned char authority)
 
 void Slave::release_access(JausAddress &address, bool wait_for_reply)
 {
-	if (pGetAccesscontrolClient() != 0 && address.getComponentID() != 0) {
+	if (pGetAccesscontrolClient() != 0 && address.get() != 0) {
 		if (wait_for_reply) {
 //			pGetAccesscontrolClient()->releaseAccess(address, &Slave::pAccessControlClientReplyHandler, this);
 			pGetAccesscontrolClient()->releaseAccess(address);
 		} else {
 			pGetAccesscontrolClient()->releaseAccess(address);
 		}
-	} else {
-		pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+	}
+	pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+	if (pGetManagementClient() != 0) {
+		p_management_client->set_current_client(JausAddress(0));
 	}
 }
 
@@ -393,37 +389,39 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 {
 	RCLCPP_DEBUG(logger, "access control status of %s changed to %d", address.str().c_str(), code);
 	auto msg_feedback = fkie_iop_msgs::msg::OcuFeedback();
-	Component* cmp = pGetComponent(address);
 	unsigned char authority = 205;
-	if (cmp != NULL) {
-		authority = cmp->get_authority();
-		if (cmp->set_state(code)) {
-			switch (code) {
-			case Component::ACCESS_STATE_NOT_AVAILABLE:
-			case Component::ACCESS_STATE_NOT_CONTROLLED:
-			case Component::ACCESS_STATE_CONTROL_RELEASED:
-				// access released -> stop control
-				// the services are informed before release access was send
-				// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
-				break;
-			case Component::ACCESS_STATE_TIMEOUT:
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->delete_emergency_client();
+	for (unsigned int i = 0; i < p_components.size(); i++) {
+		Component &cmp = p_components[i];
+		if (cmp.get_address().get() == address.get()) {
+			authority = cmp.get_authority();
+			if (cmp.set_state(code)) {
+				switch (code) {
+				case Component::ACCESS_STATE_NOT_AVAILABLE:
+				case Component::ACCESS_STATE_NOT_CONTROLLED:
+				case Component::ACCESS_STATE_CONTROL_RELEASED:
+					// access released -> stop control
+					// the services are informed before release access was send
+					// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+					break;
+				case Component::ACCESS_STATE_TIMEOUT:
+					if (pGetManagementClient() != 0) {
+						pGetManagementClient()->delete_emergency_client();
+					}
+					break;
+				case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
+					pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+					break;
+				case Component::ACCESS_STATE_CONTROL_ACCEPTED:
+					// pass authority to the handler
+					pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
+					if (pGetManagementClient() != 0) {
+						pGetManagementClient()->resume(address);
+					}
+					break;
 				}
-				break;
-			case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
-				pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
-				break;
-			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
-				// pass authority to the handler
-				pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
-				if (pGetManagementClient() != 0) {
-					pGetManagementClient()->resume(address);
-				}
-				break;
+				// send updated info to ROS
+				pSendFeedback();
 			}
-			// send updated info to ROS
-			pSendFeedback();
 		}
 	}
 }
@@ -446,7 +444,8 @@ Component* Slave::pGetComponent(JausAddress &address)
 
 	for (unsigned int i = 0; i < p_components.size(); i++) {
 		Component &cmp = p_components[i];
-		if (cmp.get_address().get() == address.get()) {
+		JausAddress cmp_addr = cmp.get_address();
+		if (cmp_addr.match(address)) {
 			return &cmp;
 		}
 	}
