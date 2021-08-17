@@ -131,6 +131,8 @@ void SlaveHandlerInterface::set_query_before_event(bool enable, double hz)
 	if (!enable && p_query_before_event) {
 		p_timer.stop();
 		if (p_remote_addr.get() != 0) {
+			p_query_before_event = enable;
+			p_qbe_hz = hz;
 			create_events(p_service_uri, p_remote_addr, p_by_query);
 		}
 	}
