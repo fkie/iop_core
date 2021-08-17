@@ -216,7 +216,10 @@ void InternalEvent::set_error(jUnsignedByte code, std::string msg)
 
 bool InternalEvent::p_is_event_supported(jUnsignedShortInteger query_msg_id, jUnsignedByte p_event_type, double p_event_rate)
 {
-	if (p_event_type == 0 && !p_event_list->supports_periodic(query_msg_id)) {
+	if (!p_event_list->supports_message(query_msg_id)) {
+		set_error(5, "Message not supported");
+		return false;
+	} else if (p_event_type == 0 && !p_event_list->supports_periodic(query_msg_id)) {
 		set_error(1, "Periodic events not supported");
 		return false;
 	} else if (p_event_type == 1 && !p_event_list->supports_on_change(query_msg_id)) {
@@ -224,9 +227,6 @@ bool InternalEvent::p_is_event_supported(jUnsignedShortInteger query_msg_id, jUn
 		return false;
 	} else if (p_event_type == 0 && !p_event_list->supports_rate(query_msg_id, p_event_rate)) {
 		set_error(4, "rate not supported");
-		return false;
-	} else if (!p_event_list->supports_message(query_msg_id)) {
-		set_error(5, "Message not supported");
 		return false;
 	}
 	set_error(0);
