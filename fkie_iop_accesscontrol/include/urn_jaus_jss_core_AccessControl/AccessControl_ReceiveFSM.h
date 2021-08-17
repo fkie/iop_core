@@ -80,6 +80,8 @@ public:
 	virtual bool isEmergencyClient(Receive::Body::ReceiveRec transportData);
 
 
+	void setAuthority(uint8_t authority);
+	void setControl(JausAddress address);
 	void store_emergency_address(JausAddress address);
 	void delete_emergency_address(JausAddress address);
 	bool has_emergency_address(JausAddress address);
@@ -97,6 +99,9 @@ protected:
 	std::shared_ptr<iop::Component> cmp;
 	rclcpp::Logger logger;
 	iop::Timer p_timer;
+	ReportAuthority p_report_authority;
+	ReportControl p_report_control;
+	ReportTimeout p_report_timeout;
 	JausAddress p_current_controller;
 	uint8_t p_current_authority;
 	uint8_t p_default_authority;

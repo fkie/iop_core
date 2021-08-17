@@ -91,6 +91,11 @@ void AccessControl_ReceiveFSM::setupIopConfiguration()
 	if (p_default_timeout > 0) {
 		p_timer.set_interval(std::chrono::seconds(p_default_timeout));
 	}
+	p_report_timeout.getBody()->getReportTimoutRec()->setTimeout(p_default_timeout);
+	pEvents_ReceiveFSM->get_event_handler().register_query(QueryAuthority::ID);
+	pEvents_ReceiveFSM->get_event_handler().register_query(QueryControl::ID);
+	pEvents_ReceiveFSM->get_event_handler().register_query(QueryTimeout::ID);
+	pEvents_ReceiveFSM->get_event_handler().set_report(QueryTimeout::ID, &p_report_timeout);
 	p_is_controlled_publisher = cfg.create_publisher<std_msgs::msg::Bool>("is_controlled", 5);
 	p_is_control_available = cfg.create_publisher<std_msgs::msg::Bool>("is_control_available", 5);
 	p_sub_control_available = cfg.create_subscription<std_msgs::msg::Bool>("set_control_available", 5, std::bind(&AccessControl_ReceiveFSM::p_set_control_available, this, std::placeholders::_1));
@@ -111,7 +116,7 @@ void AccessControl_ReceiveFSM::pTimeout()
 void AccessControl_ReceiveFSM::initAction()
 {
 	/// Insert User Code HERE
-	p_current_authority = p_default_authority;
+	setAuthority(p_default_authority);
 }
 
 void AccessControl_ReceiveFSM::resetTimerAction()
@@ -154,8 +159,8 @@ void AccessControl_ReceiveFSM::sendRejectControlAction(ReleaseControl msg, std::
 		reject_msg.getBody()->getRejectControlRec()->setResponseCode(0);
 		if (p_current_controller.get() != 0) {
 			RCLCPP_DEBUG(logger, "delete CONTROLER");
-			p_current_controller = JausAddress(0);
-			p_current_authority = p_default_authority;
+			setAuthority(p_default_authority);
+			setControl(JausAddress(0));
 			p_timer.stop();
 			pPublishControlState(false);
 		}
@@ -178,8 +183,8 @@ void AccessControl_ReceiveFSM::sendRejectControlToControllerAction(std::string a
 		RejectControl reject_msg;
 		if (arg0 == "CONTROL_RELEASED") {
 			RCLCPP_DEBUG(logger, "delete current CONTROLER");
-			p_current_controller = JausAddress(0);
-			p_current_authority = p_default_authority;
+			setAuthority(p_default_authority);
+			setControl(JausAddress(0));
 			p_timer.stop();
 			pPublishControlState(false);
 			reject_msg.getBody()->getRejectControlRec()->setResponseCode(0);
@@ -245,20 +250,20 @@ void AccessControl_ReceiveFSM::sendReportTimeoutAction(QueryTimeout msg, Receive
 void AccessControl_ReceiveFSM::setAuthorityAction(RequestControl msg)
 {
 	/// Insert User Code HERE
-  p_current_authority = msg.getBody()->getRequestControlRec()->getAuthorityCode();
-  RCLCPP_DEBUG(logger, "setAuthotityAction while RequestControl to %d", p_current_authority);
+	setAuthority(msg.getBody()->getRequestControlRec()->getAuthorityCode());
+	RCLCPP_DEBUG(logger, "setAuthotityAction while RequestControl to %d", p_current_authority);
 }
 
 void AccessControl_ReceiveFSM::setAuthorityAction(SetAuthority msg)
 {
 	/// Insert User Code HERE
-	p_current_authority = msg.getBody()->getAuthorityRec()->getAuthorityCode();
+	setAuthority(msg.getBody()->getAuthorityRec()->getAuthorityCode());
 	RCLCPP_DEBUG(logger, "setAuthorityAction to %d", p_current_authority);
 }
 
 void AccessControl_ReceiveFSM::storeAddressAction(Receive::Body::ReceiveRec transportData)
 {
-	p_current_controller = transportData.getAddress();
+	setControl(transportData.getAddress());
 	RCLCPP_DEBUG(logger, "store address of controlling component as %s", p_current_controller.str().c_str());
 	pPublishControlState(true);
 }
@@ -301,6 +306,27 @@ bool AccessControl_ReceiveFSM::isDefaultAuthorityGreater(RequestControl msg)
 bool AccessControl_ReceiveFSM::isEmergencyClient(Receive::Body::ReceiveRec transportData)
 {
 	return has_emergency_address(transportData.getAddress());
+}
+
+void AccessControl_ReceiveFSM::setAuthority(uint8_t authority)
+{
+	if (authority != p_current_authority) {
+		p_current_authority = authority;
+		p_report_authority.getBody()->getReportAuthorityRec()->setAuthorityCode(p_current_authority);
+		pEvents_ReceiveFSM->get_event_handler().set_report(QueryAuthority::ID, &p_report_authority);
+	}
+}
+
+void AccessControl_ReceiveFSM::setControl(JausAddress address)
+{
+	if (p_current_controller != address) {
+		p_current_controller = address;
+		p_report_control.getBody()->getReportControlRec()->setSubsystemID(p_current_controller.getSubsystemID());
+		p_report_control.getBody()->getReportControlRec()->setNodeID(p_current_controller.getNodeID());
+		p_report_control.getBody()->getReportControlRec()->setComponentID(p_current_controller.getComponentID());
+		p_report_control.getBody()->getReportControlRec()->setAuthorityCode(p_current_authority);
+		pEvents_ReceiveFSM->get_event_handler().set_report(QueryControl::ID, &p_report_control);
+	}
 }
 
 void AccessControl_ReceiveFSM::store_emergency_address(JausAddress address)
