@@ -22,6 +22,9 @@ along with this program; or you can read the full license at
 
 #pragma once
 
+#ifndef IOP_STRING
+#define IOP_STRING
+
 #include <string>
 #include <vector>
 
@@ -34,8 +37,8 @@ auto split_aux(const std::string& value, Separator&& separator, std::string::siz
     std::vector<std::string> result;
     std::string::size_type p = 0;
     std::string::size_type q;
-    std::string::size_type count = 0;
-    while ((q = separator(value, p)) != std::string::npos && (max_count == 0 || count <= max_count)) {
+    std::string::size_type count = 1;
+    while ((q = separator(value, p)) != std::string::npos && (max_count == 0 || count < max_count)) {
         result.emplace_back(value, p, q - p);
         p = q + 1;
         count++;
@@ -44,7 +47,7 @@ auto split_aux(const std::string& value, Separator&& separator, std::string::siz
     return result;
 }
 
-auto split(const std::string& value, char separator, std::string::size_type max_count=0)
+inline auto split(const std::string& value, char separator, std::string::size_type max_count=0)
     -> std::vector<std::string>
 {
     return split_aux(value,
@@ -53,7 +56,7 @@ auto split(const std::string& value, char separator, std::string::size_type max_
         }, max_count);
 }
 
-auto split(const std::string& value, const std::string& separators, std::string::size_type max_count=0)
+inline auto split(const std::string& value, const std::string& separators, std::string::size_type max_count=0)
     -> std::vector<std::string>
 {
     return split_aux(value,
@@ -62,29 +65,30 @@ auto split(const std::string& value, const std::string& separators, std::string:
         }, max_count);
 }
 
-std::string& ltrim(std::string& str, const std::string& chars="\t\n\v\f\r ")
+inline std::string& ltrim(std::string& str, const std::string& chars="\t\n\v\f\r ")
 {
     str.erase(0, str.find_first_not_of(chars));
     return str;
 }
  
-std::string& rtrim(std::string& str, const std::string& chars="\t\n\v\f\r ")
+inline std::string& rtrim(std::string& str, const std::string& chars="\t\n\v\f\r ")
 {
     str.erase(str.find_last_not_of(chars) + 1);
     return str;
 }
  
-std::string& trim(std::string& str, const std::string& chars="\t\n\v\f\r ")
+inline std::string& trim(std::string& str, const std::string& chars="\t\n\v\f\r ")
 {
     return ltrim(rtrim(str, chars), chars);
 }
 
-
-}
-
-bool stob(const std::string& v)
+inline bool stob(const std::string& v)
 {
     return !v.empty () &&
         (strcasecmp (v.c_str (), "true") == 0 ||
          atoi (v.c_str ()) != 0);
 }
+
+}
+
+#endif
