@@ -101,6 +101,7 @@ protected:
 	iop::Timer p_timer;
 	ReportAuthority p_report_authority;
 	ReportControl p_report_control;
+	bool p_is_new_controller;
 	ReportTimeout p_report_timeout;
 	JausAddress p_current_controller;
 	uint8_t p_current_authority;

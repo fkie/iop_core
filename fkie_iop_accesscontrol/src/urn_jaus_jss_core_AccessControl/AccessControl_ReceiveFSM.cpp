@@ -45,6 +45,7 @@ AccessControl_ReceiveFSM::AccessControl_ReceiveFSM(std::shared_ptr<iop::Componen
 	p_default_authority = 1;
 	p_default_timeout = 60;
 	p_ros_available = true;
+	p_is_new_controller = false;
 	p_timeout_event = new InternalEvent("Timedout", "ControlTimeout");
 	context = new AccessControl_ReceiveFSMContext(*this);
 
@@ -159,8 +160,8 @@ void AccessControl_ReceiveFSM::sendRejectControlAction(ReleaseControl msg, std::
 		reject_msg.getBody()->getRejectControlRec()->setResponseCode(0);
 		if (p_current_controller.get() != 0) {
 			RCLCPP_DEBUG(logger, "delete CONTROLER");
-			setAuthority(p_default_authority);
 			setControl(JausAddress(0));
+			setAuthority(p_default_authority);
 			p_timer.stop();
 			pPublishControlState(false);
 		}
@@ -183,8 +184,8 @@ void AccessControl_ReceiveFSM::sendRejectControlToControllerAction(std::string a
 		RejectControl reject_msg;
 		if (arg0 == "CONTROL_RELEASED") {
 			RCLCPP_DEBUG(logger, "delete current CONTROLER");
-			setAuthority(p_default_authority);
 			setControl(JausAddress(0));
+			setAuthority(p_default_authority);
 			p_timer.stop();
 			pPublishControlState(false);
 			reject_msg.getBody()->getRejectControlRec()->setResponseCode(0);
@@ -315,6 +316,11 @@ void AccessControl_ReceiveFSM::setAuthority(uint8_t authority)
 		p_report_authority.getBody()->getReportAuthorityRec()->setAuthorityCode(p_current_authority);
 		pEvents_ReceiveFSM->get_event_handler().set_report(QueryAuthority::ID, &p_report_authority);
 	}
+	if (p_is_new_controller) {
+		p_is_new_controller = false;
+		p_report_control.getBody()->getReportControlRec()->setAuthorityCode(p_current_authority);
+		pEvents_ReceiveFSM->get_event_handler().set_report(QueryControl::ID, &p_report_control);
+	}
 }
 
 void AccessControl_ReceiveFSM::setControl(JausAddress address)
@@ -324,8 +330,7 @@ void AccessControl_ReceiveFSM::setControl(JausAddress address)
 		p_report_control.getBody()->getReportControlRec()->setSubsystemID(p_current_controller.getSubsystemID());
 		p_report_control.getBody()->getReportControlRec()->setNodeID(p_current_controller.getNodeID());
 		p_report_control.getBody()->getReportControlRec()->setComponentID(p_current_controller.getComponentID());
-		p_report_control.getBody()->getReportControlRec()->setAuthorityCode(p_current_authority);
-		pEvents_ReceiveFSM->get_event_handler().set_report(QueryControl::ID, &p_report_control);
+		p_is_new_controller = true;
 	}
 }
 
