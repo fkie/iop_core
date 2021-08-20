@@ -150,7 +150,7 @@ void AccessControlClient_ReceiveFSM::handleReportTimeoutAction(ReportTimeout msg
 {
 	JausAddress sender = transportData.getAddress();
 	int rtimeout = msg.getBody()->getReportTimoutRec()->getTimeout();
-	ROS_INFO_NAMED("AccessControlClient", "received access timeout for %s: %d sec", sender.str().c_str(), rtimeout);
+	ROS_DEBUG_NAMED("AccessControlClient", "received access timeout for %s: %d sec", sender.str().c_str(), rtimeout);
 	p_remote_components.set_timeout(sender, rtimeout / 2.0);
 }
 

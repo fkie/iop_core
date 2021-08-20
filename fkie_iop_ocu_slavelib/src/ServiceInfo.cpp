@@ -92,7 +92,7 @@ JausAddress ServiceInfo::get_dicovered_address(JausAddress filter, int nr)
 		int idx = 1;
 		std::vector<JausAddress>::iterator it_addr;
 		for (it_addr = p_discovered_addresses.begin(); it_addr != p_discovered_addresses.end(); ++it_addr) {
-			if (match_address(*it_addr, filter)) {
+			if (it_addr->match(filter)) {
 				if (idx == nr) {
 					return *it_addr;
 				}

@@ -46,30 +46,6 @@ namespace ocu
 		result.setComponentID(addr.component_id);
 		return result;
 	}
-
-	inline bool match_address(JausAddress &address, JausAddress &expr) {
-		bool result = false;
-		if (expr.getSubsystemID() != 0 && expr.getSubsystemID() != 65535) {
-			if (expr.getSubsystemID() == address.getSubsystemID()) {
-				if (expr.getNodeID() != 0 && expr.getNodeID() != 255) {
-					if (expr.getNodeID() == address.getNodeID()) {
-						if (expr.getComponentID() != 0 && expr.getComponentID() != 255) {
-							if (expr.getComponentID() == address.getComponentID()) {
-								result = true;
-							}
-						} else {
-							result = true;
-						}
-					}
-				} else {
-					result = true;
-				}
-			}
-		} else if (expr.getSubsystemID() == 65535) {
-			result = true;
-		}
-		return result;
-	}
 };
 
 };

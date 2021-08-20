@@ -98,6 +98,36 @@ JausAddress::~JausAddress()
 	size = 0;
 }
 
+std::string JausAddress::str() {
+	std::ostringstream result;
+	result << getSubsystemID() << "." << (int)getNodeID() << "." << (int)getComponentID() << "-" << get();
+	return result.str();
+}
+
+bool JausAddress::match(JausAddress &expr) {
+	bool result = false;
+	if (expr.getSubsystemID() != 0 && expr.getSubsystemID() != 65535) {
+		if (expr.getSubsystemID() == getSubsystemID()) {
+			if (expr.getNodeID() != 0 && expr.getNodeID() != 255) {
+				if (expr.getNodeID() == getNodeID()) {
+					if (expr.getComponentID() != 0 && expr.getComponentID() != 255) {
+						if (expr.getComponentID() == getComponentID()) {
+							result = true;
+						}
+					} else {
+						result = true;
+					}
+				}
+			} else {
+				result = true;
+			}
+		}
+	} else if (expr.getSubsystemID() == 65535) {
+		result = true;
+	}
+	return result;
+}
+
 const JausAddress& JausAddress::operator=(const JausAddress& from)
 {
 	if (this != &from)

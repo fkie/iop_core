@@ -135,30 +135,33 @@ void ManagementClient_ReceiveFSM::resume(JausAddress address)
 void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
 {
 	if (p_current_client != client) {
-		if (p_current_client.get() != 0) {
-			if (by_query) {
-				p_query_timer.stop();
-			} else {
-				ROS_INFO_NAMED("ManagementClient", "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
-				pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
-			}
-			p_status = 255;
-			std_msgs::String ros_msg;
-			ros_msg.data = p_status_to_str(p_status);
-			p_pub_status.publish(ros_msg);
-		}
-		p_current_client = client;
-		if (p_current_client.get() != 0) {
-			if (by_query) {
-				if (p_hz > 0) {
-					ROS_INFO_NAMED("ManagementClient", "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
-					p_query_timer = p_nh.createTimer(ros::Duration(1.0 / p_hz), &ManagementClient_ReceiveFSM::pQueryCallback, this);
+		bool is_new_address = !p_current_client.match(client);
+		if (is_new_address) {
+			if (p_current_client.get() != 0) {
+				if (by_query) {
+					p_query_timer.stop();
 				} else {
-					ROS_WARN_NAMED("ManagementClient", "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
+					ROS_INFO_NAMED("ManagementClient", "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
+					pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
 				}
-			} else {
-				ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
-				pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
+				p_status = 255;
+				std_msgs::String ros_msg;
+				ros_msg.data = p_status_to_str(p_status);
+				p_pub_status.publish(ros_msg);
+			}
+			p_current_client = client;
+			if (p_current_client.get() != 0) {
+				if (by_query) {
+					if (p_hz > 0) {
+						ROS_INFO_NAMED("ManagementClient", "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
+						p_query_timer = p_nh.createTimer(ros::Duration(1.0 / p_hz), &ManagementClient_ReceiveFSM::pQueryCallback, this);
+					} else {
+						ROS_WARN_NAMED("ManagementClient", "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
+					}
+				} else {
+					ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
+					pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
+				}
 			}
 		}
 	}

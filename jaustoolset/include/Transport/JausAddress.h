@@ -47,11 +47,9 @@ public:
 	JausAddress(JausAddress const& from);
 	virtual ~JausAddress();
 
-	std::string str() {
-		std::ostringstream result;
-		result << getSubsystemID() << "." << (int)getNodeID() << "." << (int)getComponentID() << "-" << get();
-		return result.str();
-	}
+	std::string str();
+	bool match(JausAddress &expr);
+
 	const JausAddress& operator=(const JausAddress& from);
 	bool operator==(const JausAddress &value) const;
 	bool operator!=(const JausAddress &value) const;
