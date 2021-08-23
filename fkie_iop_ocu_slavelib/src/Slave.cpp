@@ -216,10 +216,6 @@ void Slave::pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control)
 			}
 			if (apply_cmd) {
 				commands[control_addr.get()] = std::make_pair(cmd.access_control, cmd.authority);
-				if (cmd.access_control != Component::ACCESS_CONTROL_REQUEST) {
-					// create events after request control was confirmed. The request is performed in pApplyCommands()
-					pApplyToService(control_addr, cmd.access_control);
-				}
 			}
 		}
 	}
@@ -265,34 +261,37 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> >::iterator it;
 	for (it = commands.begin(); it != commands.end(); ++it) {
 		JausAddress addr(it->first);
-		Component* cmp = pGetComponent(addr);
-		if (cmp != NULL) {
-			JausAddress cmp_addr(cmp->get_address());
-			// it is new control for the component or new authority
-			if (cmp->set_access_control(it->second.first) or cmp->set_authority(it->second.second)) {
-				switch (it->second.first) {
-				case Component::ACCESS_CONTROL_RELEASE:
-					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_RELEASE to %s", cmp_addr.str().c_str());
-					release_access(cmp_addr);
-					if (cmp->get_state() == Component::ACCESS_STATE_MONITORING) {
-						cmp->set_state(Component::ACCESS_STATE_NOT_CONTROLLED);
+		for (unsigned int i = 0; i < p_components.size(); i++) {
+			Component &cmp = p_components[i];
+			JausAddress cmp_addr = cmp.get_address();
+			if (cmp_addr.match(addr)) {
+				JausAddress cmp_addr(cmp.get_address());
+				// it is new control for the component or new authority
+				if (cmp.set_access_control(it->second.first) or cmp.set_authority(it->second.second)) {
+					switch (it->second.first) {
+					case Component::ACCESS_CONTROL_RELEASE:
+						ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_RELEASE to %s", cmp_addr.str().c_str());
+						release_access(cmp_addr);
+						if (cmp.get_state() == Component::ACCESS_STATE_MONITORING) {
+							cmp.set_state(Component::ACCESS_STATE_NOT_CONTROLLED);
+						}
+						break;
+					case Component::ACCESS_CONTROL_MONITOR:
+						ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_MONITOR to %s", cmp_addr.str().c_str());
+						cmp.set_state(Component::ACCESS_STATE_MONITORING);
+						break;
+					case Component::ACCESS_CONTROL_REQUEST:
+						ROS_INFO_NAMED("Slave", "apply command ACCESS_CONTROL_REQUEST to %s", cmp_addr.str().c_str());
+						// send request access
+						if (pGetAccesscontrolClient() != 0) {
+							cmp.set_authority(it->second.second);
+							request_access(cmp_addr, it->second.second);
+						} else {
+							ROS_WARN_NAMED("Slave", "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %s", cmp_addr.str().c_str());
+							cmp.set_state(Component::ACCESS_STATE_MONITORING);
+						}
+						break;
 					}
-					break;
-				case Component::ACCESS_CONTROL_MONITOR:
-					ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_MONITOR to %s", cmp_addr.str().c_str());
-					cmp->set_state(Component::ACCESS_STATE_MONITORING);
-					break;
-				case Component::ACCESS_CONTROL_REQUEST:
-					ROS_INFO_NAMED("Slave", "apply command ACCESS_CONTROL_REQUEST to %s", cmp_addr.str().c_str());
-					// send request access
-					if (pGetAccesscontrolClient() != 0) {
-						cmp->set_authority(it->second.second);
-						request_access(cmp_addr, it->second.second);
-					} else {
-						ROS_WARN_NAMED("Slave", "no acces control available -> set state to ACCESS_CONTROL_MONITOR to %s", cmp_addr.str().c_str());
-						cmp->set_state(Component::ACCESS_STATE_MONITORING);
-					}
-					break;
 				}
 			}
 		}
