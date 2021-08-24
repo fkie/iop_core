@@ -187,6 +187,7 @@ void Slave::pInitRos()
 void Slave::pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control)
 {
 	// is the command for specific client?
+	bool skipped = false;
 	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands;
 	for (unsigned int i = 0; i < control->cmds.size(); i++) {
 		fkie_iop_msgs::OcuCmdEntry cmd = control->cmds[i];
@@ -195,32 +196,56 @@ void Slave::pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control)
 		// apply default control address
 		control_addr = pApplyDefaultControlAdd(control_addr);
 		if (control_addr.get() == 0) {
+			skipped = true;
 			continue;
 		}
+		if (p_current_control_addr.get() != 0) {
+			if (! control_addr.match(p_current_control_addr) && cmd.access_control != Component::ACCESS_CONTROL_RELEASE) {
+				ROS_WARN_NAMED("Slave", "already controlling %s, cannot switch to %s", p_current_control_addr.str().c_str(), control_addr.str().c_str());
+				skipped = true;
+				continue;
+			} else if (p_current_control_state == cmd.access_control) {
+				skipped = true;
+				ROS_WARN_NAMED("Slave", "state for %s already applied", p_current_control_addr.str().c_str());
+				continue;
+			}
+		}
+		if (cmd.access_control == Component::ACCESS_CONTROL_RELEASE) {
+			p_current_control_addr = JausAddress(0);
+		} else {
+			p_current_control_addr = control_addr;
+		}
+		p_current_control_state = cmd.access_control;
 		// TODO: read services from discover client service
-		for(std::vector<ServiceInfo>::iterator it_srv = p_services.begin(); it_srv != p_services.end(); ++it_srv) {
-			bool apply_cmd = it_srv->get_own_address().match(ocu_client_addr);
-			if (p_only_monitor && cmd.access_control > Component::ACCESS_CONTROL_MONITOR) {
+		bool apply_cmd = p_own_address.match(ocu_client_addr);
+		if (p_only_monitor && cmd.access_control > Component::ACCESS_CONTROL_MONITOR) {
+			apply_cmd = false;
+		}
+		if (p_subsystem_restricted != 65535 && control_addr.getSubsystemID() != p_subsystem_restricted) {
+			apply_cmd = false;
+		}
+		if (pGetManagementClient() != 0) {
+			JausAddress emergency_addr = pGetManagementClient()->get_emergency_client();
+			if (emergency_addr.get() != 0 && control_addr.get() != 0 && emergency_addr.getSubsystemID() != control_addr.getSubsystemID()) {
 				apply_cmd = false;
 			}
-			if (p_subsystem_restricted != 65535 && control_addr.getSubsystemID() != p_subsystem_restricted) {
-				apply_cmd = false;
-			}
-			if (pGetManagementClient() != 0) {
-				JausAddress emergency_addr = pGetManagementClient()->get_emergency_client();
-				if (emergency_addr.get() != 0 && control_addr.get() != 0 && emergency_addr.getSubsystemID() != control_addr.getSubsystemID()) {
-					apply_cmd = false;
-				} else if (control_addr.get() != 0) {
-					p_management_client->set_current_client(control_addr);
-				}
-			}
-			if (apply_cmd) {
-				commands[control_addr.get()] = std::make_pair(cmd.access_control, cmd.authority);
+			// } else if (control_addr.get() != 0) {
+			// 	p_management_client->set_current_client(control_addr);
+			// }
+		}
+		if (apply_cmd) {
+			commands[control_addr.get()] = std::make_pair(cmd.access_control, cmd.authority);
+			if (cmd.access_control == Component::ACCESS_CONTROL_MONITOR) {
+				// create events after request control was confirmed. The request is performed in pApplyCommands()
+				pApplyToService(control_addr, cmd.access_control);
 			}
 		}
 	}
 	//apply commands to each component
 	pApplyCommands(commands);
+	if (skipped) {
+		pSendFeedback();
+	}
 }
 
 JausAddress Slave::pApplyDefaultControlAdd(JausAddress& control_addr)
@@ -275,6 +300,7 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 						if (cmp.get_state() == Component::ACCESS_STATE_MONITORING) {
 							cmp.set_state(Component::ACCESS_STATE_NOT_CONTROLLED);
 						}
+						p_current_control_addr = JausAddress(0);
 						break;
 					case Component::ACCESS_CONTROL_MONITOR:
 						ROS_DEBUG_NAMED("Slave", "apply command ACCESS_CONTROL_MONITOR to %s", cmp_addr.str().c_str());
@@ -341,6 +367,9 @@ void Slave::request_access(JausAddress &address, unsigned char authority)
 	if (pGetAccesscontrolClient() != 0 && address.get() != 0) {
 //		pGetAccesscontrolClient()->requestAccess(address, &Slave::pAccessControlClientReplyHandler, this, authority);
 		pGetAccesscontrolClient()->requestAccess(address, authority);
+		if (pGetManagementClient() != 0) {
+			p_management_client->set_current_client(address);
+		}
 	} else {
 	}
 }
