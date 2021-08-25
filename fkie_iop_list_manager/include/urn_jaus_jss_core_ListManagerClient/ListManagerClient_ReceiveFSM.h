@@ -81,8 +81,10 @@ protected:
 
 	unsigned char p_request_id;
 	unsigned char p_request_id_in_process;
+	unsigned char p_request_id_set_element;
 	unsigned short p_current_uid;
 	unsigned char p_current_access_code;
+	bool p_send_requested;
 
 	bool pSendCurrentList2Remote();
 	void pInformStateCallbacks(bool success, unsigned int count);

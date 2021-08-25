@@ -31,6 +31,7 @@ ListManagerClient_ReceiveFSM::ListManagerClient_ReceiveFSM(urn_jaus_jss_core_Tra
 	p_current_uid = 0;
 	p_request_id_in_process = 0;
 	p_current_access_code = 255;
+	p_send_requested = false;
 }
 
 
@@ -66,6 +67,7 @@ void ListManagerClient_ReceiveFSM::release_remote()
 	lock_type lock(p_mutex);
 	p_remote = JausAddress(0);
 	// reset states
+	p_send_requested = false;
 	p_request_id_in_process = 0;
 	p_current_uid = 0;
 	p_request_id = 0;
@@ -79,7 +81,9 @@ void ListManagerClient_ReceiveFSM::handleConfirmElementRequestAction(ConfirmElem
 	ROS_DEBUG_NAMED("ListManagerClient", "list element confirmed by %s: request_id: %d", sender.str().c_str(), request_id);
 	if (p_request_id_in_process == request_id) {
 		p_request_id_in_process = 0;
-		if (!pSendCurrentList2Remote()) {
+		if (p_request_id_set_element == request_id) {
+			pInformStateCallbacks(true, 1);
+		} else if (!pSendCurrentList2Remote()) {
 			QueryElementList query;
 			sendJausMessage(query, p_remote);
 		}
@@ -113,6 +117,13 @@ void ListManagerClient_ReceiveFSM::handleReportElementCountAction(ReportElementC
 	if (count > 0 && p_remote.get() != 0) {
 		QueryElementList query;
 		sendJausMessage(query, p_remote);
+	} else {
+		p_request_id_in_process = 0;
+		if (p_send_requested) {
+			if (!pSendCurrentList2Remote()) {
+				pInformStateCallbacks(true, count);
+			}
+		}
 	}
 }
 
@@ -131,8 +142,8 @@ void ListManagerClient_ReceiveFSM::handleReportElementListAction(ReportElementLi
 			}
 		}
 		p_request_id_in_process = 0;
-		if (!pSendCurrentList2Remote()) {
-			pInformStateCallbacks(true, list->getNumberOfElements());
+		if (p_send_requested) {
+			pSendCurrentList2Remote();
 		}
 	}
 }
@@ -144,6 +155,8 @@ void ListManagerClient_ReceiveFSM::push_back(Element &msg, bool send)
 		p_msgs_2_add.push_back(msg);
 		if (p_request_id_in_process == 0 && send) {
 			pSendCurrentList2Remote();
+		} else if (send) {
+			p_send_requested = true;
 		}
 	} else {
 		ROS_WARN_NAMED("ListManagerClient", "push_back(Element &) called without set_remote(JausAddress). This call will be ignored!");
@@ -154,14 +167,17 @@ void ListManagerClient_ReceiveFSM::send_list()
 {
 	if (p_request_id_in_process == 0) {
 		pSendCurrentList2Remote();
+	} else {
+		p_send_requested = true;
 	}
 }
 
 void ListManagerClient_ReceiveFSM::clear()
 {
 	lock_type lock(p_mutex);
+	p_send_requested = false;
+	p_current_uid = 0;
 	if (p_remote.get() != 0) {
-		p_current_uid = 0;
 		p_msgs_2_add.clear();
 		p_request_id++;
 		DeleteElement query;
@@ -201,11 +217,13 @@ bool ListManagerClient_ReceiveFSM::pSendCurrentList2Remote() {
 		}
 		ROS_DEBUG_NAMED("ListManagerClient", "send request %d to add %lu elements @ %s", (int)p_request_id, p_msgs_2_add.size(), p_remote.str().c_str());
 		p_request_id_in_process = p_request_id;
+		p_request_id_set_element = p_request_id;
 		sendJausMessage(query, p_remote);
 		// added elements are removed from the list. It is not save.
 		// If the message goes lost or reject, the elements are lost and will not be resent.
 		// TODO: put the to into retry list.
 		p_msgs_2_add.clear();
+		p_send_requested = false;
 		return true;
 	}
 	return false;
