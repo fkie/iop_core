@@ -82,7 +82,7 @@ void ListManagerClient_ReceiveFSM::handleConfirmElementRequestAction(ConfirmElem
 	if (p_request_id_in_process == request_id) {
 		p_request_id_in_process = 0;
 		if (p_request_id_set_element == request_id) {
-			pInformStateCallbacks(true, 1);
+			pInformStateCallbacks(true, p_msgs_2_add.size());
 		} else if (!pSendCurrentList2Remote()) {
 			QueryElementList query;
 			sendJausMessage(query, p_remote);
