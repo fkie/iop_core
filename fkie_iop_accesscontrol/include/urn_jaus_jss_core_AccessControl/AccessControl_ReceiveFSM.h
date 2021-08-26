@@ -41,6 +41,7 @@ along with this program; or you can read the full license at
 
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/String.h>
 
 namespace urn_jaus_jss_core_AccessControl
 {
@@ -97,6 +98,7 @@ protected:
 	std::set<unsigned int> p_emergency_address;
 	ros::Publisher p_is_controlled_publisher;
 	ros::Publisher p_is_control_available;
+	ros::Publisher p_controller_publisher;
 	ros::Subscriber p_sub_control_available;
     /// References to parent FSMs
 	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;

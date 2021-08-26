@@ -84,6 +84,7 @@ protected:
 	urn_jaus_jss_core_Management::Management_ReceiveFSM* pManagement_ReceiveFSM;
 
 	iop::InternalElementList p_list;
+	ReportElementCount p_report_count;
 };
 
 };

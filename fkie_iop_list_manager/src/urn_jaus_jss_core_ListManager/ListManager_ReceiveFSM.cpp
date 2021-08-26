@@ -84,11 +84,17 @@ void ListManager_ReceiveFSM::setupNotifications()
 	registerNotification("Receiving", pManagement_ReceiveFSM->getHandler(), "InternalStateChange_To_Management_ReceiveFSM_Receiving", "ListManager_ReceiveFSM");
 
 	iop::Config cfg("~ListManager");
+	pEvents_ReceiveFSM->get_event_handler().register_query(ReportElementCount::ID);
 }
 
 void ListManager_ReceiveFSM::deleteElementAction(DeleteElement msg)
 {
+	unsigned int count = p_list.size();
 	p_list.delete_element(msg);
+	if (p_list.size() != count) {
+		p_report_count.getBody()->getElementCountRec()->setElementCount((unsigned short)p_list.size());
+		pEvents_ReceiveFSM->get_event_handler().set_report(QueryStatus::ID, &p_report_count);
+	}
 }
 
 void ListManager_ReceiveFSM::sendConfirmElementRequestAction(DeleteElement msg, Receive::Body::ReceiveRec transportData)
@@ -123,10 +129,7 @@ void ListManager_ReceiveFSM::sendReportElementAction(QueryElement msg, Receive::
 
 void ListManager_ReceiveFSM::sendReportElementCountAction(QueryElementCount msg, Receive::Body::ReceiveRec transportData)
 {
-	JausAddress sender = transportData.getAddress();
-	ReportElementCount reply;
-	reply.getBody()->getElementCountRec()->setElementCount((unsigned short)p_list.size());
-	sendJausMessage(reply, sender);
+	sendJausMessage(p_report_count, transportData.getAddress());
 }
 
 void ListManager_ReceiveFSM::sendReportElementListAction(QueryElementList msg, Receive::Body::ReceiveRec transportData)
@@ -142,6 +145,7 @@ void ListManager_ReceiveFSM::setElementAction(SetElement msg, Receive::Body::Rec
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getSetElementSeq()->getRequestIDRec()->getRequestID();
 	bool success = false;
+	unsigned int count = p_list.size();
 	if (p_list.isElementSupported(msg)) {
 		if (p_list.isValidElementRequest(msg)) {
 			if (p_list.set_element(msg)) {
@@ -154,6 +158,10 @@ void ListManager_ReceiveFSM::setElementAction(SetElement msg, Receive::Body::Rec
 		ConfirmElementRequest reply;
 		reply.getBody()->getRequestIDRec()->setRequestID(request_id);
 		sendJausMessage(reply, sender);
+		if (p_list.size() != count) {
+			p_report_count.getBody()->getElementCountRec()->setElementCount((unsigned short)p_list.size());
+			pEvents_ReceiveFSM->get_event_handler().set_report(QueryStatus::ID, &p_report_count);
+		}
 	} else {
 		ROS_DEBUG_NAMED("ListManager", "set element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
 		RejectElementRequest reject;

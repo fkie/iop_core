@@ -88,9 +88,10 @@ void AccessControl_ReceiveFSM::setupNotifications()
 		delete p_timer;
 		p_timer = new DeVivo::Junior::JrTimer(Timeout, this, p_default_timeout*1000);
 	}
-	p_is_controlled_publisher = cfg.advertise<std_msgs::Bool>("is_controlled", 5, true);
-	p_is_control_available = cfg.advertise<std_msgs::Bool>("is_control_available", 5, true);
-	p_sub_control_available = cfg.subscribe<std_msgs::Bool>("set_control_available", 5, &AccessControl_ReceiveFSM::p_set_control_available, this);
+	p_is_controlled_publisher = cfg.advertise_p<std_msgs::Bool>("is_controlled", 5, true);
+	p_is_control_available = cfg.advertise_p<std_msgs::Bool>("is_control_available", 5, true);
+	p_controller_publisher = cfg.advertise_p<std_msgs::String>("controller", 5, true);
+	p_sub_control_available = cfg.subscribe_p<std_msgs::Bool>("set_control_available", 5, &AccessControl_ReceiveFSM::p_set_control_available, this);
 	pPublishControlState(false);
 	std_msgs::Bool msg;
 	msg.data = p_ros_available;
@@ -326,6 +327,9 @@ void AccessControl_ReceiveFSM::pPublishControlState(bool state)
 	std_msgs::Bool ros_msg;
 	ros_msg.data = state;
 	p_is_controlled_publisher.publish(ros_msg);
+	std_msgs::String ros_msg_ctrl;
+	ros_msg_ctrl.data = p_current_controller.str();
+	p_controller_publisher.publish(ros_msg_ctrl);
 }
 
 void AccessControl_ReceiveFSM::p_set_control_available(const std_msgs::Bool::ConstPtr& state)
