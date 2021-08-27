@@ -32,11 +32,11 @@ using namespace urn_jaus_jss_core_EventsClient;
 
 InternalEventClient::InternalEventClient(rclcpp::Logger& logger, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM& parent, iop::EventHandlerInterface& handler, jUnsignedByte request_id, JTS::Message &query_msg, JausAddress address, jUnsignedByte event_type, double rate)
 : logger(logger),
-  p_timer(std::chrono::seconds(1), std::bind(&InternalEventClient::timeout, this), false)
+  p_timer(std::chrono::seconds(60), std::bind(&InternalEventClient::timeout, this), false)
 {
 	p_parent = &parent;
 	p_query_msg = &query_msg;
-	p_timeout = 1;
+	p_timeout = 0;
 	p_request_id = request_id;
 	p_event_id = 255;
 	p_query_msg_id = query_msg.getID();
@@ -114,7 +114,7 @@ void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEven
 				p_send_update_event();
 			}
 			p_timeout = timeout;
-			p_timer.set_interval(std::chrono::milliseconds((p_timeout * 60 - 2) * 1000));
+			p_timer.set_interval(std::chrono::milliseconds((p_timeout * 60 - 2) / 2 * 1000));
 			p_timer_start();
 		}
 	}
@@ -214,7 +214,7 @@ void InternalEventClient::timeout()
 void InternalEventClient::p_timer_stop()
 {
 	if (p_timer.is_running()) {
-		RCLCPP_DEBUG(logger, "stop timeout timer for report %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "stop timeout timer for report %#x with timeout %dms to %s", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str());
 		p_timer.stop();
 	}
 }
@@ -222,7 +222,7 @@ void InternalEventClient::p_timer_stop()
 void InternalEventClient::p_timer_start()
 {
 	if (p_event_id != 255 && p_timeout > 0 && !p_timer.is_running()) {
-		RCLCPP_DEBUG(logger, "start timeout timer for %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+		RCLCPP_INFO(logger, "start timeout timer for %#x with %dms to %s (component timeout: %d min)", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str(), p_timeout);
 		p_timer.start();
 	}
 }
