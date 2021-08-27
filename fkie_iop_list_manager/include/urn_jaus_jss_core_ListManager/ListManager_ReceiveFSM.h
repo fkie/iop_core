@@ -90,6 +90,7 @@ protected:
 	std::shared_ptr<iop::Component> cmp;
 	rclcpp::Logger logger;
 	iop::InternalElementList p_list;
+	ReportElementCount p_report_count;
 };
 
 }

@@ -92,11 +92,17 @@ void ListManager_ReceiveFSM::setupNotifications()
 void ListManager_ReceiveFSM::setupIopConfiguration()
 {
 	iop::Config cfg(cmp, "ListManager");
+	pEvents_ReceiveFSM->get_event_handler().register_query(ReportElementCount::ID);
 }
 
 void ListManager_ReceiveFSM::deleteElementAction(DeleteElement msg)
 {
+	unsigned int count = p_list.size();
 	p_list.delete_element(msg);
+	if (p_list.size() != count) {
+		p_report_count.getBody()->getElementCountRec()->setElementCount((unsigned short)p_list.size());
+		pEvents_ReceiveFSM->get_event_handler().set_report(QueryStatus::ID, &p_report_count);
+	}
 }
 
 void ListManager_ReceiveFSM::sendConfirmElementRequestAction(DeleteElement msg, Receive::Body::ReceiveRec transportData)
@@ -122,11 +128,7 @@ void ListManager_ReceiveFSM::sendRejectElementRequestAction(DeleteElement msg, R
 
 void ListManager_ReceiveFSM::sendReportElementAction(QueryElement msg, Receive::Body::ReceiveRec transportData)
 {
-	JausAddress sender = transportData.getAddress();
-	jUnsignedShortInteger element_uid = msg.getBody()->getQueryElementRec()->getElementUID();
-	RCLCPP_DEBUG(logger, "send element with uid %d to %s", element_uid, sender.str().c_str());
-	ReportElement reply = p_list.get_element(element_uid).get_report();
-	sendJausMessage(reply, sender);
+	sendJausMessage(p_report_count, transportData.getAddress());
 }
 
 void ListManager_ReceiveFSM::sendReportElementCountAction(QueryElementCount msg, Receive::Body::ReceiveRec transportData)
@@ -150,6 +152,7 @@ void ListManager_ReceiveFSM::setElementAction(SetElement msg, Receive::Body::Rec
 	JausAddress sender = transportData.getAddress();
 	jUnsignedByte request_id = msg.getBody()->getSetElementSeq()->getRequestIDRec()->getRequestID();
 	bool success = false;
+	unsigned int count = p_list.size();
 	if (p_list.isElementSupported(msg)) {
 		if (p_list.isValidElementRequest(msg)) {
 			if (p_list.set_element(msg)) {
@@ -162,6 +165,10 @@ void ListManager_ReceiveFSM::setElementAction(SetElement msg, Receive::Body::Rec
 		ConfirmElementRequest reply;
 		reply.getBody()->getRequestIDRec()->setRequestID(request_id);
 		sendJausMessage(reply, sender);
+		if (p_list.size() != count) {
+			p_report_count.getBody()->getElementCountRec()->setElementCount((unsigned short)p_list.size());
+			pEvents_ReceiveFSM->get_event_handler().set_report(QueryStatus::ID, &p_report_count);
+		}
 	} else {
 		RCLCPP_DEBUG(logger, "set element for request id %d from %s failed with error: %d (%s)", (int)request_id, sender.str().c_str(), p_list.get_error_code(), p_list.get_error_msg().c_str());
 		RejectElementRequest reject;
