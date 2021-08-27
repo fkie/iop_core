@@ -75,6 +75,8 @@ namespace ocu {
 		bool p_handoff_supported;
 		JausAddress p_own_address;
 		JausAddress p_default_control_addr;
+		JausAddress p_current_control_addr;
+		unsigned char p_current_control_state;
 		int p_default_authority;
 		int p_default_access_control;
 		std::vector<ServiceInfo> p_services;
