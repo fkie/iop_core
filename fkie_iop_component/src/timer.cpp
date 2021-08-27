@@ -79,6 +79,11 @@ void Timer::set_interval(const std::chrono::seconds &interval)
     m_interval = std::chrono::duration_cast<std::chrono::milliseconds>(interval);
 }
 
+std::chrono::milliseconds Timer::get_interval()
+{
+    return m_interval;
+}
+
 void Timer::set_rate(double hz)
 {
     m_interval = std::chrono::milliseconds((int)(1000/hz));

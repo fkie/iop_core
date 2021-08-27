@@ -45,6 +45,7 @@ class Timer
     void stop();
     void set_interval(const std::chrono::seconds &interval);
     void set_interval(const std::chrono::milliseconds &interval);
+    std::chrono::milliseconds get_interval();
     void set_rate(double hz);
     void set_single_shot(bool enabled = true);
     bool is_running() const;
