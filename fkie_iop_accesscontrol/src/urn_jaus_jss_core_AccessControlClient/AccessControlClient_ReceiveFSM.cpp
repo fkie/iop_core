@@ -157,7 +157,7 @@ void AccessControlClient_ReceiveFSM::handleReportTimeoutAction(ReportTimeout msg
 {
 	JausAddress sender = transportData.getAddress();
 	int rtimeout = msg.getBody()->getReportTimoutRec()->getTimeout();
-	RCLCPP_INFO(logger, "received access timeout for %s: %d sec", sender.str().c_str(), rtimeout);
+	RCLCPP_DEBUG(logger, "received access timeout for %s: %d sec", sender.str().c_str(), rtimeout);
 	p_remote_components.set_timeout(sender, rtimeout / 2.0);
 }
 
