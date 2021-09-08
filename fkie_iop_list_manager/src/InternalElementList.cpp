@@ -255,6 +255,8 @@ bool InternalElementList::delete_element(DeleteElement msg)
 {
 	lock_type lock(p_mutex);
 	DeleteElement::Body::DeleteElementSeq::DeleteElementList* dellist = msg.getBody()->getDeleteElementSeq()->getDeleteElementList();
+	ROS_DEBUG_NAMED("InternalElementList", "delete of %d elements requested", dellist->getNumberOfElements());
+	bool result = false;
 	for (unsigned int i = 0; i < dellist->getNumberOfElements(); ++i) {
 		DeleteElement::Body::DeleteElementSeq::DeleteElementList::DeleteElementRec *delrec = dellist->getElement(i);
 		if (delrec->getElementUID() == 0) {
@@ -266,6 +268,7 @@ bool InternalElementList::delete_element(DeleteElement msg)
 				}
 				ROS_DEBUG_NAMED("InternalElementList", "delete first element with id: %d", p_element_list.begin()->get_uid());
 				p_element_list.erase(p_element_list.begin());
+				result = true;
 			}
 		} else if (delrec->getElementUID() == 65535) {
 			ROS_DEBUG_NAMED("InternalElementList", "delete all elements");
@@ -293,12 +296,13 @@ bool InternalElementList::delete_element(DeleteElement msg)
 						p_current_element = 0;
 					}
 					p_element_list.erase(it);
+					result = true;
 					break;
 				}
 			}
 		}
 	}
-	return true;
+	return result;
 }
 
 unsigned int InternalElementList::size()
