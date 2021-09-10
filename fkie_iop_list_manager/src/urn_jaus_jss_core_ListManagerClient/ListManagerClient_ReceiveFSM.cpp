@@ -278,11 +278,17 @@ unsigned char ListManagerClient_ReceiveFSM::pDeleteRemoteList()
 		p_request_id++;
 		DeleteElement query;
 		query.getBody()->getDeleteElementSeq()->getRequestIDRec()->setRequestID(p_request_id);
-		std::vector<jUnsignedShortInteger>::iterator it;
-		for (it = p_remote_uds.begin(); it != p_remote_uds.end(); ++it) {
+		if (p_remote_uds.size() > 0) {
+			std::vector<jUnsignedShortInteger>::iterator it;
+			for (it = p_remote_uds.begin(); it != p_remote_uds.end(); ++it) {
+				DeleteElement::Body::DeleteElementSeq::DeleteElementList::DeleteElementRec item;
+				unsigned short uid = *it;
+				item.setElementUID(uid);
+				query.getBody()->getDeleteElementSeq()->getDeleteElementList()->addElement(item);
+			}
+		} else {
 			DeleteElement::Body::DeleteElementSeq::DeleteElementList::DeleteElementRec item;
-			unsigned short uid = *it;
-			item.setElementUID(uid);
+			item.setElementUID(65535);
 			query.getBody()->getDeleteElementSeq()->getDeleteElementList()->addElement(item);
 		}
 		RCLCPP_DEBUG(logger, "send request %d to delete %lu elements @ %s", (int)p_request_id, p_remote_uds.size(), p_remote.str().c_str());
