@@ -2,7 +2,7 @@
 <declared_type_set name="MeasurementClass" id="urn:jaus:jss:iop:MessageSet:MeasurementClass" version="1.1"
 	xmlns:ns2="urn:jaus:jsidl:1.1" xmlns="urn:jaus:jsidl:1.0" xmlns:ns3="urn:jaus:jsidl:plus">
 	<declared_type_set_ref name="basicTypes"
-		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.0" />
+		id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.1" />
 	<declared_type_set_ref name="advTypes"
 		id="urn:jaus:jss:iop:MessageSet:AdvTypes" version="1.0" />
 
