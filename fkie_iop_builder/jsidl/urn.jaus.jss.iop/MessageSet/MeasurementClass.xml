@@ -20,9 +20,9 @@
 		<declared_header name="AppHeader" declared_type_ref="basicTypes.JAUSApplicationLayerHeader"/>
 		<body name="Body">
 			<sequence name="MeasurementSeq" optional="false">
-				<presence_vector field_type_unsigned="unsigned short integer"/>
+				<presence_vector field_type_unsigned="unsigned byte"/>
 				<record name="DeviceRec" optional="false">
-					<presence_vector field_type_unsigned="unsigned short integer"/>
+					<presence_vector field_type_unsigned="unsigned byte"/>
 					<variable_length_string name="DeviceName"
 						optional="false"
 						interpretation="custom name of the detecting device for differentiation">
@@ -46,7 +46,7 @@
 						field_type_unsigned="unsigned byte" />
 					<sequence name="ReadingSeq" optional="false">
 						<record name="ReadingRec" optional="false">
-							<presence_vector field_type_unsigned="unsigned short integer"/>
+							<presence_vector field_type_unsigned="unsigned byte"/>
 							<variable_length_string name="Sensor"
 								optional="false" interpretation="name of the sensor">
 								<count_field min_count="0" max_count="255"
