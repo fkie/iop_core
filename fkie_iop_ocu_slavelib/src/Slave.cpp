@@ -25,9 +25,11 @@ along with this program; or you can read the full license at
 #include <fkie_iop_ocu_slavelib/common.h>
 #include <fkie_iop_component/iop_component.h>
 #include <fkie_iop_msgs/OcuCmdEntry.h>
+#include <fkie_iop_msgs/OcuControlReport.h>
 #include <fkie_iop_component/iop_config.h>
 
 
+using namespace urn_jaus_jss_core_EventsClient;
 using namespace urn_jaus_jss_core_AccessControlClient;
 using namespace urn_jaus_jss_core_DiscoveryClient;
 using namespace urn_jaus_jss_core_ManagementClient;
@@ -75,6 +77,20 @@ Slave::~Slave(void)
 	delete global_ptr;
 }
 
+EventsClient_ReceiveFSM *Slave::pGetEventsClient()
+{
+	if (p_events_client == NULL) {
+		iop::Component &cmp = iop::Component::get_instance();
+		EventsClientService *events_srv = static_cast<EventsClientService*>(cmp.get_service("EventsClient"));
+		if (events_srv != NULL) {
+			p_events_client = events_srv->pEventsClient_ReceiveFSM;
+		} else {
+			throw std::runtime_error("[Slave] no EventsClient found! Please include its plugin first (in the list)!");
+		}
+	}
+	return p_events_client;
+}
+
 DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 {
 	if (p_discovery_client == NULL) {
@@ -82,6 +98,7 @@ DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp.get_service("DiscoveryClient"));
 		if (discovery_srv != NULL) {
 			p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
+			p_discovery_client->discover("urn:jaus:jss:core:AccessControl", &Slave::pDiscovered, this, 1);
 		} else {
 			throw std::runtime_error("[Slave] no DiscoveryClient found! Please include its plugin first (in the list)!");
 		}
@@ -181,6 +198,7 @@ void Slave::pInitRos()
 //	p_handoff_supported = cmp.has_service("urn:jaus:jss:iop:HandoffController");
 	// publish the feedback with settings
 	p_pub_control_feedback = cfg.advertise<fkie_iop_msgs::OcuFeedback>("/ocu_feedback", 1, true);
+	p_pub_ac_reports = cfg.advertise<fkie_iop_msgs::OcuControlReport>("/ocu_control_report", 1, true);
 	p_sub_control = cfg.subscribe<fkie_iop_msgs::OcuCmd>("/ocu_cmd", 10, &Slave::pRosControl, this);
 }
 
@@ -283,6 +301,7 @@ JausAddress Slave::pApplyDefaultControlAdd(JausAddress& control_addr)
 
 void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands)
 {
+	// search for each command a component with given address
 	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> >::iterator it;
 	for (it = commands.begin(); it != commands.end(); ++it) {
 		JausAddress addr(it->first);
@@ -290,7 +309,22 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 			Component &cmp = p_components[i];
 			JausAddress cmp_addr = cmp.get_address();
 			if (cmp_addr.match(addr)) {
-				JausAddress cmp_addr(cmp.get_address());
+				bool skip = true;
+				// skip all components, which has not services for given address
+				for(std::vector<ServiceInfo>::iterator its = p_services.begin(); its != p_services.end(); ++its) {
+					JausAddress discovered_addr = its->get_dicovered_address(cmp_addr);
+					if (discovered_addr.get() != 0) {
+						// make no decisions based on the VisualSensor
+						// this service can be included in multiple components -> send no access requests for this component
+						if (its->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
+							skip = false;
+							break;
+						}
+					}
+				}
+				if (skip) {
+					continue;
+				}
 				// it is new control for the component or new authority
 				if (cmp.set_access_control(it->second.first) or cmp.set_authority(it->second.second)) {
 					switch (it->second.first) {
@@ -329,8 +363,11 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		JausAddress discovered_addr = it->get_dicovered_address(address);
-		if (discovered_addr.get() != 0) {
+		if (discovered_addr.get() != 0 && it->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
 			switch (control_state) {
+			case Component::ACCESS_STATE_NOT_AVAILABLE:
+			case Component::ACCESS_STATE_NOT_CONTROLLED:
+			case Component::ACCESS_STATE_CONTROL_RELEASED:
 			case Component::ACCESS_CONTROL_RELEASE:
 				ROS_DEBUG_NAMED("Slave", "  inform %s about access_deactivated", it->get_uri().c_str());
 				it->handler().access_deactivated(it->get_uri(), address);
@@ -343,12 +380,16 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
 				break;
+			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 			case Component::ACCESS_CONTROL_REQUEST:
-				ROS_INFO_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
+				ROS_DEBUG_NAMED("Slave", "  inform %s about control_allowed", it->get_uri().c_str());
 				it->handler().control_allowed(it->get_uri(), address, authority);
 				it->set_address(address);
 				it->handler().create_events(it->get_uri(), address, p_use_queries);
 				break;
+			default:
+				ROS_DEBUG_NAMED("Slave", "  inform %s about other state", it->get_uri().c_str());
+				it->set_address(address);
 			}
 		}
 	}
@@ -415,16 +456,17 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 					}
 					break;
 				case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
-					pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+					//pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 					break;
 				case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 					// pass authority to the handler
-					pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
 					if (pGetManagementClient() != 0) {
 						pGetManagementClient()->resume(address);
 					}
 					break;
 				}
+				ROS_DEBUG_NAMED("Slave", " appyl to service %s changed to %d", address.str().c_str(), code);
+				pApplyToService(address, code, authority);
 				// send updated info to ROS
 				pSendFeedback();
 			}
@@ -489,9 +531,39 @@ void Slave::pDiscovered(const std::string &uri, JausAddress &address)
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		if (it->add_discovered(address, uri)) {
 			ROS_INFO_NAMED("Slave", "Discovered '%s' at address: %s", uri.c_str(), address.str().c_str());
-			//test for current control state, do we need to send access control request
-//			pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
+			// add event to get the current control state of the component
+			if (pGetAccesscontrolClient() != 0 && pGetEventsClient() != 0) {
+				for(std::vector<JausAddress>::iterator ita = p_access_control_addresses.begin(); ita != p_access_control_addresses.end(); ++ita) {
+					if (ita->match(address)) {
+						ROS_INFO_NAMED("Slave", "create/update event QueryControl for '%s' at address: %s", uri.c_str(), address.str().c_str());
+						pGetEventsClient()->create_event(*this, address, p_query_control, 0.0);
+					}
+				}
+			}
+		}
+	}
+	// create list of discovered AccessControl services to get requests of current states
+	if (uri.compare("urn:jaus:jss:core:AccessControl") == 0) {
+		if (pGetAccesscontrolClient() != 0 && pGetEventsClient() != 0) {
+			p_access_control_addresses.push_back(address);
 		}
 	}
 	pAddComponent(address);
+}
+
+void Slave::event(JausAddress sender, unsigned short query_msg_id, unsigned int reportlen, const unsigned char* reportdata)
+{
+	if (urn_jaus_jss_core_AccessControlClient::QueryControl::ID == query_msg_id) {
+		urn_jaus_jss_core_AccessControlClient::ReportControl report;
+		report.decode(reportdata);
+		fkie_iop_msgs::OcuControlReport rosmsg;
+		rosmsg.component.subsystem_id = sender.getSubsystemID();
+		rosmsg.component.node_id = sender.getNodeID();
+		rosmsg.component.component_id = sender.getComponentID();
+		rosmsg.controller.subsystem_id = report.getBody()->getReportControlRec()->getSubsystemID();
+		rosmsg.controller.node_id = report.getBody()->getReportControlRec()->getNodeID();
+		rosmsg.controller.component_id = report.getBody()->getReportControlRec()->getComponentID();
+		rosmsg.authority = report.getBody()->getReportControlRec()->getAuthorityCode();
+		p_pub_ac_reports.publish(rosmsg);
+	}
 }

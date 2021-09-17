@@ -27,6 +27,8 @@ along with this program; or you can read the full license at
 #include <ros/ros.h>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <urn_jaus_jss_core_EventsClient/EventsClientService.h>
+#include <urn_jaus_jss_core_AccessControlClient/Messages/MessageSet.h>
 #include <urn_jaus_jss_core_AccessControlClient/AccessControlClientService.h>
 #include <urn_jaus_jss_core_DiscoveryClient/DiscoveryClientService.h>
 #include <urn_jaus_jss_core_ManagementClient/ManagementClientService.h>
@@ -36,12 +38,13 @@ along with this program; or you can read the full license at
 #include <fkie_iop_ocu_slavelib/Component.h>
 #include <fkie_iop_ocu_slavelib/ServiceInfo.h>
 #include <fkie_iop_ocu_slavelib/SlaveHandlerInterface.h>
+#include <fkie_iop_events/EventHandlerInterface.h>
 
 namespace iop {
 
 namespace ocu {
 
-	class Slave
+	class Slave: public iop::EventHandlerInterface
 	{
 	public:
 		static Slave& get_instance(JausAddress own_address)
@@ -63,8 +66,12 @@ namespace ocu {
 		void request_access(JausAddress &address, unsigned char authority);
 		void release_access(JausAddress &address, bool wait_for_reply=true);
 
+		/// EventHandlerInterface Methods
+		void event(JausAddress reporter, unsigned short query_msg_id, unsigned int reportlen, const unsigned char* reportdata);
+
 	protected:
 		static Slave* global_ptr;
+		urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *p_events_client;
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *p_discovery_client;
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *p_accesscontrol_client;
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
@@ -82,9 +89,12 @@ namespace ocu {
 		int p_default_access_control;
 		std::vector<ServiceInfo> p_services;
 		std::vector<Component> p_components;
+		std::vector<JausAddress> p_access_control_addresses;
 		ros::Publisher p_pub_control_feedback;
+		ros::Publisher p_pub_ac_reports;
 		ros::Subscriber p_sub_control;
 		ros::Timer pFeedbackTimer;
+		urn_jaus_jss_core_AccessControlClient::QueryControl p_query_control;
 
 		void pInitRos();
 		void pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control);
@@ -93,6 +103,7 @@ namespace ocu {
 		void pManagementStatusHandler(JausAddress &address, unsigned char code);
 		void pDiscovered(const std::string &uri, JausAddress &address);
 
+		urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *pGetEventsClient();
 		urn_jaus_jss_core_DiscoveryClient::DiscoveryClient_ReceiveFSM *pGetDiscoveryClient();
 		urn_jaus_jss_core_AccessControlClient::AccessControlClient_ReceiveFSM *pGetAccesscontrolClient();
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *pGetManagementClient();
