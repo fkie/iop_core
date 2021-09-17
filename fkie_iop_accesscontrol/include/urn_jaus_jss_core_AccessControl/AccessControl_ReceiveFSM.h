@@ -78,6 +78,8 @@ public:
 	virtual bool isEmergencyClient(Receive::Body::ReceiveRec transportData);
 
 
+	void setAuthority(uint8_t authority);
+	void setControl(JausAddress address);
 	void store_emergency_address(JausAddress address);
 	void delete_emergency_address(JausAddress address);
 	bool has_emergency_address(JausAddress address);
@@ -96,6 +98,10 @@ protected:
 	int p_default_timeout;
 	bool p_ros_available;
 	std::set<unsigned int> p_emergency_address;
+	ReportAuthority p_report_authority;
+	ReportControl p_report_control;
+	bool p_is_new_controller;
+	ReportTimeout p_report_timeout;
 	ros::Publisher p_is_controlled_publisher;
 	ros::Publisher p_is_control_available;
 	ros::Publisher p_controller_publisher;
