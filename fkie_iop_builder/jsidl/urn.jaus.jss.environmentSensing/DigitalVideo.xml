@@ -41,6 +41,7 @@
 	<protocol_behavior is_stateless="false">
 		<start state_machine_name="visualSensor.AccessControl.Events.Transport.ReceiveFSM"
 			state_name="Receiving.Ready.NotControlled"/>
+        <start state_machine_name="visualSensor.accessControl.events.transport.SendFSM" state_name="Sending"/>
 		<state_machine name="visualSensor.AccessControl.Events.Transport.ReceiveFSM">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready" initial_state="NotControlled">
@@ -143,6 +144,9 @@
 					</state>
 				</state>
 			</state>
+		</state_machine>
+		<state_machine name="visualSensor.accessControl.events.transport.SendFSM">
+			<state name="Sending"/>
 		</state_machine>
 	</protocol_behavior>
 </service_def>

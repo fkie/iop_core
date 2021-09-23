@@ -59,6 +59,7 @@
   <internal_events_set/>
   <protocol_behavior>
     <start state_machine_name="management.accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+    <start state_machine_name="management.accessControl.events.transport.SendFSM" state_name="Sending"/>
     <state_machine name="management.accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
@@ -219,6 +220,9 @@
           </state>
         </state>
       </state>
+    </state_machine>
+    <state_machine name="management.accessControl.events.transport.SendFSM">
+        <state name="Sending"/>
     </state_machine>
   </protocol_behavior>
 </service_def>

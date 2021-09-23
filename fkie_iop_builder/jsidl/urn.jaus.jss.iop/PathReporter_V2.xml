@@ -41,6 +41,7 @@
 	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
 		<start state_machine_name="Events.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <start state_machine_name="Events.transport.SendFSM" state_name="Sending"/>
 		<state_machine name="Events.Transport.ReceiveFSM">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready">	
@@ -69,5 +70,8 @@
 				</state>
 			</state>
 		</state_machine>	
+    <state_machine name="Events.transport.SendFSM">
+        <state name="Sending"/>
+    </state_machine>
 	</protocol_behavior>
 </service_def>
