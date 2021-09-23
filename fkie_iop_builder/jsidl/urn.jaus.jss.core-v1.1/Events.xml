@@ -49,6 +49,7 @@
   <protocol_behavior is_stateless="false">
     <start state_machine_name="transport.ReceiveFSM"
       state_name="Receiving.Ready"/>
+    <start state_machine_name="transport.SendFSM" state_name="Sending"/>
     <state_machine name="transport.ReceiveFSM" interpretation="extending
       ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
@@ -117,6 +118,9 @@
 
         </state>
       </state>
+    </state_machine>
+    <state_machine name="transport.SendFSM">
+        <state name="Sending"/>
     </state_machine>
   </protocol_behavior>
 </service_def>

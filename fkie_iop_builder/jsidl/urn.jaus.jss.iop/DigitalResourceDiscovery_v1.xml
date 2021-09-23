@@ -30,8 +30,9 @@
 	</message_set>
 	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
-		<state_machine name="events.transport.ReceiveFSM" interpretation = "Extending ReceiveFSM from base.">
+		<start state_machine_name="Events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+        <start state_machine_name="Events.transport.SendFSM" state_name="Sending"/>
+		<state_machine name="Events.transport.ReceiveFSM" interpretation = "Extending ReceiveFSM from base.">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready">
 					<default_state>
@@ -69,5 +70,8 @@
 				</state>
 			</state>
 		</state_machine>
+    <state_machine name="Events.transport.SendFSM">
+        <state name="Sending"/>
+    </state_machine>
 	</protocol_behavior>
 </service_def>

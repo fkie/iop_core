@@ -37,6 +37,7 @@
 	
 	<protocol_behavior is_stateless="false">
 		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+        <start state_machine_name="accessControl.events.transport.SendFSM" state_name="Sending"/>
 		<!--  ROMOVED since it is done by ROS <start state_machine_name="PlatformStateFSM" state_name="Initialize"/> -->
 		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
 		<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
@@ -141,5 +142,8 @@
 		</state> <!-- Receiving -->
 		</state_machine> <!-- accessControl.events.transport.ReceiveFSM -->
 		<!-- REMOVED PlatformStateFSM since this is done by ROS topics -->
+    <state_machine name="accessControl.events.transport.SendFSM">
+        <state name="Sending"/>
+    </state_machine>
 	</protocol_behavior>
 </service_def>
