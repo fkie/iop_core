@@ -12,7 +12,7 @@
     services beyond the core service support. </description>
   <assumptions>Messages may be delayed, lost or reordered.</assumptions>
   <references>
-    <inherits_from name="events" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
+    <inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
   </references>
   <declared_type_set name="Types">
     <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet"
@@ -57,15 +57,15 @@
       </event_def>
     </internal_events_set>
   <protocol_behavior is_stateless="false">
-    <start state_machine_name="events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
-    <state_machine name="events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+    <start state_machine_name="eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready">
           <entry>
               <action name="register" interpretation="register by discovery service"/>
           </entry>
           <default_state>
-            <transition name="events.transport.Receive">
+            <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportIdentification" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <guard condition="!isRegistered() &amp;&amp; !onRegistration()"/>
@@ -75,7 +75,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-           <transition name="events.transport.Receive">
+           <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportIdentification" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
@@ -84,7 +84,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-           <transition name="events.transport.Receive">
+           <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportConfiguration" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
@@ -93,7 +93,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-           <transition name="events.transport.Receive">
+           <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportSubsystemList" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
@@ -102,7 +102,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-           <transition name="events.transport.Receive">
+           <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportServices" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
@@ -111,7 +111,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-           <transition name="events.transport.Receive">
+           <transition name="eventsClient.transport.Receive">
                 <parameter type="ReportServiceList" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
@@ -120,7 +120,7 @@
                     <argument value="transportData"/>
                 </action>
             </transition>
-            <transition name="events.transport.Receive">
+            <transition name="eventsClient.transport.Receive">
                 <parameter type="QueryIdentification" value="msg"/>
                 <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
                 <ns2:internal/>
