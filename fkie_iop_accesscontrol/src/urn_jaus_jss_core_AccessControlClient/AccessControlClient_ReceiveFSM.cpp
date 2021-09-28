@@ -82,6 +82,8 @@ void AccessControlClient_ReceiveFSM::setupIopConfiguration()
 	iop::Config cfg(cmp, "AccessControlClient");
 	p_pub_current_controller = cfg.create_publisher<fkie_iop_msgs::msg::JausAddress>("current_controller", 5);
 	p_pub_current_authority = cfg.create_publisher<std_msgs::msg::UInt8>("current_authority", 5);
+	rclcpp::QoS qos_latched(10);
+	p_pub_ac_reports = cfg.create_publisher<fkie_iop_msgs::msg::OcuControlReport>("/ocu_control_report", qos_latched.transient_local());
 	p_timer.start();
 }
 
@@ -240,5 +242,39 @@ void AccessControlClient_ReceiveFSM::pInformReplyCallbacks(JausAddress &address,
 	}
 }
 
+void AccessControlClient_ReceiveFSM::event(JausAddress sender, unsigned short query_msg_id, unsigned int /*reportlen*/, const unsigned char* reportdata)
+{
+	if (urn_jaus_jss_core_AccessControlClient::QueryControl::ID == query_msg_id) {
+		urn_jaus_jss_core_AccessControlClient::ReportControl report;
+		report.decode(reportdata);
+		auto rosmsg = fkie_iop_msgs::msg::OcuControlReport();
+		rosmsg.component.subsystem_id = sender.getSubsystemID();
+		rosmsg.component.node_id = sender.getNodeID();
+		rosmsg.component.component_id = sender.getComponentID();
+		rosmsg.controller.subsystem_id = report.getBody()->getReportControlRec()->getSubsystemID();
+		rosmsg.controller.node_id = report.getBody()->getReportControlRec()->getNodeID();
+		rosmsg.controller.component_id = report.getBody()->getReportControlRec()->getComponentID();
+		rosmsg.authority = report.getBody()->getReportControlRec()->getAuthorityCode();
+		p_pub_ac_reports->publish(rosmsg);
+	}
+}
+
+void AccessControlClient_ReceiveFSM::add_monitor_control(const std::string &uri, JausAddress &address)
+{
+	bool found = false;
+	if (uri.compare("urn:jaus:jss:core:AccessControl") == 0) {
+		for(std::vector<JausAddress>::iterator ita = p_access_control_addresses.begin(); ita != p_access_control_addresses.end(); ++ita) {
+			if (ita->match(address)) {
+				found = true;
+			}
+		}
+		if (!found) {
+			p_access_control_addresses.push_back(address);
+			// add event to get the current control state of the component
+			RCLCPP_INFO(logger, "create/update event QueryControl for address: %s", address.str().c_str());
+			this->pEventsClient_ReceiveFSM->create_event(*this, address, p_query_control, 0.0);
+		}
+	}
+}
 
 }

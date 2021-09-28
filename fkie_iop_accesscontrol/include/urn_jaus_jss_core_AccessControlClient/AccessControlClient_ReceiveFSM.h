@@ -41,9 +41,11 @@ along with this program; or you can read the full license at
 #include "AccessControlClient_ReceiveFSM_sm.h"
 #include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_events/EventHandlerInterface.h>
 
 #include <functional>
 #include <fkie_iop_msgs/msg/jaus_address.hpp>
+#include <fkie_iop_msgs/msg/ocu_control_report.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include "fkie_iop_accesscontrol/RemoteComponent.h"
 #include "fkie_iop_accesscontrol/RemoteComponentList.h"
@@ -52,7 +54,7 @@ along with this program; or you can read the full license at
 namespace urn_jaus_jss_core_AccessControlClient
 {
 
-class DllExport AccessControlClient_ReceiveFSM : public JTS::StateMachine
+class DllExport AccessControlClient_ReceiveFSM : public JTS::StateMachine, public iop::EventHandlerInterface
 {
 public:
 	static unsigned char ACCESS_STATE_NOT_AVAILABLE;
@@ -77,6 +79,8 @@ public:
 	virtual void handleReportTimeoutAction(ReportTimeout msg, Receive::Body::ReceiveRec transportData);
 	virtual void resetControlTimerAction();
 
+	/// EventHandlerInterface Methods
+	void event(JausAddress reporter, unsigned short query_msg_id, unsigned int reportlen, const unsigned char* reportdata);
 
 	/// Guard Methods
 
@@ -108,6 +112,7 @@ public:
 		p_reply_handler.push_back(std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2));
 	}
 	void set_emergency_client(JausAddress address) { p_emergency_address = address; }
+	void add_monitor_control(const std::string &uri, JausAddress &address);
 
 	AccessControlClient_ReceiveFSMContext *context;
 
@@ -127,8 +132,10 @@ protected:
 	jUnsignedByte p_default_timeout;
 	JTS::InternalEvent *p_timeout_event;
 	QueryControl p_query_control;
+	std::vector<JausAddress> p_access_control_addresses;
 	rclcpp::Publisher<fkie_iop_msgs::msg::JausAddress>::SharedPtr p_pub_current_controller;
 	rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr p_pub_current_authority;
+	rclcpp::Publisher<fkie_iop_msgs::msg::OcuControlReport>::SharedPtr p_pub_ac_reports;
 	void pTimeoutCallback();
 	void pInformReplyCallbacks(JausAddress &address, unsigned char code);
 	void pRequestAccess(JausAddress address, jUnsignedByte authority=255);

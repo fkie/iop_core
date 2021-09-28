@@ -79,6 +79,7 @@ DiscoveryClient_ReceiveFSM *Slave::pGetDiscoveryClient()
 		DiscoveryClientService *discovery_srv = static_cast<DiscoveryClientService*>(cmp->get_service("DiscoveryClientService"));
 		if (discovery_srv != NULL) {
 			p_discovery_client = discovery_srv->pDiscoveryClient_ReceiveFSM;
+			p_discovery_client->discover("urn:jaus:jss:core:AccessControl", &Slave::pDiscovered, this, 1);
 		} else {
 			throw std::runtime_error("[Slave] no DiscoveryClient found! Please include its plugin first (in the list)!");
 		}
@@ -305,6 +306,7 @@ JausAddress Slave::pApplyDefaultControlAdd(JausAddress& control_addr)
 
 void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> > commands)
 {
+	// search for each command a component with given address
 	std::map<jUnsignedInteger, std::pair<unsigned char, unsigned char> >::iterator it;
 	for (it = commands.begin(); it != commands.end(); ++it) {
 		JausAddress addr(it->first);
@@ -312,7 +314,22 @@ void Slave::pApplyCommands(std::map<jUnsignedInteger, std::pair<unsigned char, u
 			Component &cmp = p_components[i];
 			JausAddress cmp_addr = cmp.get_address();
 			if (cmp_addr.match(addr)) {
-				JausAddress cmp_addr(cmp.get_address());
+				bool skip = true;
+				// skip all components, which has not services for given address
+				for(std::vector<ServiceInfo>::iterator its = p_services.begin(); its != p_services.end(); ++its) {
+					JausAddress discovered_addr = its->get_dicovered_address(cmp_addr);
+					if (discovered_addr.get() != 0) {
+						// make no decisions based on the VisualSensor
+						// this service can be included in multiple components -> send no access requests for this component
+						if (its->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
+							skip = false;
+							break;
+						}
+					}
+				}
+				if (skip) {
+					continue;
+				}
 				// it is new control for the component or new authority
 				if (cmp.set_access_control(it->second.first) or cmp.set_authority(it->second.second)) {
 					switch (it->second.first) {
@@ -350,8 +367,11 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		JausAddress discovered_addr = it->get_dicovered_address(address);
-		if (discovered_addr.get() != 0) {
+		if (discovered_addr.get() != 0 && it->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
 			switch (control_state) {
+			case Component::ACCESS_STATE_NOT_AVAILABLE:
+			case Component::ACCESS_STATE_NOT_CONTROLLED:
+			case Component::ACCESS_STATE_CONTROL_RELEASED:
 			case Component::ACCESS_CONTROL_RELEASE:
 				RCLCPP_DEBUG(logger, "  inform %s about access_deactivated", it->get_uri().c_str());
 				it->handler().access_deactivated(it->get_uri(), discovered_addr);
@@ -364,12 +384,16 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 				it->set_address(discovered_addr);
 				it->handler().create_events(it->get_uri(), discovered_addr, p_use_queries);
 				break;
+			case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 			case Component::ACCESS_CONTROL_REQUEST:
-				RCLCPP_INFO(logger, "  inform %s about control_allowed", it->get_uri().c_str());
+				RCLCPP_DEBUG(logger, "  inform %s about control_allowed", it->get_uri().c_str());
 				it->handler().control_allowed(it->get_uri(), discovered_addr, authority);
 				it->set_address(discovered_addr);
 				it->handler().create_events(it->get_uri(), discovered_addr, p_use_queries);
 				break;
+			default:
+				RCLCPP_DEBUG(logger, "  inform %s about other state", it->get_uri().c_str());
+				it->set_address(address);
 			}
 		}
 	}
@@ -435,16 +459,18 @@ void Slave::pAccessControlClientReplyHandler(JausAddress &address, unsigned char
 					}
 					break;
 				case Component::ACCESS_STATE_INSUFFICIENT_AUTHORITY:
-					pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
+					// pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 					break;
 				case Component::ACCESS_STATE_CONTROL_ACCEPTED:
 					// pass authority to the handler
-					pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
+					// pApplyToService(address, Component::ACCESS_CONTROL_REQUEST, authority);
 					if (pGetManagementClient() != 0) {
 						pGetManagementClient()->resume(address);
 					}
 					break;
 				}
+				RCLCPP_DEBUG(logger, " apply to service %s changed to %d", address.str().c_str(), code);
+				pApplyToService(address, code, authority);
 				// send updated info to ROS
 				pSendFeedback();
 			}
@@ -509,9 +535,11 @@ void Slave::pDiscovered(const std::string &uri, JausAddress &address)
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		if (it->add_discovered(address, uri)) {
 			RCLCPP_INFO(logger, "Discovered '%s' at address: %s", uri.c_str(), address.str().c_str());
-			//test for current control state, do we need to send access control request
-//			pApplyControl(*it, it->get_address(), it->get_access_control(address), it->get_authority(address));
 		}
+	}
+	// create list of discovered AccessControl services to get requests of current states
+	if (pGetAccesscontrolClient() != 0) {
+		pGetAccesscontrolClient()->add_monitor_control(uri, address);
 	}
 	pAddComponent(address);
 }

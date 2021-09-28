@@ -267,6 +267,7 @@ std::shared_ptr<JTS::Service> Component::p_init_plugin(std::string name, pluginl
 		if (!plugin->getNameInheritsFrom().empty()) {
 			it = p_plugins_map.find(plugin->getNameInheritsFrom());
 			if (it == p_plugins_map.end()) {
+				RCLCPP_INFO(this->get_logger().get_child("PluginLoader"), "-> load required IOP-plugin %s for %s", plugin->getNameInheritsFrom().c_str(), name.c_str());
 				base_plugin = p_init_plugin(plugin->getNameInheritsFrom(), class_loader);
 			} else {
 				base_plugin = it->second;
