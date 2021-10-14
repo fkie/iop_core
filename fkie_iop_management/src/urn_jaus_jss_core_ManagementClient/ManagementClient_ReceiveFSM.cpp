@@ -57,6 +57,8 @@ ManagementClient_ReceiveFSM::ManagementClient_ReceiveFSM(urn_jaus_jss_core_Trans
 	p_status = 255;
 	p_hz = 0.0;
 	by_query = false;
+	p_client_subsystem = 0;
+	p_emegency_subsystem = 0;
 }
 
 
@@ -101,18 +103,18 @@ void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::
 		//      p_do_resume = false;
 		//      queryStatus(sender);
 		//    }
-		if (!p_class_interface_callback.empty() && p_current_client == sender) {
+		if (!p_class_interface_callback.empty() && p_client_subsystem == sender.getSubsystemID()) {
 			ROS_DEBUG_NAMED("ManagementClient", "  forward management state to handler");
 			p_class_interface_callback(sender, p_status);
 		}
-		if (p_status == 2 && p_current_client == sender) {
-			if (pAccessControlClient_ReceiveFSM->hasAccess(p_current_client )) {
-				resume(p_current_client);
+		if (p_status == 2 && p_client_subsystem == sender.getSubsystemID()) {
+			if (pAccessControlClient_ReceiveFSM->hasAccess(sender )) {
+				resume(sender);
 			}
 		}
 		if (p_status != MANAGEMENT_STATE_EMERGENCY) {
-			p_current_emergency_address = JausAddress();
-			pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_emergency_address);
+			p_emegency_subsystem = 0;
+			pAccessControlClient_ReceiveFSM->set_emergency_subsystem(p_emegency_subsystem);
 
 		}
 	}
@@ -121,65 +123,88 @@ void ManagementClient_ReceiveFSM::reportStatusAction(ReportStatus msg, Receive::
 void ManagementClient_ReceiveFSM::queryStatus(JausAddress address)
 {
 	QueryStatus msg;
-	sendJausMessage( msg, address );
+	sendJausMessage(msg, address );
 }
 
 void ManagementClient_ReceiveFSM::resume(JausAddress address)
 {
 //  pAccessControlClient_ReceiveFSM->requestAccess(address, authority);
 	Resume resume_msg;
-	sendJausMessage( resume_msg, address);
+	sendJausMessage(resume_msg, address);
 	queryStatus(address);
 }
 
-void ManagementClient_ReceiveFSM::set_current_client(JausAddress client)
+void ManagementClient_ReceiveFSM::add_client(JausAddress client)
 {
-	if (p_current_client != client) {
-		bool is_new_address = !p_current_client.match(client);
-		if (is_new_address) {
-			if (p_current_client.get() != 0) {
-				if (by_query) {
-					p_query_timer.stop();
-				} else {
-					ROS_INFO_NAMED("ManagementClient", "cancel EVENT for mgmt status by %s", p_current_client.str().c_str());
-					pEventsClient_ReceiveFSM->cancel_event(*this, p_current_client, p_query_status);
-				}
-				p_status = 255;
-				std_msgs::String ros_msg;
-				ros_msg.data = p_status_to_str(p_status);
-				p_pub_status.publish(ros_msg);
+	if (client.get() != 0 && std::find(p_clients.begin(), p_clients.end(), client) == p_clients.end()) {
+		if (p_client_subsystem == 0 || p_client_subsystem == client.getSubsystemID()) {
+			p_client_subsystem = client.getSubsystemID();
+		} else {
+			ROS_WARN_NAMED("ManagementClient", "corrently control subsystem %d, but try to add additional another subsystem %s", p_client_subsystem, client.str().c_str());
+			return;
+		}
+		p_clients.push_back(client);
+		if (by_query) {
+			if (p_hz > 0) {
+				ROS_INFO_NAMED("ManagementClient", "create QUERY timer to get mgmt status from %s", client.str().c_str());
+				p_query_timer = p_nh.createTimer(ros::Duration(1.0 / p_hz), &ManagementClient_ReceiveFSM::pQueryCallback, this);
+			} else {
+				ROS_WARN_NAMED("ManagementClient", "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, client.str().c_str());
 			}
-			p_current_client = client;
-			if (p_current_client.get() != 0) {
-				if (by_query) {
-					if (p_hz > 0) {
-						ROS_INFO_NAMED("ManagementClient", "create QUERY timer to get mgmt status from %s", p_current_client.str().c_str());
-						p_query_timer = p_nh.createTimer(ros::Duration(1.0 / p_hz), &ManagementClient_ReceiveFSM::pQueryCallback, this);
-					} else {
-						ROS_WARN_NAMED("ManagementClient", "invalid hz %.2f for QUERY timer to get mgmt status from %s", p_hz, p_current_client.str().c_str());
-					}
-				} else {
-					ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", p_current_client.str().c_str());
-					pEventsClient_ReceiveFSM->create_event(*this, p_current_client, p_query_status, p_hz);
-				}
-			}
+		} else {
+			ROS_INFO_NAMED("ManagementClient", "create EVENT to get mgmt status from %s", client.str().c_str());
+			pEventsClient_ReceiveFSM->create_event(*this, client, p_query_status, p_hz);
 		}
 	}
 }
 
+void ManagementClient_ReceiveFSM::remove_client(JausAddress client)
+{
+	std::vector<JausAddress>::iterator itc = std::find(p_clients.begin(), p_clients.end(), client);
+	if (client.get() != 0 && itc != p_clients.end()) {
+		p_clients.erase(itc);
+		if (by_query) {
+			p_query_timer.stop();
+		} else {
+			ROS_INFO_NAMED("ManagementClient", "cancel EVENT for mgmt status by %s", client.str().c_str());
+			pEventsClient_ReceiveFSM->cancel_event(*this, client, p_query_status);
+		}
+		if (p_clients.empty()) {
+			p_client_subsystem = 0;
+			p_status = 255;
+			std_msgs::String ros_msg;
+			ros_msg.data = p_status_to_str(p_status);
+			p_pub_status.publish(ros_msg);
+		}
+	}
+}
+
+unsigned short ManagementClient_ReceiveFSM::get_emergency_subsystem()
+{
+	return p_emegency_subsystem;
+	// std::vector<JausAddress>::iterator itcmp;
+	// for (itcmp = p_clients.begin(); itcmp != p_clients.end(); itcmp++) {
+	// 	if (itcmp->setSubsystemID() == subsystem_id) {
+	// 		return true;
+	// 	}
+	// }
+	// return false;
+}
+
 void ManagementClient_ReceiveFSM::delete_emergency_client()
 {
-	if (p_current_emergency_address.get() != 0) {
-		ROS_DEBUG_NAMED("ManagementClient", "delete emergency client %s", p_current_client.str().c_str());
-		p_current_emergency_address = JausAddress();
-		pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_emergency_address);
+	if (p_emegency_subsystem != 0) {
+		ROS_DEBUG_NAMED("ManagementClient", "delete emergency subsystem %d", p_emegency_subsystem);
+		p_emegency_subsystem = 0;
+		pAccessControlClient_ReceiveFSM->set_emergency_subsystem(p_emegency_subsystem);
 	}
 }
 
 void ManagementClient_ReceiveFSM::pQueryCallback(const ros::TimerEvent& event)
 {
-	if (p_current_client.get() != 0) {
-		sendJausMessage(p_query_status, p_current_client);
+	std::vector<JausAddress>::iterator itcmp;
+	for (itcmp = p_clients.begin(); itcmp != p_clients.end(); itcmp++) {
+		sendJausMessage(p_query_status, *itcmp);
 	}
 }
 
@@ -209,41 +234,42 @@ std::string ManagementClient_ReceiveFSM::p_status_to_str(unsigned char status) {
 void ManagementClient_ReceiveFSM::pRosEmergency(const std_msgs::Bool::ConstPtr& state)
 {
 	if (state->data) {
-		if (p_current_client.get() != 0) {
-			if (p_current_emergency_address.get() != 0 && p_current_emergency_address != p_current_client) {
-				ROS_WARN_NAMED("ManagementClient", "Something goes wrong: this client is in emergency state for %s, but controls now %s. Please release control first, clear emergency and then take control other %s to clear emergency state.",
-						p_current_emergency_address.str().c_str(), p_current_client.str().c_str(), p_current_emergency_address.str().c_str());
-			} else {
-				p_current_emergency_address = p_current_client;
-				pAccessControlClient_ReceiveFSM->set_emergency_client(p_current_client);
-				SetEmergency request;
-				request.getBody()->getSetEmergencyRec()->setEmergencyCode(1);
-				sendJausMessage(request, p_current_client);
-			}
+		if (!p_clients.empty()) {
+			ROS_INFO_NAMED("ManagementClient", "Send emergency to subsystem %d", p_client_subsystem);
+			p_emegency_subsystem = p_client_subsystem;
+			pAccessControlClient_ReceiveFSM->set_emergency_subsystem(p_emegency_subsystem);
+			SetEmergency request;
+			request.getBody()->getSetEmergencyRec()->setEmergencyCode(1);
+			pSendToAllClients(request);
+		} else {
+			ROS_WARN_NAMED("ManagementClient", "No client for emergency available!");
 		}
 	} else if (!state->data) {
 		ClearEmergency request;
 		request.getBody()->getClearEmergencyRec()->setEmergencyCode(1);
-		if (p_current_client.get() != 0) {
-			ROS_INFO_NAMED("ManagementClient", "send clear emergency to current client %s", p_current_client.str().c_str());
-			sendJausMessage(request, p_current_client);
-		} else if (p_current_emergency_address.get() != 0) {
-			ROS_INFO_NAMED("ManagementClient", "send clear emergency to stored address %s", p_current_emergency_address.str().c_str());
-			sendJausMessage(request, p_current_emergency_address);
-		}
+		ROS_INFO_NAMED("ManagementClient", "send clear emergency to subsystem %d", p_emegency_subsystem);
+		pSendToAllClients(request);
 	}
 }
 
 void ManagementClient_ReceiveFSM::pRosReady(const std_msgs::Bool::ConstPtr& state)
 {
-	if (p_current_client.get() != 0) {
+	if (!p_clients.empty()) {
 		if (state->data && p_status != MANAGEMENT_STATE_READY) {
 			Resume request;
-			sendJausMessage(request, p_current_client);
+			pSendToAllClients(request);
 		} else if (!state->data && p_status == MANAGEMENT_STATE_READY) {
 			Standby request;
-			sendJausMessage(request, p_current_client);
+			pSendToAllClients(request);
 		}
+	}
+}
+
+void ManagementClient_ReceiveFSM::pSendToAllClients(JTS::Message& msg)
+{
+	std::vector<JausAddress>::iterator itcmp;
+	for (itcmp = p_clients.begin(); itcmp != p_clients.end(); itcmp++) {
+		sendJausMessage(msg, *itcmp);
 	}
 }
 

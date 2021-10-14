@@ -83,8 +83,9 @@ public:
 	}
 	void queryStatus(JausAddress address);
 	void resume(JausAddress address);
-	void set_current_client(JausAddress client);
-	JausAddress get_emergency_client() { return p_current_emergency_address; }
+	void add_client(JausAddress client);
+	void remove_client(JausAddress client);
+	unsigned short get_emergency_subsystem();
 	void delete_emergency_client();
 
 	ManagementClient_ReceiveFSMContext *context;
@@ -99,8 +100,9 @@ protected:
 	boost::function<void (JausAddress &, unsigned char code)> p_class_interface_callback;
 
 	QueryStatus p_query_status;
-	JausAddress p_current_client;
-	JausAddress p_current_emergency_address;
+	std::vector<JausAddress> p_clients;
+	unsigned short p_client_subsystem;
+	unsigned short p_emegency_subsystem;
 	unsigned char p_status;
 	ros::NodeHandle p_nh;
 	ros::Timer p_query_timer;
@@ -114,6 +116,7 @@ protected:
 	void pRosEmergency(const std_msgs::Bool::ConstPtr& state);
 	void pRosReady(const std_msgs::Bool::ConstPtr& state);
 	void pQueryCallback(const ros::TimerEvent& event);
+	void pSendToAllClients(JTS::Message& msg);
 };
 
 };

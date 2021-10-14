@@ -113,7 +113,7 @@ void AccessControlClient_ReceiveFSM::handleRejectControlAction(RejectControl msg
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_RELEASED);
 		p_remote_components.remove(sender);
 	} else if (msg.getBody()->getRejectControlRec()->getResponseCode() == 1) {
-		if (p_emergency_address != sender) {
+		if (p_emergency_subsystem != sender.getSubsystemID()) {
 			p_remote_components.remove(sender);
 		}
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);

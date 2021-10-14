@@ -243,8 +243,7 @@ void Slave::pRosControl(const fkie_iop_msgs::OcuCmd::ConstPtr& control)
 			apply_cmd = false;
 		}
 		if (pGetManagementClient() != 0) {
-			JausAddress emergency_addr = pGetManagementClient()->get_emergency_client();
-			if (emergency_addr.get() != 0 && control_addr.get() != 0 && emergency_addr.getSubsystemID() != control_addr.getSubsystemID()) {
+			if (pGetManagementClient()->get_emergency_subsystem() != 0 && pGetManagementClient()->get_emergency_subsystem() != control_addr.getSubsystemID()) {
 				apply_cmd = false;
 			}
 			// } else if (control_addr.get() != 0) {
@@ -363,7 +362,8 @@ void Slave::pApplyToService(JausAddress &address, unsigned char control_state, u
 {
 	for(std::vector<ServiceInfo>::iterator it = p_services.begin(); it != p_services.end(); ++it) {
 		JausAddress discovered_addr = it->get_dicovered_address(address);
-		if (discovered_addr.get() != 0 && it->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
+		if (discovered_addr.get() != 0) {
+//		if (discovered_addr.get() != 0 && it->get_uri().compare("urn:jaus:jss:environmentSensing:VisualSensor") != 0) {
 			switch (control_state) {
 			case Component::ACCESS_STATE_NOT_AVAILABLE:
 			case Component::ACCESS_STATE_NOT_CONTROLLED:
@@ -408,8 +408,9 @@ void Slave::request_access(JausAddress &address, unsigned char authority)
 	if (pGetAccesscontrolClient() != 0 && address.get() != 0) {
 //		pGetAccesscontrolClient()->requestAccess(address, &Slave::pAccessControlClientReplyHandler, this, authority);
 		pGetAccesscontrolClient()->requestAccess(address, authority);
+		ROS_INFO_NAMED("Slave", "request access for %s, authority: %d", address.str().c_str(), (int)authority);
 		if (pGetManagementClient() != 0) {
-			p_management_client->set_current_client(address);
+			p_management_client->add_client(address);
 		}
 	} else {
 	}
@@ -427,7 +428,7 @@ void Slave::release_access(JausAddress &address, bool wait_for_reply)
 	}
 	pApplyToService(address, Component::ACCESS_CONTROL_RELEASE);
 	if (pGetManagementClient() != 0) {
-		p_management_client->set_current_client(JausAddress(0));
+		p_management_client->remove_client(address);
 	}
 
 }
