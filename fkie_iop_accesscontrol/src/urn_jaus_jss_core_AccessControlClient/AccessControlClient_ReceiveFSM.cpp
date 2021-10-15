@@ -24,6 +24,7 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_AccessControlClient/AccessControlClient_ReceiveFSM.h"
 #include <fkie_iop_component/iop_config.h>
 
+#include <fkie_iop_component/iop_component.h>
 #include <ros/console.h>
 
 using namespace JTS;
@@ -90,16 +91,19 @@ void AccessControlClient_ReceiveFSM::handleConfirmControlAction(ConfirmControl m
 		}
 		p_remote_components.set_ack(sender, ros::WallTime::now().toSec());
 		pInformReplyCallbacks(sender, ACCESS_STATE_CONTROL_ACCEPTED);
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "Control accepted " + sender.str());
 	} else if (rcode == 1) {
 		ROS_WARN_NAMED("AccessControlClient", "NOT_AVAILABLE: %s", sender.str().c_str());
 		p_remote_components.set_ack(sender, ros::WallTime::now().toSec());
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Control not available " + sender.str());
 	} else if (rcode == 2) {
 		ROS_WARN_NAMED("AccessControlClient", "INSUFFICIENT_AUTHORITY: %s", sender.str().c_str());
 		p_remote_components.set_insufficient_authority(sender);
 		QueryAuthority qa_msg;
 		this->sendJausMessage(qa_msg, sender);
 		pInformReplyCallbacks(sender, ACCESS_STATE_INSUFFICIENT_AUTHORITY);
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Insuffiecient authority " + sender.str());
 	}
 	this->sendJausMessage(p_query_control, sender);
 }
@@ -118,6 +122,7 @@ void AccessControlClient_ReceiveFSM::handleRejectControlAction(RejectControl msg
 		}
 		pInformReplyCallbacks(sender, ACCESS_STATE_NOT_AVAILABLE);
 	}
+	dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(0, "Released control " + sender.str());
 }
 
 void AccessControlClient_ReceiveFSM::handleReportAuthorityAction(ReportAuthority msg, Receive::Body::ReceiveRec transportData)
@@ -159,6 +164,7 @@ void AccessControlClient_ReceiveFSM::resetControlTimerAction()
 	try {
 		// determine timouted components
 		std::vector<boost::shared_ptr<iop::RemoteComponent> > tdcmpts = p_remote_components.timeouted();
+		ROS_DEBUG_NAMED("AccessControlClient", "TimeoutAction, timeouted components: %lu", tdcmpts.size());
 		for (unsigned int cidx = 0; cidx < tdcmpts.size(); cidx++) {
 			boost::shared_ptr<iop::RemoteComponent> cmp = tdcmpts[cidx];
 			// send request, request time was set while time_to_send_ack()
@@ -190,6 +196,7 @@ void AccessControlClient_ReceiveFSM::pRequestAccess(JausAddress address, jUnsign
 	msg.getBody()->getRequestControlRec()->setAuthorityCode(authority);
 	this->sendJausMessage(p_query_control, address);
 	this->sendJausMessage(msg, address);
+	dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(4, "Request access to " + address.str());
 }
 
 void AccessControlClient_ReceiveFSM::pReleaseAccess(JausAddress address)
@@ -198,6 +205,7 @@ void AccessControlClient_ReceiveFSM::pReleaseAccess(JausAddress address)
 	p_remote_components.remove(address);
 	ReleaseControl msg;
 	this->sendJausMessage(msg, address);
+	dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(4, "Release access from " + address.str());
 }
 
 bool AccessControlClient_ReceiveFSM::hasAccess(JausAddress address)

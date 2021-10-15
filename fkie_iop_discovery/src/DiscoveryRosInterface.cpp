@@ -32,7 +32,7 @@ DiscoveryRosInterface::DiscoveryRosInterface()
 	p_jaus_router = NULL;
 	p_enable_ros_interface = false;
 	p_force_component_update_after = 300;
-	p_timeout_discover_service = 60;
+	p_timeout_discover_service = 30;
 }
 
 void DiscoveryRosInterface::setup(JTS::StateMachine& jaus_router)
@@ -112,10 +112,14 @@ bool DiscoveryRosInterface::update_ident(JausAddress &addr, ReportIdentification
 			break;
 		}
 		case 4: {  // COMPONENT TYPE
+			p_components.update_ts(addr, addr.getSubsystemID(), addr.getNodeID());
 			break;
 		}
 	}
 	p_pub_identification.publish(ident);
+	if (p_components.changed()) {
+		p_publish_subsystem();
+	}
 	return result;
 }
 
@@ -216,9 +220,19 @@ void DiscoveryRosInterface::p_publish_subsystem()
 			}
 			ros_node.components.push_back(ros_cmpt);
 		}
-		system.subsystems.push_back(ss_new);
+		if (components.size() > 0) {
+			system.subsystems.push_back(ss_new);
+		}
 	}
 	p_pub_system.publish(system);
+	p_components.set_changed(false);
+}
+
+void DiscoveryRosInterface::update()
+{
+	if (p_components.update()) {
+		p_publish_subsystem();
+	}
 }
 
 bool DiscoveryRosInterface::p_equal2ident(fkie_iop_msgs::Identification &ros_ident, JausAddress &addr)

@@ -108,7 +108,7 @@ void Component::p_connect_2_rte()
 	}
 }
 
-void Component::send_diagnostic(int level, std::string message)
+void Component::send_diagnostic(int level, std::string message, std::map<std::string, std::string> keys)
 {
 	diagnostic_msgs::DiagnosticArray dmsg;
 	dmsg.header.stamp = ros::Time::now();
@@ -116,6 +116,13 @@ void Component::send_diagnostic(int level, std::string message)
 	diag.level = level;
 	diag.name = ros::this_node::getName();
 	diag.message = message;
+	std::map<std::string, std::string>::iterator itk;
+	for (itk = keys.begin(); itk != keys.end(); itk++) {
+		diagnostic_msgs::KeyValue key;
+		key.key = itk->first;
+		key.value = itk->second;
+		diag.values.push_back(key);
+	}
 	dmsg.status.push_back(diag);
 	p_publisher_diagnostics.publish(dmsg);
 }

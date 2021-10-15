@@ -58,7 +58,7 @@ DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(urn_jaus_jss_core_Transpo
 	p_count_discover_tries = 0;
 	p_timeout_event = new InternalEvent("Timeout", "ControlTimeout");
 	p_current_diagnostic_level = 3;
-	p_timeout_discover_service = 60;
+	p_timeout_discover_service = 30;
 }
 
 
@@ -200,7 +200,14 @@ void DiscoveryClient_ReceiveFSM::pCheckTimer()
 				ROS_DEBUG_NAMED("DiscoveryClient", "max tries for discovery services reached, increase timeout");
 				timeoutts = TIMEOUT_STANDBY;
 				p_current_diagnostic_level = 1;
-				dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Not all services discovered");
+				std::map<std::string, std::string> ndsrvs;
+				for (int i = p_discover_services.size()-1; i >= 0; --i) {
+					if (!p_discover_services[i].discovered()) {
+						iop::DiscoveryServiceDef& srv = p_discover_services[i].service;
+						ndsrvs[srv.service_uri] = "v" + std::to_string(srv.major_version) + "." + std::to_string(srv.minor_version);
+					}
+				}			
+				dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(1, "Not all services discovered", ndsrvs);
 			}
 		}
 		in_discover = true;
@@ -605,10 +612,13 @@ void DiscoveryClient_ReceiveFSM::sendQueryIdentificationAction()
 	if (p_ros_interface.enabled()) {
 		// if ROS interface enabled we send component queries to get names for components
 		query_identification(TYPE_COMPONENT, 0xFFFF, 0xFF, 0xFF);
+		ROS_DEBUG_NAMED("DiscoveryClient", "update services");
+		p_ros_interface.update();
 	}
 	if (!(pHasToDiscover(65535) || p_ros_interface.enabled())) {
 		// if we descovered all services and have enabled ROS interface we send subsystem and component queries
 		query_identification(TYPE_SUBSYSTEM, 0xFFFF, 0xFF, 0xFF);
+		p_timeout_timer.start();
 		return;
 	}
 	int query_type = TYPE_SUBSYSTEM;
@@ -846,7 +856,15 @@ void DiscoveryClient_ReceiveFSM::query_identification(int query_type, jUnsignedS
 	ROS_DEBUG_NAMED("DiscoveryClient", "send QueryIdentification to subsystem.node.comp: %i.%d.%d of type %d, next query in %i sec",
 			subsystem, (int)node, (int)component, query_type, p_current_timeout);
 	if ((p_current_diagnostic_level == 0 || p_current_diagnostic_level == 3) && (!p_is_registered || pHasToDiscover(65535))) {
-		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Discover services");
+		std::map<std::string, std::string> ndsrvs;
+		for (int i = p_discover_services.size()-1; i >= 0; --i) {
+			if (!p_discover_services[i].discovered()) {
+				iop::DiscoveryServiceDef& srv = p_discover_services[i].service;
+				ndsrvs[srv.service_uri] = "v" + std::to_string(srv.major_version) + "." + std::to_string(srv.minor_version);
+			}
+		}
+		dynamic_cast<iop::IopJausRouter*>(jausRouter)->getComponent()->send_diagnostic(3, "Discover services", ndsrvs);
+		p_current_diagnostic_level = 1;
 	}
 	sendJausMessage(msg,JausAddress(subsystem, node, component)); //0xFFFF, 0xFF, 0xFF
 }

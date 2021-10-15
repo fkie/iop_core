@@ -34,21 +34,25 @@ class DiscoveryComponentList {
 public:
 	/**
 	 * :param timeout: after this timeout a component will be removed on access or update. Zero disables timeout. */
-	DiscoveryComponentList(unsigned int timeout=60);
+	DiscoveryComponentList(unsigned int timeout=15);
 	void set_timeout(unsigned int timeout);
 
 	bool add_service(JausAddress discovery_service, JausAddress component, std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
 	/** Returns false if component not in the list or was expired and removed since last update. */
 	bool update_ts(JausAddress discovery_service, JausAddress component);
 	bool update_ts(JausAddress discovery_service, unsigned short subsystem, unsigned char node=255);
+	bool update();
 	std::vector<DiscoveryComponent> get_components(JausAddress discovery_service, unsigned short subsystem=65535, unsigned char node=255, unsigned char component=255);
 	std::vector<DiscoveryComponent> get_components(JausAddress discovery_service, std::string uri);
 	void remove_discovery_service(JausAddress addr);
 	std::vector<JausAddress> get_discovery_services();
+	bool changed();
+	void set_changed(bool state);
 
 protected:
 	std::map<JausAddress, std::vector<DiscoveryComponent> > p_components;
 	unsigned int p_timeout;
+	bool p_changed;
 
 	bool p_expired(unsigned int ts, unsigned int now=0);
 	std::vector<DiscoveryComponent>& p_get_components(JausAddress discovery_service);

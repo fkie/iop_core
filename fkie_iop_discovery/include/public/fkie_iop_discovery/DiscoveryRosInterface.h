@@ -58,6 +58,7 @@ public:
 	void update_services(JausAddress discovery_addr, urn_jaus_jss_core_DiscoveryClient::ReportServices msg);
 //	bool add_service(std::string service_uri, unsigned char major_version, unsigned char minor_version=255);
 	void set_discovery_timeout(int timeout);
+	void update();
 	bool enabled();
 
 protected:

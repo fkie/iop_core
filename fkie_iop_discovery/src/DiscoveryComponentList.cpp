@@ -30,6 +30,7 @@ using namespace iop;
 
 DiscoveryComponentList::DiscoveryComponentList(unsigned int timeout) {
 	p_timeout = timeout;
+	p_changed = false;
 }
 
 void DiscoveryComponentList::set_timeout(unsigned int timeout)
@@ -49,6 +50,9 @@ bool DiscoveryComponentList::add_service(JausAddress discovery_service, JausAddr
 	} else {
 		added = it->add_service(service_uri, major_version, minor_version);
 	}
+	if (added) {
+		p_changed = true;
+	}
 	return added;
 }
 
@@ -66,6 +70,7 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, JausAddres
 			if (p_expired(it->ts_last_ident, now)) {
 				ROS_DEBUG_NAMED("Discovery", "remove expired services of %s", it->address.str().c_str());
 				components.erase(it);
+				p_changed = true;
 			} else {
 				it->ts_last_ident = now;
 				result = true;
@@ -80,8 +85,8 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, unsigned s
 	bool result = false;
 	std::vector<DiscoveryComponent>& components = p_get_components(discovery_service);
 	std::vector<DiscoveryComponent>::iterator it;
-	for (it = components.begin(); it != components.end(); it++) {
-		unsigned int now = ros::WallTime::now().sec;
+	unsigned int now = ros::WallTime::now().sec;
+	for (it = components.begin(); it != components.end(); ++it) {
 		if (it->address == discovery_service) {
 			it->ts_last_ident = now;
 			result = true;
@@ -90,6 +95,7 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, unsigned s
 				ROS_DEBUG_NAMED("Discovery", "remove expired services of %s", it->address.str().c_str());
 				components.erase(it);
 				it = components.begin();
+				p_changed = true;
 			} else {
 				it->ts_last_ident = now;
 				result = true;
@@ -97,6 +103,34 @@ bool DiscoveryComponentList::update_ts(JausAddress discovery_service, unsigned s
 		}
 	}
 	return result;
+}
+
+bool DiscoveryComponentList::update()
+{
+	ROS_DEBUG_NAMED("Discovery", "update %lu", p_components.size());
+	std::map<JausAddress, std::vector<DiscoveryComponent> >::iterator it;
+	unsigned int now = ros::WallTime::now().sec;
+	for (it = p_components.begin(); it != p_components.end(); ++it++) {
+		std::vector<DiscoveryComponent>::iterator itc;
+		JausAddress adr = it->first;
+		ROS_DEBUG_NAMED("Discovery", "check services of %s", adr.str().c_str());
+		for (itc = it->second.begin(); itc != it->second.end(); ++itc) {
+			ROS_DEBUG_NAMED("Discovery", "  itc->ts_last_ident %u, now: %u, diff: %u, current timeout: %u", itc->ts_last_ident, now, now - itc->ts_last_ident, p_timeout);
+			if (p_expired(itc->ts_last_ident, now)) {
+				JausAddress adr2 = itc->address;
+				ROS_DEBUG_NAMED("Discovery", "remove expired services of %s", adr2.str().c_str());
+				it->second.erase(itc);
+				itc = it->second.begin();
+				p_changed = true;
+			}
+		}
+		if (it->second.size() == 0) {
+			p_components.erase(it);
+			it = p_components.begin();
+			p_changed = true;
+		}
+	}
+	return p_changed;
 }
 
 std::vector<DiscoveryComponent> DiscoveryComponentList::get_components(JausAddress discovery_service, unsigned short subsystem, unsigned char node, unsigned char component)
@@ -127,6 +161,7 @@ std::vector<DiscoveryComponent> DiscoveryComponentList::get_components(JausAddre
 		std::vector<DiscoveryComponent>::iterator itcmrm = std::find(components.begin(), components.end(), *itrm);
 		if (itcmrm != components.end()) {
 			components.erase(itcmrm);
+			p_changed = true;
 		}
 	}
 	return result;
@@ -151,6 +186,7 @@ void DiscoveryComponentList::remove_discovery_service(JausAddress addr)
 	it = p_components.find(addr);
 	if (it != p_components.end()) {
 		p_components.erase(addr);
+		p_changed = true;
 	}
 }
 
@@ -163,6 +199,16 @@ std::vector<JausAddress> DiscoveryComponentList::get_discovery_services()
 		result.push_back(it->first);
 	}
 	return result;
+}
+
+bool DiscoveryComponentList::changed()
+{
+	return p_changed;
+}
+
+void DiscoveryComponentList::set_changed(bool state)
+{
+	p_changed = state;
 }
 
 bool DiscoveryComponentList::p_expired(unsigned int ts, unsigned int now)

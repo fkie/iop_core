@@ -64,7 +64,7 @@ namespace iop
 		void start_component();
 		void shutdown_component();
 		// level: 0-OK, 1-WARNING, 2-ERROR, 3 STALE
-		void send_diagnostic(int level, std::string message);
+		void send_diagnostic(int level, std::string message, std::map<std::string, std::string> keys={});
 
 		JTS::Service* get_service(std::string service_name);
 	protected:
