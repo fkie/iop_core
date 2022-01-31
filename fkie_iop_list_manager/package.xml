@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>fkie_iop_list_manager</name>
-  <version>1.1.0</version>
+  <version>2.1.0</version>
   <description>List Manager to support services with list operations.</description>
 
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
