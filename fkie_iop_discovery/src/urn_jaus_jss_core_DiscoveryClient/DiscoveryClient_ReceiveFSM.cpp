@@ -240,9 +240,9 @@ void DiscoveryClient_ReceiveFSM::pCheckTimer()
 			cmp->send_diagnostic(0, "All services discovered");
 		}
 		if (p_current_timeout > timeoutts) {
-			RCLCPP_INFO(logger, "reduce timeout to %d sec", timeoutts);
+			RCLCPP_INFO(logger, "reduce timeout to %ld sec", timeoutts);
 		} else {
-			RCLCPP_INFO(logger, "increase timeout to %d sec", timeoutts);
+			RCLCPP_INFO(logger, "increase timeout to %ld sec", timeoutts);
 		}
 		p_current_timeout = timeoutts;
 		p_timer.set_interval(std::chrono::seconds(p_current_timeout));
@@ -873,7 +873,7 @@ void DiscoveryClient_ReceiveFSM::query_identification(int query_type, jUnsignedS
 {
 	QueryIdentification msg;
 	msg.getBody()->getQueryIdentificationRec()->setQueryType(query_type);
-	RCLCPP_DEBUG(logger, "send QueryIdentification to subsystem.node.comp: %i.%d.%d of type %d, next query in %i sec",
+	RCLCPP_DEBUG(logger, "send QueryIdentification to subsystem.node.comp: %i.%d.%d of type %d, next query in %li sec",
 			subsystem, (int)node, (int)component, query_type, p_current_timeout);
 	if ((p_current_diagnostic_level == 0 || p_current_diagnostic_level == 3) && (!p_is_registered || pHasToDiscover(65535))) {
 		cmp->send_diagnostic(3, "Discover services");

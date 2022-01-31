@@ -204,7 +204,7 @@ void Component::load_plugins()
 				}
 				plugin_names.push_back(service);
 			} else {
-				RCLCPP_WARN(this->get_logger(), "skipped plugin entry '%s' because of invalid format", plugins[i]);
+				RCLCPP_WARN(this->get_logger(), "skipped plugin entry '%s' because of invalid format", plugins[i].c_str());
 			}
 		}
 	} else {
@@ -241,7 +241,7 @@ void Component::load_plugins()
 	RCLCPP_INFO(this->get_logger(), "... plugin loading complete!");
 	// register the services
 	if (p_discovery_client.get() != nullptr) {
-		RCLCPP_INFO(this->get_logger(), "Add %d services to register by discovery service...", p_plugins_map.size());
+		RCLCPP_INFO(this->get_logger(), "Add %ld services to register by discovery service...", p_plugins_map.size());
 		std::map<std::string, std::shared_ptr<JTS::Service> >::iterator it2;
 		for (it2 = p_plugins_map.begin(); it2 != p_plugins_map.end(); ++it2) {
 			p_discovery_client->registerService(it2->second->getURN(), it2->second->getVersionManjor(), it2->second->getVersionMinor(), *this->jausRouter->getJausAddress());

@@ -214,7 +214,7 @@ void InternalEventClient::timeout()
 void InternalEventClient::p_timer_stop()
 {
 	if (p_timer.is_running()) {
-		RCLCPP_DEBUG(logger, "stop timeout timer for report %#x with timeout %dms to %s", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str());
+		RCLCPP_DEBUG(logger, "stop timeout timer for report %#x with timeout %ldms to %s", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str());
 		p_timer.stop();
 	}
 }
@@ -222,7 +222,7 @@ void InternalEventClient::p_timer_stop()
 void InternalEventClient::p_timer_start()
 {
 	if (p_event_id != 255 && p_timeout > 0 && !p_timer.is_running()) {
-		RCLCPP_INFO(logger, "start timeout timer for %#x with %dms to %s (component timeout: %d min)", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str(), p_timeout);
+		RCLCPP_INFO(logger, "start timeout timer for %#x with %ldms to %s (component timeout: %d min)", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str(), p_timeout);
 		p_timer.start();
 	}
 }

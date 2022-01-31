@@ -56,7 +56,7 @@ bool RemoteComponent::operator!=(RemoteComponent &value)
 
 void RemoteComponent::set_timeout(int64_t timeout)
 {
-	RCLCPP_DEBUG(logger, "set new timeout %d for %s", timeout, p_address.str().c_str());
+	RCLCPP_DEBUG(logger, "set new timeout %ld for %s", timeout, p_address.str().c_str());
 	p_timeout = timeout;
 }
 
