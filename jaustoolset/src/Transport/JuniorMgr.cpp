@@ -341,10 +341,12 @@ bool JuniorMgr::addMsgToBuffer(Message* msg)
 {
     // If the source of this message is the RTE, throw it away.
     // If this is an ack/nak response or a duplicate message, disregard it.
+    bool duplicate = isDuplicateMsg(msg);
+    int srouce_id = msg->getSourceId().val;
     if ((msg->getAckNakFlag() == 2) || (msg->getAckNakFlag() == 3) ||
-        isDuplicateMsg(msg) || (msg->getSourceId().val == 0))
+        duplicate || (srouce_id == 0))
     {
-    	printf("  DROP message: %d\n", msg->getSequenceNumber());
+    	printf("  DROP message: %d, duplicate: %d, ack flag: %d\n", msg->getSequenceNumber(), duplicate, msg->getAckNakFlag());
         delete msg;
         return false;
     }
