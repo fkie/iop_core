@@ -98,7 +98,7 @@ JausAddress::~JausAddress()
 	size = 0;
 }
 
-std::string JausAddress::str() {
+std::string JausAddress::str() const {
 	std::ostringstream result;
 	result << getSubsystemID() << "." << (int)getNodeID() << "." << (int)getComponentID() << "-" << get();
 	return result.str();
@@ -163,7 +163,7 @@ jUnsignedInteger JausAddress::get() const
 	return *((jUnsignedInteger*)address);
 }
 
-jUnsignedShortInteger JausAddress::getSubsystemID()
+jUnsignedShortInteger JausAddress::getSubsystemID() const
 {
 	jUnsignedInteger tempValue = *((jUnsignedInteger*)address);
 	return (jUnsignedShortInteger)(tempValue >> 16);
@@ -178,7 +178,7 @@ int JausAddress::setSubsystemID(jUnsignedShortInteger value)
 	return 0;
 }
 
-jUnsignedByte JausAddress::getNodeID()
+jUnsignedByte JausAddress::getNodeID() const
 {
 	jUnsignedInteger tempValue = *((jUnsignedInteger*)address);
 
@@ -197,7 +197,7 @@ int JausAddress::setNodeID(jUnsignedByte value)
 	return 0;
 }
 
-jUnsignedByte JausAddress::getComponentID()
+jUnsignedByte JausAddress::getComponentID() const
 {
 	jUnsignedInteger tempValue = *((jUnsignedInteger*)address);
 	return (jUnsignedByte)(tempValue & 0x000000FF);

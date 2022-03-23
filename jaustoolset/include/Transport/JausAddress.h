@@ -47,7 +47,7 @@ public:
 	JausAddress(JausAddress const& from);
 	virtual ~JausAddress();
 
-	std::string str();
+	std::string str() const;
 	bool match(JausAddress &expr);
 
 	const JausAddress& operator=(const JausAddress& from);
@@ -55,11 +55,11 @@ public:
 	bool operator!=(const JausAddress &value) const;
 	bool operator<(const JausAddress &value) const;
 
-	virtual jUnsignedShortInteger getSubsystemID();
+	virtual jUnsignedShortInteger getSubsystemID() const;
 	virtual int setSubsystemID(jUnsignedShortInteger value);
-	virtual jUnsignedByte getNodeID();
+	virtual jUnsignedByte getNodeID() const;
 	virtual int setNodeID(jUnsignedByte value);
-	virtual jUnsignedByte getComponentID();
+	virtual jUnsignedByte getComponentID() const;
 	virtual int setComponentID(jUnsignedByte value);
 	virtual jUnsignedInteger get() const;
 
