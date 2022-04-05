@@ -16,7 +16,7 @@
   <license>GPLv2</license>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>jaustoolset</depend>
-  <depend condition="$ROS_PYTHON_VERSION == 2">python-lxml</depend>
   <depend condition="$ROS_PYTHON_VERSION == 3">python3-lxml</depend>
+  <depend condition="$ROS_PYTHON_VERSION == 2">python-lxml</depend>
 </package>
 
