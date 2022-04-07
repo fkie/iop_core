@@ -1,5 +1,5 @@
 This repository lets your ROS software communicate with IOP services. You can find an overview of all supported services at [doc/other_packages.md](doc/other_packages.md).
-| IOP package      |  Kinetic / Melodic / Noetic | Foxy |
+| IOP package      |  Kinetic / Melodic / Noetic | Foxy / Galactic |
 | ---              | --- | --- |
 | iop_core         |  [![master](https://travis-ci.org/fkie/iop_core.svg?branch=master)](https://travis-ci.org/fkie/iop_core) | [![foxy-devel](https://github.com/fkie/iop_core/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_core/actions) |
 | [iop_msgs](https://github.com/fkie/iop_msgs) | [![Build Status](https://travis-ci.org/fkie/iop_msgs.svg?branch=master)](https://travis-ci.org/fkie/iop_msgs) | [![foxy-devel](https://github.com/fkie/iop_msgs/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_msgs/actions) |
