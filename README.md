@@ -88,8 +88,9 @@ catkin build
 For convenient usage of ROS environment use the `node_manager` of `multimaster_fkie`. You can install it from  [https://github.com/fkie/multimaster_fkie](https://github.com/fkie/multimaster_fkie) using
 
 ```console
-wstool merge -t src https://raw.githubusercontent.com/fkie/multimaster_fkie/master/fkie_multimaser.rosinstall
-wstool update -t src
+wstool merge -t src/iop https://raw.githubusercontent.com/fkie/multimaster_fkie/master/fkie_multimaster.rosinstall
+wstool update -t src/iop
+rosdep install --from-paths src --ignore-src
 ```
 
 On each host you run IOP components you need to start a ``Node Manager``. There are two alternatives:
@@ -112,6 +113,7 @@ This Node Manager is written in Python and is an alternative development to JTSN
 ```console
 wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_node_manager/master/iop_node_manager.rosinstall
 wstool update -t src/iop
+rosdep install --from-paths src --ignore-src
 catkin build
 ```
 
