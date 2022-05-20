@@ -53,6 +53,7 @@ Slave::Slave(JausAddress own_address)
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_own_address = own_address;
 	p_handoff_supported = false;
+	p_force_monitor_on_start = false;
 	pInitRos();
 }
 
@@ -148,6 +149,10 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 	if (pGetDiscoveryClient() != NULL) {
 		pGetDiscoveryClient()->discover(service_uri, &Slave::pDiscovered, this, major_version, minor_version);
 	}
+	if (p_force_monitor_on_start) {
+		handler.enable_monitoring_only(service_uri, p_default_control_addr);
+		handler.create_events(service_uri, p_default_control_addr, p_use_queries);
+	}
 	pSendFeedback();
 }
 
@@ -180,6 +185,7 @@ void Slave::pInitRos()
 			}
 		}
 		ROS_INFO_ONCE_NAMED("Slave", "	control_addr: %s, decoded to: %s", control_addr.c_str(), p_default_control_addr.str().c_str());
+		cfg.param("force_monitor_on_start", p_force_monitor_on_start, p_force_monitor_on_start);
 	}
 	cfg.param("authority", p_default_authority, p_default_authority);
 	std::map<int, std::string> access_control_map;
