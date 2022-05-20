@@ -50,6 +50,7 @@ Slave::Slave(std::shared_ptr<iop::Component> cmp)
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_own_address = *(cmp->jausRouter->getJausAddress());
 	p_handoff_supported = false;
+	p_force_monitor_on_start = false;
 	pInitRos();
 }
 
@@ -65,6 +66,7 @@ Slave::Slave(const Slave& other)
 	p_try_get_management = true;
 	p_use_queries = false;
 	p_default_authority = 205;
+	p_force_monitor_on_start = false;
 	p_default_access_control = Component::ACCESS_CONTROL_RELEASE;
 	p_handoff_supported = other.p_handoff_supported;
 }
@@ -127,6 +129,10 @@ void Slave::add_supported_service(SlaveHandlerInterface &handler, std::string se
 	if (pGetDiscoveryClient() != NULL) {
 		pGetDiscoveryClient()->discover(service_uri, &Slave::pDiscovered, this, major_version, minor_version);
 	}
+	if (p_force_monitor_on_start) {
+		handler.enable_monitoring_only(service_uri, p_default_control_addr);
+		handler.create_events(service_uri, p_default_control_addr, p_use_queries);
+	}
 	pSendFeedback();
 }
 
@@ -144,6 +150,10 @@ void Slave::pInitRos()
 		rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
 		"The JAUS address if only a specific component, node or system are controlled by the client.",
 		"Supported formats: XX, XX.XX or XX.XX.XX");
+	cfg.declare_param<bool>("force_monitor_on_start", p_force_monitor_on_start, true,
+		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
+		"Start monitoring the component declared in 'control_addr' immediately. No effect if 'control_addr' is not set!",
+		"Default: false");
 	cfg.declare_param<int64_t>("authority", p_default_authority, true,
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"The authority for access control.",
@@ -186,6 +196,7 @@ void Slave::pInitRos()
 			}
 		}
 		RCLCPP_INFO_ONCE(logger, "	control_addr: %s, decoded to: %s", control_addr.c_str(), p_default_control_addr.str().c_str());
+		cfg.param("force_monitor_on_start", p_force_monitor_on_start, p_force_monitor_on_start);
 	}
 	cfg.param("authority", p_default_authority, p_default_authority);
 	std::map<int, std::string> access_control_map;

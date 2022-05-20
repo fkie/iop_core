@@ -73,6 +73,7 @@ namespace ocu {
 		bool p_try_get_management;
 		bool p_use_queries;
 		bool p_handoff_supported;
+		bool p_force_monitor_on_start;
 		JausAddress p_own_address;
 		JausAddress p_default_control_addr;
 		JausAddress p_current_control_addr;

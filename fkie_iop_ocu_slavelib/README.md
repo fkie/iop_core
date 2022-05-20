@@ -35,6 +35,10 @@ _controlled_component (int_, (Default: 1)
 
 > Use this parameter if more than one component with requested service is available on robot. Returns the service in the list, beginning with 1.
 
+_force_monitor_on_start (bool_, (Default: false)
+
+> Start monitoring the component declared in 'control_addr' immediately. No effect if 'control_addr' is not set!
+
 
 #### Publisher:
 
