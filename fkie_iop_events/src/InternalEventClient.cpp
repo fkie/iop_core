@@ -35,7 +35,7 @@ InternalEventClient::InternalEventClient(urn_jaus_jss_core_EventsClient::EventsC
 {
 	p_parent = &parent;
 	p_query_msg = &query_msg;
-	p_timeout = 1;
+	p_timeout = 0.1;
 	p_request_id = request_id;
 	p_event_id = 255;
 	p_query_msg_id = query_msg.getID();
@@ -48,19 +48,7 @@ InternalEventClient::InternalEventClient(urn_jaus_jss_core_EventsClient::EventsC
 	p_canceled = false;
 	p_timeout_received = false;
 	p_handler.push_back(&handler);
-
-	ROS_DEBUG_NAMED("EventsClient", "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)event_type, query_msg.getID(), p_remote.str().c_str(), rate, p_request_id);
-	QueryEventTimeout query_timeout;
-	p_parent->sendJausMessage(query_timeout, p_remote);
-	jUnsignedInteger len = query_msg.getSize();
-	unsigned char bytes[len];
-	query_msg.encode(bytes);
-	CreateEvent create_event;
-	create_event.getBody()->getCreateEventRec()->setRequestID(request_id);
-	create_event.getBody()->getCreateEventRec()->setEventType(event_type);
-	create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(rate);
-	create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
-	p_parent->sendJausMessage(create_event, p_remote);
+	p_send_create_event();
 	p_timer_start();
 }
 
@@ -243,15 +231,15 @@ void InternalEventClient::timeout(const ros::TimerEvent& event)
 void InternalEventClient::p_timer_stop()
 {
 	if (p_timeout_timer.isValid()) {
-		ROS_DEBUG_NAMED("EventsClient", "stop timeout timer for report %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+		ROS_DEBUG_NAMED("EventsClient", "stop timeout timer for report %#x with timeout %.2f min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timeout_timer.stop();
 	}
 }
 
 void InternalEventClient::p_timer_start()
 {
-	if (p_event_id != 255 && p_timeout > 0  && !p_timeout_timer.isValid()) {
-		ROS_DEBUG_NAMED("EventsClient", "start timeout timer for %#x with timeout %d min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
+	if (p_timeout > 0  && !p_timeout_timer.isValid()) {
+		ROS_DEBUG_NAMED("EventsClient", "start timeout timer for %#x with timeout %.2f min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timeout_timer = p_nh.createTimer(ros::Duration(p_timeout * 60.0 - 2), &InternalEventClient::timeout, this);
 		p_timeout_timer.start();
 	}

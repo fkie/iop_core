@@ -90,7 +90,7 @@ protected:
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *p_parent;
 	ros::NodeHandle p_nh;
 	ros::Timer p_timeout_timer;
-	int p_timeout;
+	double p_timeout;
 	JausAddress p_remote;
 	jUnsignedShortInteger p_query_msg_id;
 	JTS::Message *p_query_msg;
