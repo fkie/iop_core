@@ -60,6 +60,7 @@ InternalEventClient::InternalEventClient(urn_jaus_jss_core_EventsClient::EventsC
 	create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(rate);
 	create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
 	p_parent->sendJausMessage(create_event, p_remote);
+	p_timer_start();
 }
 
 InternalEventClient::~InternalEventClient()

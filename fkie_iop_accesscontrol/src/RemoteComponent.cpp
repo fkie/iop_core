@@ -34,7 +34,7 @@ RemoteComponent::RemoteComponent(JausAddress address, jUnsignedByte authority, i
 	p_address = address;
 	p_timeout = timeout;
 	p_authority = authority;
-	p_last_request = 0;
+	p_last_request = ros::WallTime::now().toSec();
 	p_last_ack = 0;
 	p_has_access = false;
 	p_insauth = false;
@@ -78,6 +78,9 @@ bool RemoteComponent::timeouted()
 {
 	if (!p_insauth && p_last_ack < p_last_request && p_last_request - p_last_ack > (unsigned long)p_timeout * 2) {
 		ROS_DEBUG_NAMED("AccessControlClient", "timeouted, last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
+		return true;
+	} else if (p_last_ack == 0 && ros::WallTime::now().toSec() - p_last_request > 3)  {
+		ROS_DEBUG_NAMED("AccessControlClient", "timeouted (no ack received), last req: %lu, last_ack %lu, diff: %lu for %s", p_last_request, p_last_ack, p_last_request - p_last_ack, p_address.str().c_str());
 		return true;
 	}
 	return false;
