@@ -102,12 +102,14 @@ protected:
 	std::string p_error_msg;
 	bool p_wait_for_cancel;
 	bool p_canceled;
+	bool p_timeout_received;
 
 	std::vector<iop::EventHandlerInterface *> p_handler;
 
 	void p_send_cancel_event();
 	void p_send_update_event();
 
+	void p_send_create_event();
 	void timeout(const ros::TimerEvent& event);
 	void p_timer_stop();
 	void p_timer_start();
