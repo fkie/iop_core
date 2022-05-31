@@ -610,6 +610,7 @@ void DiscoveryClient_ReceiveFSM::sendQueryIdentificationAction()
 		query_identification(TYPE_SUBSYSTEM, addr.getSubsystemID(), addr.getNodeID(), addr.getComponentID());
 	}
 	if (p_ros_interface.enabled()) {
+		lock_type lock(p_mutex);
 		// if ROS interface enabled we send component queries to get names for components
 		query_identification(TYPE_COMPONENT, 0xFFFF, 0xFF, 0xFF);
 		ROS_DEBUG_NAMED("DiscoveryClient", "update services");
