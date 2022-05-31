@@ -154,7 +154,7 @@ void EventsClient_ReceiveFSM::handleReportEventsAction(ReportEvents msg, Receive
 void EventsClient_ReceiveFSM::create_event(iop::EventHandlerInterface &handler, JausAddress address, JTS::Message &query_msg, double rate)
 {
 	lock_type lock(p_mutex);
-	iop::InternalEventClient* event = p_get_event(address, query_msg.getID());
+	iop::InternalEventClient* event = p_get_event(address, query_msg.getID(), true);
 	if (event == NULL) {
 		jUnsignedByte event_type = 0;
 		if (rate < 0.1 || rate > 25.0) {
@@ -179,7 +179,7 @@ void EventsClient_ReceiveFSM::cancel_event(iop::EventHandlerInterface &handler, 
 	}
 }
 
-iop::InternalEventClient* EventsClient_ReceiveFSM::p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id)
+iop::InternalEventClient* EventsClient_ReceiveFSM::p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id, bool delete_invalid)
 {
 	lock_type lock(p_mutex);
 	std::vector<iop::InternalEventClient *>::iterator it;
@@ -187,6 +187,11 @@ iop::InternalEventClient* EventsClient_ReceiveFSM::p_get_event(JausAddress addre
 		iop::InternalEventClient* result = *it;
 		if (result->get_query_msg_id() == query_msg_id
 				&& result->get_remote() == address) {
+			if (delete_invalid && !result->is_valid()) {
+				delete (*it);
+				p_events.erase(it);
+				return NULL;
+			}
 			return result;
 		}
 	}
