@@ -95,8 +95,8 @@ void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEven
 {
 	if (reporter.match(p_remote)) {
 		p_timeout_received = true;
-		jUnsignedByte timeout = msg.getBody()->getReportTimoutRec()->getTimeout();
-		ROS_DEBUG_NAMED("EventsClient", "update timeout %d min for event %d with query=%#x to %s, request_id: %d", timeout, p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		double timeout = double(msg.getBody()->getReportTimoutRec()->getTimeout());
+		ROS_DEBUG_NAMED("EventsClient", "update timeout %.2f min for event %d with query=%#x to %s, request_id: %d", timeout, p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		if (timeout != p_timeout) {
 			if (p_timeout_timer.isValid()) {
 				p_timeout_timer.stop();
@@ -148,11 +148,16 @@ bool InternalEventClient::handle_reject(urn_jaus_jss_core_EventsClient::RejectEv
 		}
 		ROS_DEBUG_NAMED("EventsClient", "received reject for event %d with query=%#x to %s, request_id: %d, error: %d, err_msg: %s",
 				p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id, p_error_code, p_error_msg.c_str());
-		p_timer_stop();
-		for (unsigned int i = 0; i < p_handler.size(); i++) {
-			p_handler[i]->rejected(reporter, p_query_msg_id, p_error_code, p_error_msg);
+		if (p_wait_for_cancel || p_error_code == 5) {
+			p_timer_stop();
+			for (unsigned int i = 0; i < p_handler.size(); i++) {
+				p_handler[i]->rejected(reporter, p_query_msg_id, p_error_code, p_error_msg);
+			}
+			return true;
+		} else {
+			p_send_create_event();
+			return false;
 		}
-		return true;
 	}
 	return false;
 }
@@ -209,18 +214,16 @@ void InternalEventClient::p_send_create_event() {
 		QueryEventTimeout query_timeout;
 		p_parent->sendJausMessage(query_timeout, p_remote);
 	}
-	if (p_event_id == 255) {
-		ROS_DEBUG_NAMED("EventsClient", "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)p_event_type, p_query_msg->getID(), p_remote.str().c_str(), p_event_rate, p_request_id);
-		jUnsignedInteger len = p_query_msg->getSize();
-		unsigned char bytes[len];
-		p_query_msg->encode(bytes);
-		CreateEvent create_event;
-		create_event.getBody()->getCreateEventRec()->setRequestID(p_request_id);
-		create_event.getBody()->getCreateEventRec()->setEventType(p_event_type);
-		create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(p_event_rate);
-		create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
-		p_parent->sendJausMessage(create_event, p_remote);
-	}
+	ROS_DEBUG_NAMED("EventsClient", "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)p_event_type, p_query_msg->getID(), p_remote.str().c_str(), p_event_rate, p_request_id);
+	jUnsignedInteger len = p_query_msg->getSize();
+	unsigned char bytes[len];
+	p_query_msg->encode(bytes);
+	CreateEvent create_event;
+	create_event.getBody()->getCreateEventRec()->setRequestID(p_request_id);
+	create_event.getBody()->getCreateEventRec()->setEventType(p_event_type);
+	create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(p_event_rate);
+	create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
+	p_parent->sendJausMessage(create_event, p_remote);
 }
 
 void InternalEventClient::timeout(const ros::TimerEvent& event)
@@ -233,12 +236,14 @@ void InternalEventClient::p_timer_stop()
 	if (p_timeout_timer.isValid()) {
 		ROS_DEBUG_NAMED("EventsClient", "stop timeout timer for report %#x with timeout %.2f min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timeout_timer.stop();
+		p_timeout = 0;
 	}
 }
 
 void InternalEventClient::p_timer_start()
 {
-	if (p_timeout > 0  && !p_timeout_timer.isValid()) {
+	if (p_timeout > 0.0) {
+		p_timeout_timer.stop();
 		ROS_DEBUG_NAMED("EventsClient", "start timeout timer for %#x with timeout %.2f min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
 		p_timeout_timer = p_nh.createTimer(ros::Duration(p_timeout * 60.0 - 2), &InternalEventClient::timeout, this);
 		p_timeout_timer.start();
