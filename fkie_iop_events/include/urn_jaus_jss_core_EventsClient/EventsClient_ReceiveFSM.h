@@ -110,7 +110,7 @@ protected:
 	mutable mutex_type p_mutex;
 	boost::function<void (JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jByte event_id, jUnsignedByte reject_code)> p_class_events_reply_callback;
 
-	iop::InternalEventClient* p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id);
+	iop::InternalEventClient* p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id, bool delete_invalid=false);
 };
 
 };

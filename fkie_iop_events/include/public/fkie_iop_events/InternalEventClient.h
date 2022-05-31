@@ -64,6 +64,7 @@ public:
 	bool handle_confirm(urn_jaus_jss_core_EventsClient::ConfirmEventRequest &msg, JausAddress &reporter);
 	bool handle_reject(urn_jaus_jss_core_EventsClient::RejectEventRequest &msg, JausAddress &reporter);
 	bool is_canceld() { return p_canceled; }
+	bool is_valid() { return !p_canceled && !p_wait_for_cancel; }
 
 	/** Callbacks for this event. */
 	void add_handler(iop::EventHandlerInterface& handler);
