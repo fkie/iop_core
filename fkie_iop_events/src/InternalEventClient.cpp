@@ -36,7 +36,7 @@ InternalEventClient::InternalEventClient(rclcpp::Logger& logger, urn_jaus_jss_co
 {
 	p_parent = &parent;
 	p_query_msg = &query_msg;
-	p_timeout = 0;
+	p_timeout = 0.1;
 	p_request_id = request_id;
 	p_event_id = 255;
 	p_query_msg_id = query_msg.getID();
@@ -47,21 +47,10 @@ InternalEventClient::InternalEventClient(rclcpp::Logger& logger, urn_jaus_jss_co
 	p_error_msg = "";
 	p_wait_for_cancel = false;
 	p_canceled = false;
+	p_timeout_received = false;
 	p_handler.push_back(&handler);
 
-	RCLCPP_DEBUG(logger, "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)event_type, query_msg.getID(), p_remote.str().c_str(), rate, p_request_id);
-	QueryEventTimeout query_timeout;
-	p_parent->sendJausMessage(query_timeout, p_remote);
-	jUnsignedInteger len = query_msg.getSize();
-	unsigned char* bytes = new unsigned char[len];
-	query_msg.encode(bytes);
-	CreateEvent create_event;
-	create_event.getBody()->getCreateEventRec()->setRequestID(request_id);
-	create_event.getBody()->getCreateEventRec()->setEventType(event_type);
-	create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(rate);
-	create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
-	p_parent->sendJausMessage(create_event, p_remote);
-	delete[] bytes;
+	p_send_create_event();
 }
 
 InternalEventClient::~InternalEventClient()
@@ -106,6 +95,7 @@ void InternalEventClient::cancel_event(iop::EventHandlerInterface &handler)
 void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEventTimeout &msg, JausAddress &reporter)
 {
 	if (reporter.match(p_remote)) {
+		p_timeout_received = true;
 		jUnsignedByte timeout = msg.getBody()->getReportTimoutRec()->getTimeout();
 		RCLCPP_DEBUG(logger, "update timeout %d min for event %d with query=%#x to %s, request_id: %d", timeout, p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		if (timeout != p_timeout) {
@@ -114,7 +104,7 @@ void InternalEventClient::set_timeout(urn_jaus_jss_core_EventsClient::ReportEven
 				p_send_update_event();
 			}
 			p_timeout = timeout;
-			p_timer.set_interval(std::chrono::milliseconds((p_timeout * 60 - 2) / 2 * 1000));
+			p_timer.set_interval(std::chrono::milliseconds(int(p_timeout * 60 - 2) / 2 * 1000));
 			p_timer_start();
 		}
 	}
@@ -190,6 +180,12 @@ void InternalEventClient::set_error(jUnsignedByte code, std::string msg)
 
 void InternalEventClient::p_send_update_event()
 {
+	if (!p_timeout_received && !p_canceled && !p_wait_for_cancel) {
+		RCLCPP_DEBUG(logger, "Send get timeout %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
+		QueryEventTimeout query_timeout;
+		p_parent->sendJausMessage(query_timeout, p_remote);
+	}
+
 	if (p_event_id != 255 && !p_canceled && !p_wait_for_cancel) {
 		RCLCPP_DEBUG(logger, "Send update event %d for query=%#x to %s, request_id: %d", p_event_id, p_query_msg_id, p_remote.str().c_str(), p_request_id);
 		jUnsignedInteger len = p_query_msg->getSize();
@@ -202,6 +198,33 @@ void InternalEventClient::p_send_update_event()
 		update_event.getBody()->getUpdateEventRec()->setRequestedPeriodicRate(p_event_rate);
 		update_event.getBody()->getUpdateEventRec()->getQueryMessage()->set(len, bytes);
 		p_parent->sendJausMessage(update_event, p_remote);
+		delete[] bytes;
+	} else {
+		p_send_create_event();
+	}
+}
+
+void InternalEventClient::p_send_create_event() {
+	if (p_canceled || p_wait_for_cancel) {
+		return;
+	}
+	if (!p_timeout_received) {
+		QueryEventTimeout query_timeout;
+		p_parent->sendJausMessage(query_timeout, p_remote);
+	}
+	if (p_event_id == 255) {
+		RCLCPP_DEBUG(logger, "Send create event of type %d for query=%#x to %s, rate: %f, request_id: %d", (int)p_event_type, p_query_msg->getID(), p_remote.str().c_str(), p_event_rate, p_request_id);
+		QueryEventTimeout query_timeout;
+		p_parent->sendJausMessage(query_timeout, p_remote);
+		jUnsignedInteger len = p_query_msg->getSize();
+		unsigned char* bytes = new unsigned char[len];
+		p_query_msg->encode(bytes);
+		CreateEvent create_event;
+		create_event.getBody()->getCreateEventRec()->setRequestID(p_request_id);
+		create_event.getBody()->getCreateEventRec()->setEventType(p_event_type);
+		create_event.getBody()->getCreateEventRec()->setRequestedPeriodicRate(p_event_rate);
+		create_event.getBody()->getCreateEventRec()->getQueryMessage()->set(len, bytes);
+		p_parent->sendJausMessage(create_event, p_remote);
 		delete[] bytes;
 	}
 }
@@ -221,8 +244,8 @@ void InternalEventClient::p_timer_stop()
 
 void InternalEventClient::p_timer_start()
 {
-	if (p_event_id != 255 && p_timeout > 0 && !p_timer.is_running()) {
-		RCLCPP_INFO(logger, "start timeout timer for %#x with %ldms to %s (component timeout: %d min)", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str(), p_timeout);
+	if (p_timeout > 0 && !p_timer.is_running()) {
+		RCLCPP_INFO(logger, "start timeout timer for %#x with %ldms to %s (component timeout: %.2f min)", p_query_msg_id, p_timer.get_interval().count(), p_remote.str().c_str(), p_timeout);
 		p_timer.start();
 	}
 }

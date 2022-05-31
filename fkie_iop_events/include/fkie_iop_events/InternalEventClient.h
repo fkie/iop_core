@@ -90,7 +90,7 @@ protected:
 	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM *p_parent;
 	rclcpp::Logger logger;
 	iop::Timer p_timer;
-	int p_timeout;
+	double p_timeout;
 	JausAddress p_remote;
 	jUnsignedShortInteger p_query_msg_id;
 	JTS::Message *p_query_msg;
@@ -102,9 +102,11 @@ protected:
 	std::string p_error_msg;
 	bool p_wait_for_cancel;
 	bool p_canceled;
+	bool p_timeout_received;
 
 	std::vector<iop::EventHandlerInterface *> p_handler;
 
+	void p_send_create_event();
 	void p_send_cancel_event();
 	void p_send_update_event();
 
