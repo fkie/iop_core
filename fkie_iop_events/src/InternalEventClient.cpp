@@ -245,7 +245,7 @@ void InternalEventClient::p_timer_start()
 	if (p_timeout > 0.0) {
 		p_timeout_timer.stop();
 		ROS_DEBUG_NAMED("EventsClient", "start timeout timer for %#x with timeout %.2f min to %s", p_query_msg_id, p_timeout, p_remote.str().c_str());
-		p_timeout_timer = p_nh.createTimer(ros::Duration(p_timeout * 60.0 - 2), &InternalEventClient::timeout, this);
+		p_timeout_timer = p_nh.createTimer(ros::Duration(p_timeout * 60.0 / 10.0), &InternalEventClient::timeout, this);
 		p_timeout_timer.start();
 	}
 }
