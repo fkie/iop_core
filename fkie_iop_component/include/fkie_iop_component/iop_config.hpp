@@ -158,7 +158,21 @@ namespace iop
         )
         {
                 std::string name = get_topic_name(topic_name, "topic.sub.");
-                auto result = p_cmp->create_subscription<MessageT>(name, qos, std::forward<CallbackT>(callback), options, msg_mem_strat);
+                auto qos_cfg = qos;
+                bool reliable = get_param_by_topic_name(topic_name, "topic.sub.qos.reliable", true, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
+                if (reliable) {
+                       qos_cfg = qos_cfg.reliable();
+                } else {
+                       qos_cfg = qos_cfg.best_effort();
+                }
+                bool transient_local = get_param_by_topic_name(topic_name, "topic.sub.qos.transient_local", false, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
+                if (transient_local) {
+                       qos_cfg = qos_cfg.transient_local();
+                } else {
+                       qos_cfg = qos_cfg.durability_volatile();
+                }
+
+                auto result = p_cmp->create_subscription<MessageT>(name, qos_cfg, std::forward<CallbackT>(callback), options, msg_mem_strat);
                 RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS subscriber: %s [type: %s]", p_ns.c_str(), result->get_topic_name(), typeid(MessageT).name());
                 return result;
         }
@@ -223,6 +237,25 @@ namespace iop
         std::shared_ptr<iop::Component> p_cmp;
         std::string p_ns;
         std::string get_topic_name(const std::string& name, const std::string& prefix);
+        template<typename T>
+        T get_param_by_topic_name(const std::string& name, const std::string& prefix,
+                                   const T& default_value,
+                                   uint8_t ptype=rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
+                                   std::string description="")
+        {
+                T result;
+                std::string param_name = prefix;
+                if (name[0] == '/') {
+                        param_name += name.substr(1);
+                } else {
+                        param_name += name;
+                }
+                std::replace(param_name.begin(), param_name.end(), '/', '_');
+                declare_param<T>(param_name, default_value, true, ptype, description, "");
+                // only from private namespace
+                param<T>(param_name, result, default_value, true);
+                return result;
+        }
     };
 }
 
