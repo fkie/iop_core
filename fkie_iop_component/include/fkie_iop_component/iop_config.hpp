@@ -173,7 +173,7 @@ namespace iop
                 }
 
                 auto result = p_cmp->create_subscription<MessageT>(name, qos_cfg, std::forward<CallbackT>(callback), options, msg_mem_strat);
-                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS subscriber: %s [type: %s]", p_ns.c_str(), result->get_topic_name(), typeid(MessageT).name());
+                RCLCPP_INFO(p_cmp->get_logger(), "[%s] ROS subscriber: %s [type: %s, reliable: %d, transient_local: %d]", p_ns.c_str(), result->get_topic_name(), typeid(MessageT).name(), reliable, transient_local);
                 return result;
         }
 
