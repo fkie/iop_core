@@ -159,13 +159,13 @@ namespace iop
         {
                 std::string name = get_topic_name(topic_name, "topic.sub.");
                 auto qos_cfg = qos;
-                bool reliable = get_param_by_topic_name(topic_name, "topic.sub.qos.reliable", true, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
+                bool reliable = get_param_by_topic_name(topic_name, "topic.sub.qos.reliable.", true, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
                 if (reliable) {
                        qos_cfg = qos_cfg.reliable();
                 } else {
                        qos_cfg = qos_cfg.best_effort();
                 }
-                bool transient_local = get_param_by_topic_name(topic_name, "topic.sub.qos.transient_local", false, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
+                bool transient_local = get_param_by_topic_name(topic_name, "topic.sub.qos.transient_local.", false, rcl_interfaces::msg::ParameterType::PARAMETER_BOOL);
                 if (transient_local) {
                        qos_cfg = qos_cfg.transient_local();
                 } else {
