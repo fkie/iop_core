@@ -4,7 +4,7 @@ First of all you need a running `JAUS Node Manager` on **each host** where you s
 
 ### Create configuration for robot
 
-In JAUS/IOP a robot represents a subsystem with all his payloads and computers. For a whole subsystem we have to setup exact one component, which manage the discovering of all IOP/JAUS services. Usually it is a component named `platfrom_manager` with `node id` **15**.
+In JAUS/IOP a robot represents a subsystem with all his payloads and computers. For a whole subsystem we have to setup exact one component, which manage the discovering of all IOP/JAUS services. Usually it is a component named `platform_manager` with `node id` **15**.
 ```
     <param name="name_subsystem" value="Bob"/>
     <node name="iop_platform_manager" pkg="fkie_iop_component" type="iop_component">
