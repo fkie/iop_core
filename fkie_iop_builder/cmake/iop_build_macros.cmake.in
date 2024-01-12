@@ -27,6 +27,7 @@ if(NOT EXISTS "${IOP_BUILDER_SCRIPT_DIR}/mss.py")
 endif()
 
 macro(iop_init_paths)
+  find_package (Python COMPONENTS Interpreter Development)
   if ("${PROJECT_NAME}" STREQUAL "")
     message(FATAL_ERROR "You must call project() first")
   endif()
@@ -122,7 +123,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.xml"
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
+    COMMAND "${Python_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/mss.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" "${IOP_COMPONENT_NAME}" ${iop_arg_DEFAULT_IDLS} ${iop_arg_OWN_IDLS}
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/jaus/"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_INSTALL_PREFIX}/include"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -131,7 +132,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.overrides"
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/cpy.py" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
+    COMMAND "${Python_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/cpy.py" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.overrides"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     DEPENDS ${iop_arg_OVERRIDE_SOURCES} ${iop_arg_OVERRIDE_HEADERS} "jaus.xml"
@@ -141,8 +142,8 @@ macro(iop_code_generator)
     OUTPUT "jaus.headers"
     COMMAND "${Java_JAVA_EXECUTABLE}" ${CMAKE_JAVA_COMPILE_FLAGS} -classpath .:${jaustoolset_INCLUDE_JARS}:${jaustoolset_SHARE_PATH}/iop_codegenerator.jar -Djts.path=${jaustoolset_SHARE_PATH} org.jts.codegenerator.CodeGenerator -i "${CMAKE_CURRENT_BINARY_DIR}/jaus.xml" -o "${CMAKE_CURRENT_BINARY_DIR}/jaus" -n "${IOP_COMPONENT_NAME}" -p "'${IOP_NS_COMPONENTS}'"
     COMMAND rm -fr ${iop_arg_EXTERN_INCLUDES} ${iop_arg_EXTERN_SRCS}
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
+    COMMAND "${Python_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_HEADERS}
+    COMMAND "${Python_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/chmerge.py" "${CMAKE_CURRENT_SOURCE_DIR}" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/jaus.headers"
     COMMAND find ${CMAKE_INSTALL_PREFIX}/include -name "*.old" -type f -delete
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -151,7 +152,7 @@ macro(iop_code_generator)
 
   add_custom_command(
     OUTPUT "jaus.cpp"
-    COMMAND "${PYTHON_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.cpp" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
+    COMMAND "${Python_EXECUTABLE}" "${IOP_BUILDER_SCRIPT_DIR}/cpp.py" "${CMAKE_CURRENT_BINARY_DIR}/jaus.cpp" "${IOP_COMPONENT_DIR}" ${iop_arg_OVERRIDE_SOURCES}
     DEPENDS "jaus.headers"
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
