@@ -66,7 +66,7 @@ public class RecordGenerator
     final private boolean fixedLengthStringHasClass = false;		// FixedLengthString		// Currently always false
     final private boolean variableLengthStringHasClass = false;		// VariableLengthString		// Currently always false
     private CodeLines.CodeType codeType;
-    private Record record;
+    private org.jts.jsidl.binding.Record record;
     private boolean isList;
     private String countFieldType;
     private boolean countFieldSigned;
@@ -77,7 +77,7 @@ public class RecordGenerator
     private String shortClassName;
     private String varName;
 
-    public RecordGenerator(CodeLines.CodeType codeType, Record record)
+    public RecordGenerator(CodeLines.CodeType codeType, org.jts.jsidl.binding.Record record)
     {
         this.codeType = codeType;
         this.record = record;
@@ -101,7 +101,7 @@ public class RecordGenerator
 
     }
 
-    public RecordGenerator(CodeLines.CodeType codeType, Record record, boolean isList, String countFieldType)
+    public RecordGenerator(CodeLines.CodeType codeType, org.jts.jsidl.binding.Record record, boolean isList, String countFieldType)
     {
         this.codeType = codeType;
         this.record = record;

@@ -248,9 +248,9 @@ public class SequenceGenerator
 
                     new VariantGenerator(codeType, variant).run(fullClassName, pvIndex1, varCode);
                 }
-                else if (field instanceof Record)
+                else if (field instanceof org.jts.jsidl.binding.Record)
                 {
-                    Record record = (Record)field;
+                    org.jts.jsidl.binding.Record record = (org.jts.jsidl.binding.Record)field;
 
                     fieldName = Util.upperCaseFirstLetter(record.getName());
                     fieldIsNested = recordIsNested;
@@ -364,9 +364,9 @@ public class SequenceGenerator
 
                     new VariantGenerator(codeType, variant).run(fullClassName, pvIndex1, varCode);
                 }
-                else if (field instanceof Record)
+                else if (field instanceof org.jts.jsidl.binding.Record)
                 {
-                    Record record = (Record)field;
+                    org.jts.jsidl.binding.Record record = (org.jts.jsidl.binding.Record)field;
 
                     fieldName = Util.upperCaseFirstLetter(record.getName());
                     fieldIsNested = recordIsNested;
@@ -479,9 +479,9 @@ public class SequenceGenerator
 
                     new VariantGenerator(codeType, variant).run(fullClassName, pvIndex1, varCode);
                 }
-                else if (field instanceof Record)
+                else if (field instanceof org.jts.jsidl.binding.Record)
                 {
-                    Record record = (Record)field;
+                    org.jts.jsidl.binding.Record record = (org.jts.jsidl.binding.Record)field;
 
                     fieldName = Util.upperCaseFirstLetter(record.getName());
                     fieldIsNested = recordIsNested;
