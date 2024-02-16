@@ -291,13 +291,13 @@ endif()
 add_jar(iop_codegenerator ${JAVA_SOURCE_FILES}
     INCLUDE_JARS ${INCLUDE_LOCAL_JARS}
     ENTRY_POINT org/jts/codegenerator/CodeGenerator
-    OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
+    OUTPUT_DIR build/${PROJECT_NAME}
 )
 
 ###################################
 ## install iop_codegenerator.jar ##
 ###################################
-install_jar(iop_codegenerator ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
+install_jar(iop_codegenerator share/${PROJECT_NAME})
 
 
 ###############################################################
