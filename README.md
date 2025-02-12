@@ -37,15 +37,14 @@ sudo apt-get install default-jdk -y
 
 ## Set up your ROS environment
 
-Make sure, that your catin workspace is set up correctly:
+Make sure, that your ROS workspace is set up correctly:
 
-- Using [catkin](http://wiki.ros.org/catkin/Tutorials/create_a_workspace)
-- Using [catkin_tools](https://catkin-tools.readthedocs.io/en/latest/quick_start.html#initializing-a-new-workspace)
+- Using [Creating a workspace](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html)
 
-For easier download of bridge packages install **[wstool](http://wiki.ros.org/wstool)**:
+For easier download of bridge packages install **[vcstool](https://wiki.ros.org/vcstool)**:
 
 ```console
-sudo apt-get install python-wstool -y
+sudo apt-get install vcstool -y
 ```
 
 ----
@@ -54,15 +53,14 @@ sudo apt-get install python-wstool -y
 
 The sourcecode of the ROS/IOP-Bridge is splitted into different Git repositories. Depending on your configuration you need a different set of packages. An overview of existing packages you find [here](doc/other_packages.md)
 
-For download the ROS/IOP-Bridge sources we use the [wstool](http://wiki.ros.org/wstool):
-  > If you do not already have an *.rosinstall* go into you ROS workspace and call  
-  >`cd catkin_ws/; wstool init src/iop`
+For download the ROS/IOP-Bridge sources we use the [vcstool](https://wiki.ros.org/vcstool):
 
 Merge the iop.rosinstall file and fetch code.
 
 ```console
-wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_core/master/iop.rosinstall
-wstool update -t src/iop
+cd ros/
+mkdir src/iop
+vcs import --input https://raw.githubusercontent.com/fkie/iop_core/refs/heads/ros2/iop_robot.rosinstall src/iop
 ```
 
 ## Install dependencies
@@ -78,19 +76,14 @@ rosdep install --from-paths src --ignore-src
 Go to the root folder of your ROS workspace and type:
 
 ```console
-catkin build
+colcon build --symlink-install
 ```
 
 >If some errors occur while JTS build regarding missing *pthread* and *timer* the *libpthread* and *librt* have to be included. This can be done by replacing LIBS=[] by LIBS=['-lpthread', '-lrt'] in   *jaustoolset/GUI/templates/Common/SConstruct*
 
 ## Additional Information
 
-For convenient usage of ROS environment use the `node_manager` of `multimaster_fkie`. You can install it from  [https://github.com/fkie/multimaster_fkie](https://github.com/fkie/multimaster_fkie) using
-
-```console
-wstool merge -t src https://raw.githubusercontent.com/fkie/multimaster_fkie/master/fkie_multimaser.rosinstall
-wstool update -t src
-```
+For convenient usage of ROS environment use the `mas gui` of `fkie-multi-agent-suite`. You can install it from  [https://github.com/fkie/fkie-multi-agent-suite](https://github.com/fkie/fkie-multi-agent-suite/).
 
 On each host you run IOP components you need to start a ``Node Manager``. There are two alternatives:
 
