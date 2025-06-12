@@ -183,7 +183,7 @@ namespace iop
         create_service(
                 const std::string& service_name,
                 CallbackT&& callback,
-                const rclcpp::QoS& qos_profile = rclcpp::ServicesQoS(),
+                const rmw_qos_profile_t& qos_profile = rmw_qos_profile_services_default,
                 rclcpp::CallbackGroup::SharedPtr group = nullptr 
         )
         {

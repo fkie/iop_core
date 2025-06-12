@@ -66,12 +66,12 @@ void DiscoveryRosInterface::set_discovery_timeout(int64_t timeout)
 	p_components.set_timeout(p_timeout_discover_service);
 }
 
-void DiscoveryRosInterface::pQueryIdentificationSrv(const fkie_iop_msgs::srv::QueryIdentification::Request::SharedPtr req, fkie_iop_msgs::srv::QueryIdentification::Response::SharedPtr /* res */)
+void DiscoveryRosInterface::pQueryIdentificationSrv(const std::shared_ptr<fkie_iop_msgs::srv::QueryIdentification::Request> req, std::shared_ptr<fkie_iop_msgs::srv::QueryIdentification::Response> /* res */)
 {
 	p_query_identification(req->type, 0xFFFF, 0xFF, 0xFF);
 }
 
-void DiscoveryRosInterface::pUpdateSystemSrv(const std_srvs::srv::Empty::Request::SharedPtr /* req */, std_srvs::srv::Empty::Response::SharedPtr /* res */)
+void DiscoveryRosInterface::pUpdateSystemSrv(const std::shared_ptr<std_srvs::srv::Empty::Request> /* req */, std::shared_ptr<std_srvs::srv::Empty::Response> /* res */)
 {
 	p_discovery_srvs_stamps.clear();
 	p_query_identification(2, 0xFFFF, 0xFF, 0xFF);
