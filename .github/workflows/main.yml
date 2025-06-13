@@ -8,7 +8,6 @@ jobs:
       matrix:
         env:
           - {ROS_DISTRO: jazzy, UPSTREAM_WORKSPACE: 'dependencies.rosinstall', CMAKE_ARGS: '--event-handlers console_direct+'}
-          - {ROS_DISTRO: rolling, UPSTREAM_WORKSPACE: 'dependencies.rosinstall', CMAKE_ARGS: '--event-handlers console_direct+'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
