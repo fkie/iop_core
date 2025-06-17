@@ -1,8 +1,8 @@
 This repository lets your ROS software communicate with IOP services. You can find an overview of all supported services at [doc/other_packages.md](doc/other_packages.md).
-| IOP package      |  Kinetic / Melodic / Noetic | Foxy / Galactic |
+| IOP package      |  Noetic | Jazzy |
 | ---              | --- | --- |
 | iop_core         |  [![master](https://travis-ci.org/fkie/iop_core.svg?branch=master)](https://travis-ci.org/fkie/iop_core) | [![foxy-devel](https://github.com/fkie/iop_core/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_core/actions) |
-| [iop_msgs](https://github.com/fkie/iop_msgs) | [![Build Status](https://travis-ci.org/fkie/iop_msgs.svg?branch=master)](https://travis-ci.org/fkie/iop_msgs) | [![foxy-devel](https://github.com/fkie/iop_msgs/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_msgs/actions) |
+| [iop_msgs](https://github.com/fkie/iop_msgs) | [![noetic](https://github.com/fkie/iop_msgs/actions/workflows/main.yaml/badge.svg)](https://github.com/fkie/iop_msgs/actions/workflows/main.yaml) | [![jazzy](https://github.com/fkie/iop_msgs/actions/workflows/main.yml/badge.svg)](https://github.com/fkie/iop_msgs/actions/workflows/main.yml) |
 | [iop_platform](https://github.com/fkie/iop_platform) | [![Build Status](https://travis-ci.org/fkie/iop_platform.svg?branch=master)](https://travis-ci.org/fkie/iop_platform) | [![foxy-devel](https://github.com/fkie/iop_platform/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_platform/actions) |
 | [iop_sensing](https://github.com/fkie/iop_sensing) | [![Build Status](https://travis-ci.org/fkie/iop_sensing.svg?branch=master)](https://travis-ci.org/fkie/iop_sensing) | [![foxy-devel](https://github.com/fkie/iop_sensing/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_sensing/actions) |
 | [iop_sensing_clients](https://github.com/fkie/iop_sensing_clients) | [![Build Status](https://travis-ci.org/fkie/iop_sensing_clients.svg?branch=master)](https://travis-ci.org/fkie/iop_sensing_clients) | [![foxy-devel](https://github.com/fkie/iop_sensing_clients/workflows/CI/badge.svg?branch=foxy-devel)](https://github.com/fkie/iop_sensing_clients/actions) |
@@ -61,7 +61,7 @@ For download the ROS/IOP-Bridge sources we use the [wstool](http://wiki.ros.org/
 Merge the iop.rosinstall file and fetch code.
 
 ```console
-wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_core/master/iop.rosinstall
+wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_core/neotic/iop.rosinstall
 wstool update -t src/iop
 ```
 
@@ -111,7 +111,7 @@ bash rosrun jaustoolset jaus_node_manager.sh start
 This Node Manager is written in Python and is an alternative development to JTSNodeManager. You need to install it as separate package from [https://github.com/fkie/iop_node_manager](https://github.com/fkie/iop_node_manager) using
 
 ```console
-wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_node_manager/master/iop_node_manager.rosinstall
+wstool merge -t src/iop https://raw.githubusercontent.com/fkie/iop_node_manager/noetic/iop_node_manager.rosinstall
 wstool update -t src/iop
 rosdep install --from-paths src --ignore-src
 catkin build
@@ -119,7 +119,7 @@ catkin build
 
 ## Example
 
-For a simple example with turtlesim see [fkie_iop_cfg_sim_turtle](https://github.com/fkie/iop_examples/blob/master/fkie_iop_cfg_sim_turtle/README.md) package.
+For a simple example with turtlesim see [fkie_iop_cfg_sim_turtle](https://github.com/fkie/iop_examples/blob/noetic/fkie_iop_cfg_sim_turtle/README.md) package.
 
 You find other examples in [iop_examples](https://github.com/fkie/iop_examples) repository.
 
