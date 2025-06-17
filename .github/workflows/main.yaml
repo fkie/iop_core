@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: noetic, UPSTREAM_WORKSPACE: 'dependencies.rosinstall', CMAKE_ARGS: '--event-handlers console_direct+'}
+          - {ROS_DISTRO: noetic, UPSTREAM_WORKSPACE: 'dependencies.rosinstall'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
