@@ -36,7 +36,8 @@ namespace urn_jaus_jss_core_Discovery
 
 Discovery_ReceiveFSM::Discovery_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
 : logger(cmp->get_logger().get_child("Discovery")),
-  p_component_list(logger)
+  p_component_list(logger),
+  p_report_service_list(new ReportServiceList())
 {
 
 	/*
@@ -68,6 +69,36 @@ void Discovery_ReceiveFSM::registerService(std::string serviceuri, unsigned char
 	} else {
 		RCLCPP_WARN(logger, "own service '%s' [%s] already exists, ignore", serviceuri.c_str(), address.str().c_str());
 	}
+	int cnt_services = 0;
+	delete p_report_service_list;
+	p_report_service_list = new ReportServiceList();
+	// std::vector<JausAddress> discovery_services = p_component_list.get_discovery_services();
+	// std::vector<JausAddress>::iterator itaddr;
+	// for (itaddr = discovery_services.begin(); itaddr != discovery_services.end(); itaddr++) {
+		// RCLCPP_INFO(logger, "  add services of [%s]", itaddr->str().c_str());
+		std::vector<iop::DiscoveryComponent> components = p_component_list.get_components(p_own_address);
+		std::vector<iop::DiscoveryComponent>::iterator itcmp;
+		for (itcmp = components.begin(); itcmp != components.end(); itcmp++) {
+			JausAddress addr = itcmp->address;
+			std::vector<iop::DiscoveryServiceDef> services = itcmp->get_services();
+			std::vector<iop::DiscoveryServiceDef>::iterator itsrv;
+			for (itsrv = services.begin(); itsrv != services.end(); itsrv++) {
+				bool service_added = false;
+				ReportServiceList::Body::SubsystemList *sslist = p_report_service_list->getBody()->getSubsystemList();
+				ReportServiceList::Body::SubsystemList::SubsystemSeq *ssrec = p_add_subsystem(sslist, addr.getSubsystemID());
+				ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq *nrec = p_add_node(ssrec->getNodeList(), addr.getNodeID());
+				ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentSeq *crec = p_add_component(nrec->getComponentList(), addr.getComponentID());
+				ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentSeq::ServiceList::ServiceRec srvrec;
+				srvrec.setURI(itsrv->service_uri);
+				srvrec.setMajorVersionNumber(itsrv->major_version);
+				srvrec.setMinorVersionNumber(itsrv->minor_version);
+				crec->getServiceList()->addElement(srvrec);
+				cnt_services++;
+			}
+			
+		}
+	// }
+	pEvents_ReceiveFSM->get_event_handler().set_report(QueryServiceList::ID, p_report_service_list);
 }
 
 void Discovery_ReceiveFSM::registerSubsystem(JausAddress address)
@@ -119,6 +150,7 @@ void Discovery_ReceiveFSM::setupIopConfiguration()
 	cfg.param<std::string>("name_subsystem", name_subsystem, name_subsystem);
 	cfg.param<std::string>("name_node", name_node, name_node);
 	cfg.param<int64_t>("timeout_lost", p_timeout_lost, p_timeout_lost);
+	pEvents_ReceiveFSM->get_event_handler().register_query(QueryServiceList::ID, true, false);
 	p_own_address = *(this->jausRouter->getJausAddress());
 	p_component_list.set_timeout(p_timeout_lost);
 }
@@ -147,18 +179,53 @@ std::map<uint16_t, std::string> Discovery_ReceiveFSM::system_type_map()
 
 void Discovery_ReceiveFSM::publishServicesAction(RegisterServices msg, Receive::Body::ReceiveRec transportData)
 {
+	bool changed_services = false;
 	JausAddress sender = transportData.getAddress();
 	RegisterServices::RegisterServicesBody::ServiceList *services = msg.getRegisterServicesBody()->getServiceList();
 	RCLCPP_DEBUG(logger, "Register %u new services...", services->getNumberOfElements());
 	for (unsigned int i = 0; i < services->getNumberOfElements(); i++) {
 		RegisterServices::RegisterServicesBody::ServiceList::ServiceRec *service = msg.getRegisterServicesBody()->getServiceList()->getElement(i);
-		bool result = p_component_list.add_service(p_own_address, sender, service->getURI(), service->getMajorVersionNumber(), service->getMinorVersionNumber());
-		if (result) {
-			RCLCPP_INFO(logger, "registered '%s' [%s]", service->getURI().c_str(), sender.str().c_str());
-		} else {
-			RCLCPP_WARN(logger, "service '%s' [%s] already exists, ignore", service->getURI().c_str(), sender.str().c_str());
+		if (p_own_address.getSubsystemID() == sender.getSubsystemID()) {
+			bool result = p_component_list.add_service(p_own_address, sender, service->getURI(), service->getMajorVersionNumber(), service->getMinorVersionNumber());
+			if (result) {
+				changed_services = true;
+				RCLCPP_INFO(logger, "registered '%s' [%s]", service->getURI().c_str(), sender.str().c_str());
+			} else {
+				RCLCPP_WARN(logger, "service '%s' [%s] already exists, ignore", service->getURI().c_str(), sender.str().c_str());
+			}
 		}
 	}
+	if (changed_services) {
+		int cnt_services = 0;
+		delete p_report_service_list;
+		p_report_service_list = new ReportServiceList();
+		// std::vector<JausAddress> discovery_services = p_component_list.get_discovery_services();
+		// std::vector<JausAddress>::iterator itaddr;
+		// for (itaddr = discovery_services.begin(); itaddr != discovery_services.end(); itaddr++) {
+			std::vector<iop::DiscoveryComponent> components = p_component_list.get_components(p_own_address);
+			std::vector<iop::DiscoveryComponent>::iterator itcmp;
+			for (itcmp = components.begin(); itcmp != components.end(); itcmp++) {
+				JausAddress addr = itcmp->address;
+				std::vector<iop::DiscoveryServiceDef> services = itcmp->get_services();
+				std::vector<iop::DiscoveryServiceDef>::iterator itsrv;
+				for (itsrv = services.begin(); itsrv != services.end(); itsrv++) {
+					bool service_added = false;
+					ReportServiceList::Body::SubsystemList *sslist = p_report_service_list->getBody()->getSubsystemList();
+					ReportServiceList::Body::SubsystemList::SubsystemSeq *ssrec = p_add_subsystem(sslist, addr.getSubsystemID());
+					ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq *nrec = p_add_node(ssrec->getNodeList(), addr.getNodeID());
+					ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentSeq *crec = p_add_component(nrec->getComponentList(), addr.getComponentID());
+					ReportServiceList::Body::SubsystemList::SubsystemSeq::NodeList::NodeSeq::ComponentList::ComponentSeq::ServiceList::ServiceRec srvrec;
+					srvrec.setURI(itsrv->service_uri);
+					srvrec.setMajorVersionNumber(itsrv->major_version);
+					srvrec.setMinorVersionNumber(itsrv->minor_version);
+					crec->getServiceList()->addElement(srvrec);
+					cnt_services++;
+				}
+				
+			}
+		// }
+	}
+	pEvents_ReceiveFSM->get_event_handler().set_report(QueryServiceList::ID, p_report_service_list);
 	p_component_list.update_ts(p_own_address, sender);
 	p_respond_ident.clear();
 	p_respond_ident[sender] = 0;

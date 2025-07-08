@@ -97,6 +97,7 @@ protected:
 	std::vector<JausAddress> p_subsystems;
 	iop::DiscoveryComponentList p_component_list;
 	JausAddress p_own_address;
+	ReportServiceList *p_report_service_list;
 
 	// ros parameter
 	// 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 - 255: Reserved
