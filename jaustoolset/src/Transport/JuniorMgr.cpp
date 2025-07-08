@@ -219,7 +219,7 @@ unsigned char JuniorMgr::pending()
 bool JuniorMgr::isDuplicateMsg(Message* msg)
 {
     // This checking can be configured off.
-    if (!_detectDuplicates) return false;
+    if (!_detectDuplicates || msg->getSequenceNumber() == 0) return false;
 
     MsgIdListIter iter = _recentMsgs.begin();
     while (iter != _recentMsgs.end())
