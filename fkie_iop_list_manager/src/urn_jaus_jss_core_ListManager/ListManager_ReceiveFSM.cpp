@@ -128,7 +128,14 @@ void ListManager_ReceiveFSM::sendRejectElementRequestAction(DeleteElement msg, R
 
 void ListManager_ReceiveFSM::sendReportElementAction(QueryElement msg, Receive::Body::ReceiveRec transportData)
 {
-	sendJausMessage(p_report_count, transportData.getAddress());
+	JausAddress sender = transportData.getAddress();
+	iop::InternalElement el = p_list.get_element(msg.getBody()->getQueryElementRec()->getElementUID());
+	if (el.get_uid() != 0)
+	{
+		urn_jaus_jss_core_ListManager::ReportElement &reply = el.get_report();
+		RCLCPP_DEBUG(logger, "send element %d to %s", el.get_uid(), sender.str().c_str());
+		sendJausMessage(reply, sender);
+	}
 }
 
 void ListManager_ReceiveFSM::sendReportElementCountAction(QueryElementCount msg, Receive::Body::ReceiveRec transportData)
