@@ -42,7 +42,6 @@ iop_init_paths()
 include_directories(
     ${diagnostic_msgs_INCLUDE_DIRS}
     ${fkie_iop_builder_INCLUDE_DIRS}
-    ${jaustoolset_INCLUDE_DIRS}
     ${rclcpp_INCLUDE_DIRS}
     ${pluginlib_INCLUDE_DIRS}
     include
@@ -56,7 +55,13 @@ add_executable(iop_component
                src/main.cpp
                src/timer.cpp
 )
-ament_target_dependencies(iop_component ${dependencies})
+target_link_libraries(iop_component
+    ${diagnostic_msgs_TARGETS}
+    fkie_iop_builder::fkie_iop_builder
+    pluginlib::pluginlib
+    rclcpp::rclcpp
+)
+
 
 # create shared library
 add_library(${PROJECT_NAME} SHARED
@@ -64,7 +69,14 @@ add_library(${PROJECT_NAME} SHARED
             src/iop_config.cpp
             src/timer.cpp
 )
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${diagnostic_msgs_TARGETS}
+    fkie_iop_builder::fkie_iop_builder
+    pluginlib::pluginlib
+    rclcpp::rclcpp
+)
+
 
 # Mark headers for installation
 install(
@@ -82,12 +94,21 @@ install(
 # Mark executables and/or libraries for installation
 install(
     TARGETS iop_component ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}Targets
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_export_include_directories(include)
+install(
+  EXPORT ${PROJECT_NAME}Targets
+  FILE ${PROJECT_NAME}Targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
+
+ament_export_include_directories(include ${fkie_iop_builder_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
 

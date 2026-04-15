@@ -57,7 +57,7 @@ add_library(${library_name} SHARED
     src/jFixedLengthString.cpp
 )
 
-
+add_library(jaustoolset::jaustoolset ALIAS jaustoolset)
 
 # ament_target_dependencies(${library_name}
 #     ${dependencies}
@@ -334,10 +334,17 @@ install(
 )
 
 install(
-    TARGETS ${library_name} ${executable_name} 
+    TARGETS ${executable_name} 
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS ${library_name}
+  EXPORT ${library_name}Targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(
@@ -346,8 +353,14 @@ install(
     DESTINATION bin
 )
 
+install(EXPORT ${library_name}Targets
+  FILE ${library_name}Targets.cmake
+  NAMESPACE ${library_name}::
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+
 ament_export_include_directories(include/${PROJECT_NAME})
-ament_export_libraries(${library_name})
+ament_export_targets(${library_name}Targets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${dependencies})
 
 ament_package(

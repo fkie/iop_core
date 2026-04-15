@@ -16,6 +16,7 @@
 
   <depend>fkie_iop_builder</depend>
   <depend>diagnostic_msgs</depend>
+  <!-- <depend>jaustoolset</depend> -->
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
 

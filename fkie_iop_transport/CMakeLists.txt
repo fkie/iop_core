@@ -48,6 +48,7 @@ set(dependencies
 
 include_directories(
   include
+  ${fkie_iop_component_INCLUDE_DIRS}
   ${IOP_COMPONENT_INCLUDE_DIRS}
 )
 
@@ -55,7 +56,14 @@ add_library(${PROJECT_NAME} SHARED
             ${cppfiles}
 )
 
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    fkie_iop_component::fkie_iop_component
+    pluginlib::pluginlib
+    rclcpp::rclcpp
+)
+
+# ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 #############
 ## Install ##
@@ -68,15 +76,26 @@ install(
   PATTERN "*.gen" EXCLUDE
 )
 
-install(TARGETS ${PROJECT_NAME}
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS})
+install(
+  EXPORT ${PROJECT_NAME}Targets
+  FILE ${PROJECT_NAME}Targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
+
+ament_export_include_directories(include ${IOP_COMPONENT_INCLUDE_DIRS} ${fkie_iop_component_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
+
 pluginlib_export_plugin_description_file(fkie_iop_component plugin_iop.xml)
 
 ament_package()
