@@ -1,5 +1,5 @@
 This repository lets your ROS software communicate with IOP services. You can find an overview of all supported services at [doc/other_packages.md](doc/other_packages.md).
-| IOP package      |  Noetic | Jazzy |
+| IOP package      |  Noetic | Jazzy / Kilted / Rolling |
 | ---              | --- | --- |
 | iop_core         |  [![CI](https://github.com/fkie/iop_core/actions/workflows/main.yaml/badge.svg)](https://github.com/fkie/iop_core/actions/workflows/main.yaml) | [![CI](https://github.com/fkie/iop_core/actions/workflows/main.yml/badge.svg)](https://github.com/fkie/iop_core/actions/workflows/main.yml) |
 | [iop_msgs](https://github.com/fkie/iop_msgs) | [![noetic](https://github.com/fkie/iop_msgs/actions/workflows/main.yaml/badge.svg)](https://github.com/fkie/iop_msgs/actions/workflows/main.yaml) | [![jazzy](https://github.com/fkie/iop_msgs/actions/workflows/main.yml/badge.svg)](https://github.com/fkie/iop_msgs/actions/workflows/main.yml) |
