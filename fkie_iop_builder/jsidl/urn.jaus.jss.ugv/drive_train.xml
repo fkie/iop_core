@@ -447,7 +447,7 @@
                   </default_state>
                </state>
                <state name="Controlled" initial_state="Available">
-                  <state name="Available" initial_state="Standby">
+                  <state name="Available" initial_state="Ready">
                      <state name="Ready">
                         <exit>
                            <action name="shiftToPark"
