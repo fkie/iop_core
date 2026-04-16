@@ -400,7 +400,12 @@
       <state_machine name="management.accessControl.events.transport.ReceiveFSM">
          <state name="Receiving" initial_state="Ready">
             <state name="Ready" initial_state="NotControlled">
-               <state name="NotControlled">
+               <state name="NotControlled" initial_state="Ready">
+                  <state name="Init"/>
+                  <state name="Ready"/>
+                  <state name="Failure"/>
+                  <state name="Shutdown"/>
+                  <state name="Emergency"/>
                   <default_state>
                      <transition name="management.accessControl.events.transport.Receive">
                         <parameter type="QueryTransmissionState" value="msg"
