@@ -391,7 +391,7 @@ public class Entry {
 	 * @param entryActions
 	 * @param stateW
 	 */
-	public static void getEntryActionsForStartStateFromWrapper(List <Object> entryActions, org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList)
+	public static void getEntryActionsForStartStateFromWrapper(List <Object> entryActions, org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList) throws Exception
 	{		
 		//** we have to create a special start to replace the start state so that entry action will be executed
 		String startStateName = org.jts.codegenerator.protocolBehavior.State.getFlattenedEndStateName( start.getStateName(), wrapperList );

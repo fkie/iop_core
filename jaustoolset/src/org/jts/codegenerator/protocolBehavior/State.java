@@ -45,7 +45,7 @@ import org.jts.codegenerator.CodeLines;
 
 public class State {
 	
-	public static void generateUniqueStartState(org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList)
+	public static void generateUniqueStartState(org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> clonedUnflattenedStateWrapperList) throws Exception
 	{
 		//** we have to create a special start to replace the start state so that entry action will be executed
 		String startStateName = org.jts.codegenerator.protocolBehavior.State.getFlattenedEndStateName(org.jts.codegenerator.ProtocolBehaviorGenerator.flattenString(start.getStateName()), wrapperList);
@@ -1346,7 +1346,7 @@ public class State {
 	 * Takes a mapping of flattened states with their respective wrappers and changes all the end states to the correct flattened state name
 	 * @param stateMap
 	 */
-	public static void changeEndStateNames(List<org.jts.jsidl.binding.State> flattenedStateList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList)
+	public static void changeEndStateNames(List<org.jts.jsidl.binding.State> flattenedStateList, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList) throws Exception
 	{
 		Iterator<org.jts.jsidl.binding.State> flattenedStateIterator = flattenedStateList.iterator();
 		
@@ -1467,7 +1467,7 @@ public class State {
 	 * @param stateMap
 	 * @return
 	 */
-	public static String getFlattenedEndStateName(String endState, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList)
+	public static String getFlattenedEndStateName(String endState, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList) throws Exception
 	{
 		Iterator<org.jts.codegenerator.protocolBehavior.StateWrapper> stateWrapperIterator = wrapperList.iterator();
 
@@ -1494,6 +1494,7 @@ public class State {
 					// drill down to leaf from parent start states
 					while((currentState.getInitialState() != null) && !currentState.getInitialState().isEmpty())
 					{
+						Boolean changed = false;
 						String initialState = currentState.getInitialState();
 						
 						// look through all child states of current state for start state
@@ -1502,8 +1503,12 @@ public class State {
 							if(currentState.getState().get(i).getName().compareTo(initialState) == 0)
 							{
 								currentState = currentState.getState().get(i);
+								changed = true;
 								break;
 							}
+						}
+						if (!changed) {
+							throw new Exception("Initial state '" + currentState.getInitialState() + "' not found!");
 						}
 					}
 					
@@ -1524,6 +1529,7 @@ public class State {
 					// drill down to leaf from parent start states
 					while((currentState.getInitialState() != null) && !currentState.getInitialState().isEmpty())
 					{
+						Boolean changed = false;
 						String initialState = currentState.getInitialState();
 						
 						// look through all child states of current state for start state
@@ -1532,8 +1538,12 @@ public class State {
 							if(currentState.getState().get(i).getName().compareTo(initialState) == 0)
 							{
 								currentState = currentState.getState().get(i);
+								changed = true;
 								break;
 							}
+						}
+						if (!changed) {
+							throw new Exception("Initial state '" + currentState.getInitialState() + "' not found!");
 						}
 					}
 					
@@ -1554,6 +1564,7 @@ public class State {
 				// drill down to leaf from parent start states
 				while((currentState.getInitialState() != null) && !currentState.getInitialState().isEmpty())
 				{
+					Boolean changed = false;
 					String initialState = currentState.getInitialState();
 					
 					// look through all child states of current state for start state
@@ -1562,8 +1573,12 @@ public class State {
 						if(currentState.getState().get(i).getName().compareTo(initialState) == 0)
 						{
 							currentState = currentState.getState().get(i);
+							changed = true;
 							break;
 						}
+					}
+					if (!changed) {
+						throw new Exception("Initial state '" + currentState.getInitialState() + "' not found!");
 					}
 				}
 				

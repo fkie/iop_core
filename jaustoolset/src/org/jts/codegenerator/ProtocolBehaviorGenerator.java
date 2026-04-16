@@ -86,7 +86,7 @@ public class ProtocolBehaviorGenerator {
      * @param sd, The service definition
      * @param includes, the includes list for the C# generator.
      */
-    public ProtocolBehaviorGenerator(String namespace, CodeLines.CodeType codeType, String outDir, ServiceDef sd, ServiceSet ss, StringBuffer includes) {
+    public ProtocolBehaviorGenerator(String namespace, CodeLines.CodeType codeType, String outDir, ServiceDef sd, ServiceSet ss, StringBuffer includes) throws Exception {
         ProtocolBehavior pBehavior = sd.getProtocolBehavior();
         m_codeType = codeType;
         serviceDef = sd;
@@ -291,7 +291,7 @@ public class ProtocolBehaviorGenerator {
      * @param wrapperList
      * @return
      */
-    public final void generateFlattenedStateMachine(List<org.jts.jsidl.binding.State> flattenedStateList, org.jts.jsidl.binding.StateMachine stateMachine, org.jts.jsidl.binding.ServiceDef serviceDef, org.jts.jsidl.binding.ServiceSet serviceSet, org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList) {
+    public final void generateFlattenedStateMachine(List<org.jts.jsidl.binding.State> flattenedStateList, org.jts.jsidl.binding.StateMachine stateMachine, org.jts.jsidl.binding.ServiceDef serviceDef, org.jts.jsidl.binding.ServiceSet serviceSet, org.jts.jsidl.binding.Start start, List<org.jts.codegenerator.protocolBehavior.StateWrapper> wrapperList) throws Exception {
         // move default states from sibling level to child level
         // this is so they will be easier to handle(1:1 mapping instead of 1:n)
         // each state's default state will now be set inside of the state instead of at the same level
