@@ -14,11 +14,9 @@
 
 %statemachine_include_list%
 
-namespace %service_namespace%
-{
+namespace %service_namespace% {
 
-class DllExport %service_name% : public JTS::Service
-{
+class DllExport %service_name% : public JTS::Service {
 public:
 	%service_name%();
 	virtual ~%service_name%();

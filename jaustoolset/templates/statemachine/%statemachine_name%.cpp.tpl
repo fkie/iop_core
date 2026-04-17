@@ -1,13 +1,9 @@
 %copyright%
-
 %user_include_definitions%
-
 %user_constants_definitions%
-
 using namespace JTS;
 
-namespace %service_namespace%
-{
+namespace %service_namespace% {
 
 %user_definitions%
 

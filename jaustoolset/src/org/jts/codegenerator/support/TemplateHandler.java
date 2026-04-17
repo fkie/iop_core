@@ -59,6 +59,7 @@ public class TemplateHandler
 			{
 				String currentKey = it.next();
 				output = output.replace(currentKey, (String)replaceTable.get(currentKey));
+				output = output.replace("\t", "    ");
 			}
 
 			Util.writeContents(dest, output);
