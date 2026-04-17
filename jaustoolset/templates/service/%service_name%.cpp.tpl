@@ -24,7 +24,6 @@ void %service_name%::init_service(std::shared_ptr<iop::Component> cmp, JTS::Jaus
 	p_initialized = true;
 }
 
-
 %service_name%::~%service_name%()
 {
 	if (p_initialized) {
@@ -73,7 +72,6 @@ leave:
    return done;
 }
 
-
 /**
  *	This is the function that will check for default transitions if
  *  no other transitions were satisfied. 
@@ -93,7 +91,6 @@ leave:
    mutex.unlock();
    return done;
 }
-
 
 }
 

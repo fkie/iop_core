@@ -662,7 +662,7 @@ public class ProtocolBehaviorGenerator {
         if (replaceUserConstructor.length() == 0) {
             // IOP: add logger to ReceiveFSM constructor
             if (smName.contains("_ReceiveFSM")) {
-                replaceUserConstructor.append(": logger(cmp->get_logger().get_child(\"" + smNamePrefix + "\"))").append(System.getProperty("line.separator"));
+                replaceUserConstructor.append("    : logger(cmp->get_logger().get_child(\"" + smNamePrefix + "\"))").append(System.getProperty("line.separator"));
             }
             replaceUserConstructor.append("{").append(System.getProperty("line.separator"));
             replaceUserConstructor.append(System.getProperty("line.separator"));

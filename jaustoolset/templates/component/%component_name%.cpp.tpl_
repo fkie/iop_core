@@ -32,7 +32,6 @@ using namespace JTS;
     delete jausRouter;
 }
 
-
 void %component_name%::startComponent()
 {
     Service* service;
@@ -46,7 +45,6 @@ void %component_name%::startComponent()
          service->start();
     }
 }
-
 
 void %component_name%::shutdownComponent()
 {
