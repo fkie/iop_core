@@ -347,10 +347,10 @@ void Component::shutdown_component()
 JTS::Service* Component::get_service(std::string service_name)
 {
 	// extend if given name has no "Service" at the end
-	std::string ending = "Service";
-	if (service_name.size() < 8 || !std::equal(ending.rbegin(), ending.rend(), service_name.rbegin())) {
-		service_name += "Service";
-	}
+	// std::string ending = "Service";
+	// if (service_name.size() < 8 || !std::equal(ending.rbegin(), ending.rend(), service_name.rbegin())) {
+	// 	service_name += "Service";
+	// }
 	std::map<std::string, std::shared_ptr<JTS::Service> >::iterator it;
 	for (it = p_plugins_map.begin(); it != p_plugins_map.end(); ++it) {
 		if (it->second.get()->getName().compare(service_name) == 0
