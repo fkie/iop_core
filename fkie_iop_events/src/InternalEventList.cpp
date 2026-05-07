@@ -335,12 +335,12 @@ bool InternalEventList::cancel_event(urn_jaus_jss_core_Events::CancelEvent msg, 
 
 jUnsignedShortInteger InternalEventList::message_id_from_data(const unsigned char *data)
 {
+	if (data == nullptr) {
+		return 0;
+    }
 	jUnsignedShortInteger result = 0;
-	try {
-		memcpy(&result, data, sizeof(jUnsignedShortInteger));
-		result = JSIDL_v_1_0::correctEndianness(result);
-	} catch (...) {
-	}
+	memcpy(&result, data, sizeof(jUnsignedShortInteger));
+	result = JSIDL_v_1_0::correctEndianness(result);
 	return result;
 }
 
