@@ -23,10 +23,8 @@ from sys import version_info
 import os
 from lxml import etree
 
-NSMAP = {None : "urn:jaus:jsidl:1.0",
-         "ns_auto" : "urn:jaus:jsidl:plus",
-         "ns2" : "urn:jaus:jsidl:plus",
-         "ns3" : "urn:jaus:jsidl:1.1"}
+NSMAP = {None : "urn:jaus:jsidl:1.1",
+         "plus" : "urn:jaus:jsidl:plus"}
 
 class RefDissolver(object):
   '''
@@ -69,10 +67,10 @@ class RefDissolver(object):
     print("JAUS:   Include MessageSet file %s" % msg_file)
     message_def_tree = etree.parse(msg_file).getroot()
     # the defined consts are in the separate file, only add to the knonwn list
-    if message_def_tree.tag == '{urn:jaus:jsidl:1.0}declared_const_set':
+    if message_def_tree.tag == '{urn:jaus:jsidl:1.1}declared_const_set':
       self._extract_const_set(message_def_tree)
     else: # search for const declarations, append to known and replace all used constants
-      const_set_elements = message_def_tree.findall("./{urn:jaus:jsidl:1.0}declared_const_set")
+      const_set_elements = message_def_tree.findall("./{urn:jaus:jsidl:1.1}declared_const_set")
       if const_set_elements is not None:
         for const_set_element in const_set_elements:
           const_id = self._extract_const_set(message_def_tree)
@@ -88,7 +86,7 @@ class RefDissolver(object):
             except Exception as e:
               print(e)
 #              declared_const_set_ref
-    const_ref_elements = message_def_tree.findall("./{urn:jaus:jsidl:1.0}declared_const_set_ref")
+    const_ref_elements = message_def_tree.findall("./{urn:jaus:jsidl:1.1}declared_const_set_ref")
     if const_ref_elements is not None:
       for const_ref_element in const_ref_elements:
         ref_id = const_ref_element.attrib['id']
@@ -143,16 +141,16 @@ class RefDissolver(object):
     search_attr = ref_name
     if ref_name or ref_id:
       search_attr = "[@name='%s']"%ref_name if ref_id is None else "[@id='%s']"%ref_id
-    if not ref_name and xml_root.tag == '{urn:jaus:jsidl:1.0}declared_type_set':
+    if not ref_name and xml_root.tag == '{urn:jaus:jsidl:1.1}declared_type_set':
       declared_type_set = xml_root
     if declared_type_set is None:
-      declared_type_set = self._filter_by_id(xml_root.findall("./{urn:jaus:jsidl:1.0}declared_type_set%s"%search_attr), ref_id, ref_version)
+      declared_type_set = self._filter_by_id(xml_root.findall("./{urn:jaus:jsidl:1.1}declared_type_set%s"%search_attr), ref_id, ref_version)
       if declared_type_set is None:
-        declared_type_set = self._filter_by_id(xml_root.findall("./{urn:jaus:jsidl:1.0}declared_type_set/{urn:jaus:jsidl:1.0}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
+        declared_type_set = self._filter_by_id(xml_root.findall("./{urn:jaus:jsidl:1.1}declared_type_set/{urn:jaus:jsidl:1.1}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
         if declared_type_set is None:
-          declared_type_set = self._filter_by_id(xml_root.findall(".{urn:jaus:jsidl:1.0}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
+          declared_type_set = self._filter_by_id(xml_root.findall(".{urn:jaus:jsidl:1.1}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
           if declared_type_set is None:
-            declared_type_set = self._filter_by_id(xml_root.findall(".{urn:jaus:jsidl:1.0}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
+            declared_type_set = self._filter_by_id(xml_root.findall(".{urn:jaus:jsidl:1.1}declared_type_set_ref%s"%search_attr), ref_id, ref_version)
     res_ref_id = None
     res_ref_version = None
     if declared_type_set is not None:
@@ -172,11 +170,11 @@ class RefDissolver(object):
       (declared_type_set, ref_id, ref_version) = self._get_declared_type_set(service_def_root, '')
     else:
       (declared_type_set, ref_id, ref_version) = self._get_declared_type_set(service_def_root, declared_type_path[0])
-    if declared_type_set.tag == '{urn:jaus:jsidl:1.0}declared_type_set_ref':
+    if declared_type_set.tag == '{urn:jaus:jsidl:1.1}declared_type_set_ref':
       (declared_type_set, ref_id, ref_version) = self._get_declared_type_set(self.mset_root, declared_type_path[0], ref_id, ref_version)
     for i in range(1,len(declared_type_path)-1):
       (declared_type_set, ref_id, ref_version) = self._get_declared_type_set(declared_type_set, declared_type_path[i])
-      if declared_type_set.tag == '{urn:jaus:jsidl:1.0}declared_type_set_ref':
+      if declared_type_set.tag == '{urn:jaus:jsidl:1.1}declared_type_set_ref':
         (declared_type_set, ref_id, ref_version) = self._get_declared_type_set(self.mset_root, declared_type_path[i], ref_id, ref_version)
     derefed_element = declared_type_set.find("./*[@name='%s']"%declared_type_path[-1])
     if derefed_element is None:
@@ -223,7 +221,12 @@ class ServiceSet(object):
   def write(self, outfile):
     xmltree = etree.ElementTree(self.root)
     xml_declaration = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-    xmltree.write(outfile, xml_declaration=xml_declaration, method='xml')
+    xmltree.write(outfile,
+      xml_declaration=xml_declaration,
+      method='xml',
+      encoding='UTF-8',
+      pretty_print=True
+    )
 
   def append(self, service_def_file):
     '''
@@ -231,7 +234,8 @@ class ServiceSet(object):
     attribute. The RefDissolver-class used for this purpose.
     '''
     print("JAUS: Including %s" % srcfile)
-    service_tree = etree.parse(service_def_file)
+    parser = etree.XMLParser(remove_blank_text=True)
+    service_tree = etree.parse(service_def_file, parser)
     # in case it is not done before
     self.ref_dissolver.add_message_set(service_def_file)
     self.ref_dissolver.deref_children(service_tree.getroot(), service_tree.getroot())

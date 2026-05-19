@@ -207,6 +207,7 @@ set(JAVA_SOURCE_FILES
     src/org/jts/jsidl/binding/DeclaredSequence.java
     src/org/jts/jsidl/binding/DeclaredTypeSet.java
     src/org/jts/jsidl/binding/DeclaredTypeSetRef.java
+    src/org/jts/jsidl/binding/DeclaredValueSet.java
     src/org/jts/jsidl/binding/DeclaredVariableField.java
     src/org/jts/jsidl/binding/DeclaredVariableFormatField.java
     src/org/jts/jsidl/binding/DeclaredVariableLengthField.java
@@ -241,7 +242,6 @@ set(JAVA_SOURCE_FILES
     src/org/jts/jsidl/binding/MxRectangle.java
     src/org/jts/jsidl/binding/ObjectFactory.java
     src/org/jts/jsidl/binding/OutputSet.java
-    src/org/jts/jsidl/binding/package-info.java
     src/org/jts/jsidl/binding/Parameter.java
     src/org/jts/jsidl/binding/Pop.java
     src/org/jts/jsidl/binding/PresenceVector.java
@@ -272,6 +272,8 @@ set(JAVA_SOURCE_FILES
     src/org/jts/jsidl/binding/VariableLengthString.java
     src/org/jts/jsidl/binding/Variant.java
     src/org/jts/jsidl/binding/VtagField.java
+    src/org/jts/jsidl/binding/package-info.java
+
 )
 # some variables like INCLUDE_LOCAL_JARS
 include(cmake/jts_cfg.cmake)

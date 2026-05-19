@@ -1,0 +1,1 @@
+xjc -d tmp -p org.jts.jsidl.binding resources/schema/JSIDL_Plus/jsidl_plus.xsd
