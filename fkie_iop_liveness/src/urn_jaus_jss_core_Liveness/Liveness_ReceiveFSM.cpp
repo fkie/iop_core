@@ -20,68 +20,59 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
 #include "urn_jaus_jss_core_Liveness/Liveness_ReceiveFSM.h"
 #include <fkie_iop_component/iop_component.hpp>
 
-
 using namespace JTS;
 
-namespace urn_jaus_jss_core_Liveness
-{
-
+namespace urn_jaus_jss_core_Liveness {
 
 static ReportHeartbeatPulse report_heartbeart_pulse_;
 
 Liveness_ReceiveFSM::Liveness_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM)
-: logger(cmp->get_logger().get_child("Liveness"))
+    : logger(cmp->get_logger().get_child("Liveness"))
 {
 
-	/*
-	 * If there are other variables, context must be constructed last so that all 
-	 * class variables are available if an EntryAction of the InitialState of the 
-	 * statemachine needs them. 
-	 */
-	context = new Liveness_ReceiveFSMContext(*this);
+    /*
+     * If there are other variables, context must be constructed last so that all
+     * class variables are available if an EntryAction of the InitialState of the
+     * statemachine needs them.
+     */
+    context = new Liveness_ReceiveFSMContext(*this);
 
-	this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
-	this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
-	this->cmp = cmp;
+    this->pEvents_ReceiveFSM = pEvents_ReceiveFSM;
+    this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
+    this->cmp = cmp;
 }
-
 
 Liveness_ReceiveFSM::~Liveness_ReceiveFSM()
 {
-	delete context;
+    delete context;
 }
 
 void Liveness_ReceiveFSM::setupNotifications()
 {
-	pEvents_ReceiveFSM->registerNotification("Receiving_Ready", ieHandler, "InternalStateChange_To_Liveness_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
-	pEvents_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_Liveness_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
-	registerNotification("Receiving_Ready", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving_Ready", "Liveness_ReceiveFSM");
-	registerNotification("Receiving", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving", "Liveness_ReceiveFSM");
+    pEvents_ReceiveFSM->registerNotification("Receiving_Ready", ieHandler, "InternalStateChange_To_Liveness_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
+    pEvents_ReceiveFSM->registerNotification("Receiving", ieHandler, "InternalStateChange_To_Liveness_ReceiveFSM_Receiving_Ready", "Events_ReceiveFSM");
+    registerNotification("Receiving_Ready", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving_Ready", "Liveness_ReceiveFSM");
+    registerNotification("Receiving", pEvents_ReceiveFSM->getHandler(), "InternalStateChange_To_Events_ReceiveFSM_Receiving", "Liveness_ReceiveFSM");
 
-	pEvents_ReceiveFSM->get_event_handler().register_query(QueryHeartbeatPulse::ID, false);
-	pEvents_ReceiveFSM->get_event_handler().set_report(QueryHeartbeatPulse::ID, &report_heartbeart_pulse_);
+    pEvents_ReceiveFSM->get_event_handler().register_query(QueryHeartbeatPulse::ID, false);
+    pEvents_ReceiveFSM->get_event_handler().set_report(QueryHeartbeatPulse::ID, &report_heartbeart_pulse_);
 }
 
 void Liveness_ReceiveFSM::setupIopConfiguration()
 {
-	// iop::Config cfg(cmp, "Liveness");
+    // iop::Config cfg(cmp, "Liveness");
 }
 
 void Liveness_ReceiveFSM::sendReportHeartbeatPulseAction(QueryHeartbeatPulse msg, Receive::Body::ReceiveRec transportData)
 {
-	/// Insert User Code HERE
-	JausAddress sender = transportData.getAddress();
-	RCLCPP_DEBUG(logger, "send ReportHeartbeatPulse to %s", sender.str().c_str());
-	ReportHeartbeatPulse response;
-	sendJausMessage(response, sender);
+    /// Insert User Code HERE
+    JausAddress sender = transportData.getAddress();
+    RCLCPP_DEBUG(logger, "send ReportHeartbeatPulse to %s", sender.str().c_str());
+    ReportHeartbeatPulse response;
+    sendJausMessage(response, sender);
 }
-
-
-
-
 
 }

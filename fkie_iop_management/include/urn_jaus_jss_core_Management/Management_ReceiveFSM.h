@@ -20,16 +20,15 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
 #ifndef MANAGEMENT_RECEIVEFSM_H
 #define MANAGEMENT_RECEIVEFSM_H
 
-#include "JausUtils.h"
 #include "InternalEvents/InternalEventHandler.h"
-#include "Transport/JausTransport.h"
 #include "JTSStateMachine.h"
-#include "urn_jaus_jss_core_Management/Messages/MessageSet.h"
+#include "JausUtils.h"
+#include "Transport/JausTransport.h"
 #include "urn_jaus_jss_core_Management/InternalEvents/InternalEventsSet.h"
+#include "urn_jaus_jss_core_Management/Messages/MessageSet.h"
 
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
@@ -38,15 +37,13 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_Events/Events_ReceiveFSM.h"
 #include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
-
 #include "Management_ReceiveFSM_sm.h"
-#include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_component/iop_component.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <std_msgs/msg/bool.hpp>
 
-namespace urn_jaus_jss_core_Management
-{
+namespace urn_jaus_jss_core_Management {
 /**
  * Internal status, see StatusReport
  **/
@@ -57,56 +54,51 @@ const int STATE_SHUTDOWN = 3;
 const int STATE_FAILURE = 4;
 const int STATE_EMERGENCY = 5;
 
-class DllExport Management_ReceiveFSM : public JTS::StateMachine
-{
+class DllExport Management_ReceiveFSM : public JTS::StateMachine {
 public:
-	Management_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
-	virtual ~Management_ReceiveFSM();
+    Management_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM, urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
+    virtual ~Management_ReceiveFSM();
 
-	/// Handle notifications on parent state changes
-	virtual void setupNotifications();
-	virtual void setupIopConfiguration();
+    /// Handle notifications on parent state changes
+    virtual void setupNotifications();
+    virtual void setupIopConfiguration();
 
-	/// Action Methods
-	virtual void deleteIDAction(Receive::Body::ReceiveRec transportData);
-	virtual void emergencyAction();
-	virtual void failureAction();
-	virtual void goReadyAction();
-	virtual void goStandbyAction();
-	virtual void initializeAction();
-	virtual void readyAction();
-	virtual void resetAction();
-	virtual void resetEmergencyAction();
-	virtual void sendRejectControlToControllerAction(std::string arg0);
-	virtual void sendReportStatusAction(QueryStatus msg, Receive::Body::ReceiveRec transportData);
-	virtual void shutdownAction();
-	virtual void standbyAction();
-	virtual void storeIDAction(Receive::Body::ReceiveRec transportData);
+    /// Action Methods
+    virtual void deleteIDAction(Receive::Body::ReceiveRec transportData);
+    virtual void emergencyAction();
+    virtual void failureAction();
+    virtual void goReadyAction();
+    virtual void goStandbyAction();
+    virtual void initializeAction();
+    virtual void readyAction();
+    virtual void resetAction();
+    virtual void resetEmergencyAction();
+    virtual void sendRejectControlToControllerAction(std::string arg0);
+    virtual void sendReportStatusAction(QueryStatus msg, Receive::Body::ReceiveRec transportData);
+    virtual void shutdownAction();
+    virtual void standbyAction();
+    virtual void storeIDAction(Receive::Body::ReceiveRec transportData);
 
+    /// Guard Methods
+    virtual bool isControllingClient(Receive::Body::ReceiveRec transportData);
+    virtual bool isEmergencyCleared();
+    virtual bool isIDStored(Receive::Body::ReceiveRec transportData);
 
-	/// Guard Methods
-	virtual bool isControllingClient(Receive::Body::ReceiveRec transportData);
-	virtual bool isEmergencyCleared();
-	virtual bool isIDStored(Receive::Body::ReceiveRec transportData);
-
-
-
-	Management_ReceiveFSMContext *context;
+    Management_ReceiveFSMContext* context;
 
 protected:
+    /// References to parent FSMs
+    urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM;
+    urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
+    urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 
-	/// References to parent FSMs
-	urn_jaus_jss_core_AccessControl::AccessControl_ReceiveFSM* pAccessControl_ReceiveFSM;
-	urn_jaus_jss_core_Events::Events_ReceiveFSM* pEvents_ReceiveFSM;
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
-
-	std::shared_ptr<iop::Component> cmp;
-	rclcpp::Logger logger;
-	ReportStatus p_report_status;
-	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_emergency;
-	rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_ready;
-	jUnsignedByte p_state;
-	void pSetState(jUnsignedByte state);
+    std::shared_ptr<iop::Component> cmp;
+    rclcpp::Logger logger;
+    ReportStatus p_report_status;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_emergency;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr p_pub_ready;
+    jUnsignedByte p_state;
+    void pSetState(jUnsignedByte state);
 };
 
 }

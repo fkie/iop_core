@@ -20,101 +20,95 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
 #ifndef EVENTSCLIENT_RECEIVEFSM_H
 #define EVENTSCLIENT_RECEIVEFSM_H
 
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
 
-#include "JausUtils.h"
 #include "InternalEvents/InternalEventHandler.h"
-#include "Transport/JausTransport.h"
 #include "JTSStateMachine.h"
-#include "urn_jaus_jss_core_EventsClient/Messages/MessageSet.h"
+#include "JausUtils.h"
+#include "Transport/JausTransport.h"
 #include "urn_jaus_jss_core_EventsClient/InternalEvents/InternalEventsSet.h"
+#include "urn_jaus_jss_core_EventsClient/Messages/MessageSet.h"
 
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
 
 #include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
-#include <fkie_iop_events/InternalEventClient.h>
-#include <fkie_iop_events/EventHandlerInterface.h>
 #include "EventsClient_ReceiveFSM_sm.h"
-#include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_component/iop_component.hpp>
+#include <fkie_iop_events/EventHandlerInterface.h>
+#include <fkie_iop_events/InternalEventClient.h>
+#include <rclcpp/rclcpp.hpp>
 
-namespace urn_jaus_jss_core_EventsClient
-{
+namespace urn_jaus_jss_core_EventsClient {
 
-class DllExport EventsClient_ReceiveFSM : public JTS::StateMachine
-{
+class DllExport EventsClient_ReceiveFSM : public JTS::StateMachine {
 public:
-	EventsClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
-	~EventsClient_ReceiveFSM();
+    EventsClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
+    ~EventsClient_ReceiveFSM();
 
-	/// Handle notifications on parent state changes
-	virtual void setupNotifications();
-	virtual void setupIopConfiguration();
+    /// Handle notifications on parent state changes
+    virtual void setupNotifications();
+    virtual void setupIopConfiguration();
 
-	/// Action Methods
-	virtual void handleCommandEventAction(CommandEvent msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleConfirmEventRequestAction(ConfirmEventRequest msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleEventAction(Event msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleRejectEventRequestAction(RejectEventRequest msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleReportEventTimeoutAction(ReportEventTimeout msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleReportEventsAction(ReportEvents msg, Receive::Body::ReceiveRec transportData);
+    /// Action Methods
+    virtual void handleCommandEventAction(CommandEvent msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleConfirmEventRequestAction(ConfirmEventRequest msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleEventAction(Event msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleRejectEventRequestAction(RejectEventRequest msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleReportEventTimeoutAction(ReportEventTimeout msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleReportEventsAction(ReportEvents msg, Receive::Body::ReceiveRec transportData);
 
+    /// Guard Methods
 
-	/// Guard Methods
-
-
-
-	EventsClient_ReceiveFSMContext *context;
-	/** Create an event on given remote JAUS service. By default it is a periodic event.
-	 *
-	 * rate:
-	 * MINIMUM_RATE = 0.1
-	 * MAXIMUM_RATE = 25.0
-	 *
-	 * event_type:
-	 * 0 = Periodic, on valid rate
-	 * 1 = Every Change, if rate is less then 0.1 or more then 25 */
-	void create_event(iop::EventHandlerInterface &handler, JausAddress address, JTS::Message &query_msg, double rate=1.0);
-	void cancel_event(iop::EventHandlerInterface &handler, JausAddress address, JTS::Message &query_msg);
-	/** You can register a handler to be informed about the creation/cancelation status of your events. To register the handler you
-	 * have to define a function in your class:
-	 * void my_handler(JausAddress &addr, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code) {}
-	 * and then register:
-	 * pEventsClientService->set_events_reply_handler(&MyClass::my_handler, this);
-	 *
-	 * reject_code:
-	 * 1: Periodic events not supported
-	 * 2: Change based events not supported
-	 * 3: Connection refused
-	 * 4: Invalid event setup
-	 * 5: Message not supported
-	 * 6: Invalid event ID for update event request */
-	template<class T>
-	void set_events_reply_handler(void(T::*handler)(JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code), T*obj) {
-		p_class_events_reply_callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-	}
+    EventsClient_ReceiveFSMContext* context;
+    /** Create an event on given remote JAUS service. By default it is a periodic event.
+     *
+     * rate:
+     * MINIMUM_RATE = 0.1
+     * MAXIMUM_RATE = 25.0
+     *
+     * event_type:
+     * 0 = Periodic, on valid rate
+     * 1 = Every Change, if rate is less then 0.1 or more then 25 */
+    void create_event(iop::EventHandlerInterface& handler, JausAddress address, JTS::Message& query_msg, double rate = 1.0);
+    void cancel_event(iop::EventHandlerInterface& handler, JausAddress address, JTS::Message& query_msg);
+    /** You can register a handler to be informed about the creation/cancelation status of your events. To register the handler you
+     * have to define a function in your class:
+     * void my_handler(JausAddress &addr, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code) {}
+     * and then register:
+     * pEventsClientService->set_events_reply_handler(&MyClass::my_handler, this);
+     *
+     * reject_code:
+     * 1: Periodic events not supported
+     * 2: Change based events not supported
+     * 3: Connection refused
+     * 4: Invalid event setup
+     * 5: Message not supported
+     * 6: Invalid event ID for update event request */
+    template <class T>
+    void set_events_reply_handler(void (T::*handler)(JausAddress&, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code), T* obj)
+    {
+        p_class_events_reply_callback = std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+    }
 
 protected:
-
     /// References to parent FSMs
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
-	std::shared_ptr<iop::Component> cmp;
-	rclcpp::Logger logger;
-	std::vector<iop::InternalEventClient *> p_events;
-	jUnsignedByte p_request_id_idx;
-	typedef std::recursive_mutex mutex_type;
-	typedef std::unique_lock<mutex_type> lock_type;
-	mutable mutex_type p_mutex;
-	std::function<void (JausAddress &, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code)> p_class_events_reply_callback;
+    urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
+    std::shared_ptr<iop::Component> cmp;
+    rclcpp::Logger logger;
+    std::vector<iop::InternalEventClient*> p_events;
+    jUnsignedByte p_request_id_idx;
+    typedef std::recursive_mutex mutex_type;
+    typedef std::unique_lock<mutex_type> lock_type;
+    mutable mutex_type p_mutex;
+    std::function<void(JausAddress&, jUnsignedShortInteger query_msg_id, bool accepted, jUnsignedByte event_id, jUnsignedByte reject_code)> p_class_events_reply_callback;
 
-	iop::InternalEventClient* p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id, bool delete_invalid=false);
+    iop::InternalEventClient* p_get_event(JausAddress address, jUnsignedShortInteger query_msg_id, bool delete_invalid = false);
 };
 
 }

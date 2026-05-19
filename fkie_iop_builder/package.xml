@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>fkie_iop_builder</name>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <description>JAUS build helper. It generates CPP sources from JSIDL files.
   An installed JausToolSet is required. This is done by scripts in jaustoolset.
   If some error occurs regarding missing "pthread" and "timer" the libpthread and

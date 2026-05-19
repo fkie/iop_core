@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>jaustoolset</name>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
   <description>Reduced version of JausToolSet (http://jaustoolset.org/)</description>
   <maintainer email="alexander.tiderko@fkie.fraunhofer.de">Alexander Tiderko</maintainer>
   <license>BSD</license>

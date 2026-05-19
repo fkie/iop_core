@@ -20,16 +20,15 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
 #ifndef ACCESSCONTROLCLIENT_RECEIVEFSM_H
 #define ACCESSCONTROLCLIENT_RECEIVEFSM_H
 
-#include "JausUtils.h"
 #include "InternalEvents/InternalEventHandler.h"
-#include "Transport/JausTransport.h"
 #include "JTSStateMachine.h"
-#include "urn_jaus_jss_core_AccessControlClient/Messages/MessageSet.h"
+#include "JausUtils.h"
+#include "Transport/JausTransport.h"
 #include "urn_jaus_jss_core_AccessControlClient/InternalEvents/InternalEventsSet.h"
+#include "urn_jaus_jss_core_AccessControlClient/Messages/MessageSet.h"
 
 #include "InternalEvents/Receive.h"
 #include "InternalEvents/Send.h"
@@ -37,109 +36,107 @@ along with this program; or you can read the full license at
 #include "urn_jaus_jss_core_EventsClient/EventsClient_ReceiveFSM.h"
 #include "urn_jaus_jss_core_Transport/Transport_ReceiveFSM.h"
 
-
 #include "AccessControlClient_ReceiveFSM_sm.h"
-#include <rclcpp/rclcpp.hpp>
 #include <fkie_iop_component/iop_component.hpp>
 #include <fkie_iop_events/EventHandlerInterface.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <functional>
-#include <fkie_iop_msgs/msg/jaus_address.hpp>
-#include <fkie_iop_msgs/msg/ocu_control_report.hpp>
-#include <std_msgs/msg/u_int8.hpp>
 #include "fkie_iop_accesscontrol/RemoteComponent.h"
 #include "fkie_iop_accesscontrol/RemoteComponentList.h"
 #include <fkie_iop_component/timer.hpp>
+#include <fkie_iop_msgs/msg/jaus_address.hpp>
+#include <fkie_iop_msgs/msg/ocu_control_report.hpp>
+#include <functional>
+#include <std_msgs/msg/u_int8.hpp>
 
-namespace urn_jaus_jss_core_AccessControlClient
-{
+namespace urn_jaus_jss_core_AccessControlClient {
 
-class DllExport AccessControlClient_ReceiveFSM : public JTS::StateMachine, public iop::EventHandlerInterface
-{
+class DllExport AccessControlClient_ReceiveFSM : public JTS::StateMachine, public iop::EventHandlerInterface {
 public:
-	static unsigned char ACCESS_STATE_NOT_AVAILABLE;
-	static unsigned char ACCESS_STATE_NOT_CONTROLLED;
-	static unsigned char ACCESS_STATE_CONTROL_RELEASED;
-	static unsigned char ACCESS_STATE_CONTROL_ACCEPTED;
-	static unsigned char ACCESS_STATE_TIMEOUT;
-	static unsigned char ACCESS_STATE_INSUFFICIENT_AUTHORITY;
+    static unsigned char ACCESS_STATE_NOT_AVAILABLE;
+    static unsigned char ACCESS_STATE_NOT_CONTROLLED;
+    static unsigned char ACCESS_STATE_CONTROL_RELEASED;
+    static unsigned char ACCESS_STATE_CONTROL_ACCEPTED;
+    static unsigned char ACCESS_STATE_TIMEOUT;
+    static unsigned char ACCESS_STATE_INSUFFICIENT_AUTHORITY;
 
-	AccessControlClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
-	virtual ~AccessControlClient_ReceiveFSM();
+    AccessControlClient_ReceiveFSM(std::shared_ptr<iop::Component> cmp, urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM, urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM);
+    virtual ~AccessControlClient_ReceiveFSM();
 
-	/// Handle notifications on parent state changes
-	virtual void setupNotifications();
-	virtual void setupIopConfiguration();
+    /// Handle notifications on parent state changes
+    virtual void setupNotifications();
+    virtual void setupIopConfiguration();
 
-	/// Action Methods
-	virtual void handleConfirmControlAction(ConfirmControl msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleRejectControlAction(RejectControl msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleReportAuthorityAction(ReportAuthority msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleReportControlAction(ReportControl msg, Receive::Body::ReceiveRec transportData);
-	virtual void handleReportTimeoutAction(ReportTimeout msg, Receive::Body::ReceiveRec transportData);
-	virtual void resetControlTimerAction();
+    /// Action Methods
+    virtual void handleConfirmControlAction(ConfirmControl msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleRejectControlAction(RejectControl msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleReportAuthorityAction(ReportAuthority msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleReportControlAction(ReportControl msg, Receive::Body::ReceiveRec transportData);
+    virtual void handleReportTimeoutAction(ReportTimeout msg, Receive::Body::ReceiveRec transportData);
+    virtual void resetControlTimerAction();
 
-	/// EventHandlerInterface Methods
-	void event(JausAddress reporter, unsigned short query_msg_id, unsigned int reportlen, const unsigned char* reportdata);
+    /// EventHandlerInterface Methods
+    void event(JausAddress reporter, unsigned short query_msg_id, unsigned int reportlen, const unsigned char* reportdata);
 
-	/// Guard Methods
+    /// Guard Methods
 
-	template<class T>
-	void requestAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj, jUnsignedByte authority=255)
-	{
-		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
-		p_reply_callbacks[address.get()].push_back(callback);
-		pRequestAccess(address, authority);
-	}
-	void requestAccess(JausAddress address, jUnsignedByte authority=255)
-	{
-		pRequestAccess(address, authority);
-	}
-	template<class T>
-	void releaseAccess(JausAddress address, void(T::*reply_handler)(JausAddress &, unsigned char code), T*obj)
-	{
-		std::function<void (JausAddress &, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
-		p_reply_callbacks[address.get()].push_back(callback);
-		pReleaseAccess(address);
-	}
-	void releaseAccess(JausAddress address)
-	{
-		pReleaseAccess(address);
-	}
-	bool hasAccess(JausAddress address);
-	template<class T>
-	void add_reply_handler(void(T::*handler)(JausAddress &, unsigned char code), T*obj) {
-		p_reply_handler.push_back(std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2));
-	}
-	void set_emergency_client(JausAddress address) { p_emergency_address = address; }
-	void add_monitor_control(const std::string &uri, JausAddress &address);
+    template <class T>
+    void requestAccess(JausAddress address, void (T::*reply_handler)(JausAddress&, unsigned char code), T* obj, jUnsignedByte authority = 255)
+    {
+        std::function<void(JausAddress&, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
+        p_reply_callbacks[address.get()].push_back(callback);
+        pRequestAccess(address, authority);
+    }
+    void requestAccess(JausAddress address, jUnsignedByte authority = 255)
+    {
+        pRequestAccess(address, authority);
+    }
+    template <class T>
+    void releaseAccess(JausAddress address, void (T::*reply_handler)(JausAddress&, unsigned char code), T* obj)
+    {
+        std::function<void(JausAddress&, unsigned char code)> callback = std::bind(reply_handler, obj, std::placeholders::_1, std::placeholders::_2);
+        p_reply_callbacks[address.get()].push_back(callback);
+        pReleaseAccess(address);
+    }
+    void releaseAccess(JausAddress address)
+    {
+        pReleaseAccess(address);
+    }
+    bool hasAccess(JausAddress address);
+    template <class T>
+    void add_reply_handler(void (T::*handler)(JausAddress&, unsigned char code), T* obj)
+    {
+        p_reply_handler.push_back(std::bind(handler, obj, std::placeholders::_1, std::placeholders::_2));
+    }
+    void set_emergency_client(JausAddress address) { p_emergency_address = address; }
+    void add_monitor_control(const std::string& uri, JausAddress& address);
 
-	AccessControlClient_ReceiveFSMContext *context;
+    AccessControlClient_ReceiveFSMContext* context;
 
 protected:
-	/// References to parent FSMs
-	urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
-	urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
+    /// References to parent FSMs
+    urn_jaus_jss_core_EventsClient::EventsClient_ReceiveFSM* pEventsClient_ReceiveFSM;
+    urn_jaus_jss_core_Transport::Transport_ReceiveFSM* pTransport_ReceiveFSM;
 
-	std::shared_ptr<iop::Component> cmp;
-	rclcpp::Logger logger;
-	iop::Timer p_timer;
-	iop::RemoteComponentList p_remote_components;
-	std::vector<std::function<void (JausAddress &, unsigned char code)> > p_reply_handler;
-	std::map <unsigned int, std::vector<std::function<void (JausAddress &, unsigned char code)> > > p_reply_callbacks;  // unsigned int -> JausAddress::get(), list with callbacks to this address
-	std::function<void (JausAddress &, unsigned char code)> p_class_access_reply_callback;
-	JausAddress p_emergency_address;
-	jUnsignedByte p_default_timeout;
-	JTS::InternalEvent *p_timeout_event;
-	QueryControl p_query_control;
-	std::vector<JausAddress> p_access_control_addresses;
-	rclcpp::Publisher<fkie_iop_msgs::msg::JausAddress>::SharedPtr p_pub_current_controller;
-	rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr p_pub_current_authority;
-	rclcpp::Publisher<fkie_iop_msgs::msg::OcuControlReport>::SharedPtr p_pub_ac_reports;
-	void pTimeoutCallback();
-	void pInformReplyCallbacks(JausAddress &address, unsigned char code);
-	void pRequestAccess(JausAddress address, jUnsignedByte authority=255);
-	void pReleaseAccess(JausAddress address);
+    std::shared_ptr<iop::Component> cmp;
+    rclcpp::Logger logger;
+    iop::Timer p_timer;
+    iop::RemoteComponentList p_remote_components;
+    std::vector<std::function<void(JausAddress&, unsigned char code)>> p_reply_handler;
+    std::map<unsigned int, std::vector<std::function<void(JausAddress&, unsigned char code)>>> p_reply_callbacks; // unsigned int -> JausAddress::get(), list with callbacks to this address
+    std::function<void(JausAddress&, unsigned char code)> p_class_access_reply_callback;
+    JausAddress p_emergency_address;
+    jUnsignedByte p_default_timeout;
+    JTS::InternalEvent* p_timeout_event;
+    QueryControl p_query_control;
+    std::vector<JausAddress> p_access_control_addresses;
+    rclcpp::Publisher<fkie_iop_msgs::msg::JausAddress>::SharedPtr p_pub_current_controller;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr p_pub_current_authority;
+    rclcpp::Publisher<fkie_iop_msgs::msg::OcuControlReport>::SharedPtr p_pub_ac_reports;
+    void pTimeoutCallback();
+    void pInformReplyCallbacks(JausAddress& address, unsigned char code);
+    void pRequestAccess(JausAddress address, jUnsignedByte authority = 255);
+    void pReleaseAccess(JausAddress address);
 };
 
 }
