@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service_def name="ListManager" id="urn:jaus:jss:core:ListManager" version="1.1"
-  xmlns="urn:jaus:jsidl:1.0" xmlns:ns2="urn:jaus:jsidl:1.1">
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:plus="urn:jaus:jsidl:plus">
   <description> The List Manager Service permits operations on a single ordered
     sequence of connected elements. It supports operations to add, replace or
     delete elements from the list, as well as querying the entire list or
@@ -27,33 +28,22 @@
     <inherits_from name="management" id="urn:jaus:jss:core:Management" version="1.1"/>
   </references>
   <declared_type_set name="Types">
-    <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet"
-      version="1.1"/>
+    <declared_type_set_ref name="messages" id="urn:jaus:jss:core:MessageSet:ListManagerSet" version="1.1"/>
   </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="SetElement"
-        declared_type_ref="core.commandClass.SetElement"/>
-      <declared_message_def name="DeleteElement"
-        declared_type_ref="core.commandClass.DeleteElement"/>
-      <declared_message_def name="QueryElement"
-        declared_type_ref="core.queryClass.QueryElement"/>
-      <declared_message_def name="QueryElementList"
-        declared_type_ref="core.queryClass.QueryElementList"/>
-      <declared_message_def name="QueryElementCount"
-        declared_type_ref="core.queryClass.QueryElementCount"/>
+      <declared_message_def name="SetElement" declared_type_ref="messages.SetElement"/>
+      <declared_message_def name="DeleteElement" declared_type_ref="messages.DeleteElement"/>
+      <declared_message_def name="QueryElement" declared_type_ref="messages.QueryElement"/>
+      <declared_message_def name="QueryElementList" declared_type_ref="messages.QueryElementList"/>
+      <declared_message_def name="QueryElementCount" declared_type_ref="messages.QueryElementCount"/>
     </input_set>
     <output_set>
-      <declared_message_def name="ConfirmElementRequest"
-        declared_type_ref="core.commandClass.ConfirmElementRequest"/>
-      <declared_message_def name="RejectElementRequest"
-        declared_type_ref="core.commandClass.RejectElementRequest"/>
-      <declared_message_def name="ReportElement"
-        declared_type_ref="core.informClass.ReportElement"/>
-      <declared_message_def name="ReportElementList"
-        declared_type_ref="core.informClass.ReportElementList"/>
-      <declared_message_def name="ReportElementCount"
-        declared_type_ref="core.informClass.ReportElementCount"/>
+      <declared_message_def name="ConfirmElementRequest" declared_type_ref="messages.ConfirmElementRequest"/>
+      <declared_message_def name="RejectElementRequest" declared_type_ref="messages.RejectElementRequest"/>
+      <declared_message_def name="ReportElement" declared_type_ref="messages.ReportElement"/>
+      <declared_message_def name="ReportElementList" declared_type_ref="messages.ReportElementList"/>
+      <declared_message_def name="ReportElementCount" declared_type_ref="messages.ReportElementCount"/>
     </output_set>
   </message_set>
   <internal_events_set/>
@@ -66,163 +56,130 @@
           <state name="NotControlled" initial_state="Standby">
             <state name="Standby"/>
             <default_state>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElement" value="msg" interpretation="enveloped query element message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                  <guard condition="elementExists( msg )"
-                    interpretation="True if the Element UID specified in the message 
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElement" value="msg" interpretation="enveloped query element message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="elementExists( msg )" interpretation="True if the Element UID specified in the message 
                     that triggered the transition exists in the list."/>
-                  <ns2:internal/>
-                  <action name="sendReportElement"
-                    interpretation="Send a Report Element message with the requested element">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElementList" value="msg"
-                    interpretation="enveloped query element list message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <ns2:internal/>
-                  <action name="sendReportElementList"
-                    interpretation="Send a Report Element List message with the
+                <internal/>
+                <action name="sendReportElement" interpretation="Send a Report Element message with the requested element">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElementList" value="msg" interpretation="enveloped query element list message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportElementList" interpretation="Send a Report Element List message with the
                     UIDs of all elements currently in the list">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElementCount" value="msg"
-                    interpretation="enveloped query element count message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <ns2:internal/>
-                  <action name="sendReportElementCount"
-                    interpretation="Send a Report Element Count message with 
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElementCount" value="msg" interpretation="enveloped query element count message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportElementCount" interpretation="Send a Report Element Count message with 
                     the number of elements currently in the list">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+            </default_state>
           </state>
 
           <state name="Controlled" initial_state="Standby">
-              <state name="Standby"/>
-              <default_state>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElement" value="msg"
-                    interpretation="enveloped query element message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <guard condition="elementExists( msg )"
-                    interpretation="True if the Element UID specified in the message 
+            <state name="Standby"/>
+            <default_state>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElement" value="msg" interpretation="enveloped query element message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="elementExists( msg )" interpretation="True if the Element UID specified in the message 
                     that triggered the transition exists in the list."/>
-                  <ns2:internal/>
-                  <action name="sendReportElement"
-                    interpretation="Send a Report Element message with the requested element">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElementList" value="msg"
-                    interpretation="enveloped query element list message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <ns2:internal/>
-                  <action name="sendReportElementList"
-                    interpretation="Send a Report Element List message with the
+                <internal/>
+                <action name="sendReportElement" interpretation="Send a Report Element message with the requested element">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElementList" value="msg" interpretation="enveloped query element list message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportElementList" interpretation="Send a Report Element List message with the
                     UIDs of all elements currently in the list">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryElementCount" value="msg"
-                    interpretation="enveloped query element count message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <ns2:internal/>
-                  <action name="sendReportElementCount"
-                    interpretation="Send a Report Element Count message with 
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryElementCount" value="msg" interpretation="enveloped query element count message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportElementCount" interpretation="Send a Report Element Count message with 
                     the number of elements currently in the list">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="SetElement" value="msg"
-                    interpretation="enveloped set element message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <guard condition="isControllingClient(transportData)"
-                    interpretation="Other conditions (isValidElementRequest, isElementSupported are checked by setElementAction()"/>
-                  <ns2:internal/>
-                  <action name="setElement"
-                    interpretation="sets elements and send a Confirm or Reject Element message.
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="SetElement" value="msg" interpretation="enveloped set element message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="isControllingClient(transportData)" interpretation="Other conditions (isValidElementRequest, isElementSupported are checked by setElementAction()"/>
+                <internal/>
+                <action name="setElement" interpretation="sets elements and send a Confirm or Reject Element message.
                     Store the element(s) in the list with sequence 
                     specified by the previous and next element IDs.  If this
                     action represents an insert or append into an existing list,
                     the service should modify the NextUID of the previous
                     element and/or the Previous UID of the next element to
                     reflect the updated sequence.">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="DeleteElement" value="msg"
-                    interpretation="enveloped delete element message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <guard
-                    condition="isControllingClient( transportData ) &amp;&amp; elementExists( msg )"
-                    interpretation="True if the message that triggered the transition 
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="DeleteElement" value="msg" interpretation="enveloped delete element message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="isControllingClient( transportData ) &amp;&amp; elementExists( msg )" interpretation="True if the message that triggered the transition 
                     is received from the client that is in control of this service AND 
                     the Element UID specified in the message that triggered the 
                     transition exists in the list."/>
-                  <ns2:internal/>
-                  <action name="deleteElement"
-                    interpretation="Remove the specified element(s) from the
+                <internal/>
+                <action name="deleteElement" interpretation="Remove the specified element(s) from the
                     list.  The service should modify the NextUID of the previous
                     element and/or the Previous UID of the next element to
                     reflect the updated sequence.">
-                    <argument value="msg"/>
-                  </action>
-                  <action name="sendConfirmElementRequest"
-                    interpretation="Send a Confirm Element Request message with the  requested element">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="DeleteElement" value="msg"
-                    interpretation="enveloped delete element message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData"
-                    interpretation="transport data"/>
-                  <guard
-                    condition="isControllingClient( transportData ) &amp;&amp; ! elementExists( msg )"
-                    interpretation="True if the message that triggered the transition is 
+                  <argument value="msg"/>
+                </action>
+                <action name="sendConfirmElementRequest" interpretation="Send a Confirm Element Request message with the  requested element">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="DeleteElement" value="msg" interpretation="enveloped delete element message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="isControllingClient( transportData ) &amp;&amp; ! elementExists( msg )" interpretation="True if the message that triggered the transition is 
                     received from the 
                     client that is in control of this service AND the Element UID 
                     specified in the message that triggered the transition does not exist
                     in the list."/>
-                  <ns2:internal/>
-                  <action name="sendRejectElementRequest"
-                    interpretation="Send a Reject Element Request message with the  requested element">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
+                <internal/>
+                <action name="sendRejectElementRequest" interpretation="Send a Reject Element Request message with the  requested element">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+            </default_state>
           </state>
         </state>
       </state>
     </state_machine>
     <state_machine name="management.accessControl.events.transport.SendFSM">
-        <state name="Sending"/>
+      <state name="Sending"/>
     </state_machine>
   </protocol_behavior>
 </service_def>

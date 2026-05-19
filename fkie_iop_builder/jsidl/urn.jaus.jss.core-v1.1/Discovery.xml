@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service_def xmlns="urn:jaus:jsidl:1.0" xmlns:ns2="urn:jaus:jsidl:1.1"
-  name="Discovery" id="urn:jaus:jss:core:Discovery" version="1.1">
+<service_def name="Discovery" id="urn:jaus:jss:core:Discovery" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:plus="urn:jaus:jsidl:plus">
   <description>The process of discovery is conducted at both the node level and
     the subsystem level. This service supports the discovery of both legacy
     components defined in the JAUS Reference Architecture versions 3.2+, and new
@@ -15,35 +16,23 @@
     <inherits_from name="events" id="urn:jaus:jss:core:Events" version="1.1"/>
   </references>
   <declared_type_set name="Types">
-    <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet"
-      version="1.1"/>
+    <declared_type_set_ref name="messages" id="urn:jaus:jss:core:MessageSet:DiscoverySet" version="1.1"/>
   </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="QueryIdentification"
-        declared_type_ref="core.queryClass.QueryIdentification"/>
-      <declared_message_def name="QueryConfiguration"
-        declared_type_ref="core.queryClass.QueryConfiguration"/>
-      <declared_message_def name="QuerySubsystemList"
-        declared_type_ref="core.queryClass.QuerySubsystemList"/>
-      <declared_message_def name="QueryServices"
-        declared_type_ref="core.queryClass.QueryServices"/>
-      <declared_message_def name="QueryServiceList"
-        declared_type_ref="core.queryClass.QueryServiceList"/>
-      <declared_message_def name="RegisterServices"
-        declared_type_ref="core.commandClass.RegisterServices"/>
+      <declared_message_def name="QueryIdentification" declared_type_ref="messages.QueryIdentification"/>
+      <declared_message_def name="QueryConfiguration" declared_type_ref="messages.QueryConfiguration"/>
+      <declared_message_def name="QuerySubsystemList" declared_type_ref="messages.QuerySubsystemList"/>
+      <declared_message_def name="QueryServices" declared_type_ref="messages.QueryServices"/>
+      <declared_message_def name="QueryServiceList" declared_type_ref="messages.QueryServiceList"/>
+      <declared_message_def name="RegisterServices" declared_type_ref="messages.RegisterServices"/>
     </input_set>
     <output_set>
-      <declared_message_def name="ReportIdentification"
-        declared_type_ref="core.informClass.ReportIdentification"/>
-      <declared_message_def name="ReportConfiguration"
-        declared_type_ref="core.informClass.ReportConfiguration"/>
-      <declared_message_def name="ReportSubsystemList"
-        declared_type_ref="core.informClass.ReportSubsystemList"/>
-      <declared_message_def name="ReportServices"
-        declared_type_ref="core.informClass.ReportServices"/>
-      <declared_message_def name="ReportServiceList"
-        declared_type_ref="core.informClass.ReportServiceList"/>
+      <declared_message_def name="ReportIdentification" declared_type_ref="messages.ReportIdentification"/>
+      <declared_message_def name="ReportConfiguration" declared_type_ref="messages.ReportConfiguration"/>
+      <declared_message_def name="ReportSubsystemList" declared_type_ref="messages.ReportSubsystemList"/>
+      <declared_message_def name="ReportServices" declared_type_ref="messages.ReportServices"/>
+      <declared_message_def name="ReportServiceList" declared_type_ref="messages.ReportServiceList"/>
     </output_set>
   </message_set>
   <internal_events_set/>
@@ -56,7 +45,7 @@
             <transition name="events.transport.Receive">
               <parameter type="RegisterServices" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="publishServices" interpretation="Add the component that sent the message
                   to the list of reported services">
                 <argument value="msg"/>
@@ -66,7 +55,7 @@
             <transition name="events.transport.Receive">
               <parameter type="QueryIdentification" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="sendReportIdentification" interpretation="Send a Report
                 Identification message to querying client">
                 <argument value="msg"/>
@@ -76,7 +65,7 @@
             <transition name="events.transport.Receive">
               <parameter type="QueryConfiguration" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="sendReportConfiguration" interpretation="Send a Report
                 Configuration message to querying client">
                 <argument value="msg"/>
@@ -86,7 +75,7 @@
             <transition name="events.transport.Receive">
               <parameter type="QuerySubsystemList" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="sendReportSubsystemList" interpretation="Send a Report
                 Subsystem List message to querying client">
                 <argument value="msg"/>
@@ -96,7 +85,7 @@
             <transition name="events.transport.Receive">
               <parameter type="QueryServices" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="sendReportServices" interpretation="Send a Report
                 Services message to querying client">
                 <argument value="msg"/>
@@ -106,7 +95,7 @@
             <transition name="events.transport.Receive">
               <parameter type="QueryServiceList" value="msg"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-              <ns2:internal/>
+              <internal/>
               <action name="sendReportServiceList" interpretation="Send a Report
                 Service List message to querying client">
                 <argument value="msg"/>

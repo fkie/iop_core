@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service_def xmlns="urn:jaus:jsidl:1.0" xmlns:ns2="urn:jaus:jsidl:1.1"
-  name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1">
+<service_def name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:plus="urn:jaus:jsidl:plus">
   <description>This service is used to set up event notifications. Since this
     service does not contain any messages and data on which events can be setup,
     it is useful only when derived by other services that contain messages and
@@ -11,37 +12,24 @@
     <client_of name="Events" id="urn:jaus:jss:core:Events" version="1.1"/>
   </references>
   <declared_type_set name="Types">
-    <declared_type_set_ref name="core" id="urn:jaus:jss:core:MessageSet"
-      version="1.1"/>
+    <declared_type_set_ref name="messages" id="urn:jaus:jss:core:MessageSet:EventsSet" version="1.1"/>
   </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="ConfirmEventRequest"
-        declared_type_ref="core.commandClass.ConfirmEventRequest"/>
-      <declared_message_def name="RejectEventRequest"
-        declared_type_ref="core.commandClass.RejectEventRequest"/>
-      <declared_message_def name="ReportEvents"
-        declared_type_ref="core.informClass.ReportEvents"/>
-      <declared_message_def name="Event"
-        declared_type_ref="core.informClass.Event"/>
-      <declared_message_def name="CommandEvent"
-        declared_type_ref="core.informClass.CommandEvent"/>
-      <declared_message_def name="ReportEventTimeout"
-        declared_type_ref="core.informClass.ReportEventTimeout"/>
+      <declared_message_def name="ConfirmEventRequest" declared_type_ref="messages.ConfirmEventRequest"/>
+      <declared_message_def name="RejectEventRequest" declared_type_ref="messages.RejectEventRequest"/>
+      <declared_message_def name="ReportEvents" declared_type_ref="messages.ReportEvents"/>
+      <declared_message_def name="Event" declared_type_ref="messages.Event"/>
+      <declared_message_def name="CommandEvent" declared_type_ref="messages.CommandEvent"/>
+      <declared_message_def name="ReportEventTimeout" declared_type_ref="messages.ReportEventTimeout"/>
     </input_set>
     <output_set>
-      <declared_message_def name="CreateEvent"
-        declared_type_ref="core.commandClass.CreateEvent"/>
-      <declared_message_def name="CreateCommandEvent"
-        declared_type_ref="core.commandClass.CreateCommandEvent"/>
-      <declared_message_def name="UpdateEvent"
-        declared_type_ref="core.commandClass.UpdateEvent"/>
-      <declared_message_def name="CancelEvent"
-        declared_type_ref="core.commandClass.CancelEvent"/>
-      <declared_message_def name="QueryEvents"
-        declared_type_ref="core.queryClass.QueryEvents"/>
-      <declared_message_def name="QueryEventTimeout"
-        declared_type_ref="core.queryClass.QueryEventTimeout"/>
+      <declared_message_def name="CreateEvent" declared_type_ref="messages.CreateEvent"/>
+      <declared_message_def name="CreateCommandEvent" declared_type_ref="messages.CreateCommandEvent"/>
+      <declared_message_def name="UpdateEvent" declared_type_ref="messages.UpdateEvent"/>
+      <declared_message_def name="CancelEvent" declared_type_ref="messages.CancelEvent"/>
+      <declared_message_def name="QueryEvents" declared_type_ref="messages.QueryEvents"/>
+      <declared_message_def name="QueryEventTimeout" declared_type_ref="messages.QueryEventTimeout"/>
     </output_set>
   </message_set>
   <internal_events_set>
@@ -54,7 +42,7 @@
           <transition name="transport.Receive">
             <parameter type="ReportEvents" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <ns2:internal/>
+            <internal/>
             <action name="handleReportEvents" interpretation="Receive Report Events message">
               <argument value="msg"/>
               <argument value="transportData"/>
@@ -64,7 +52,7 @@
           <transition name="transport.Receive">
             <parameter type="ReportEventTimeout" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <ns2:internal/>
+            <internal/>
             <action name="handleReportEventTimeout" interpretation="Received Report Event Timeout message">
               <argument value="msg"/>
               <argument value="transportData"/>
@@ -74,17 +62,17 @@
           <transition name="transport.Receive">
             <parameter type="ConfirmEventRequest" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <ns2:internal/>
+            <internal/>
             <action name="handleConfirmEventRequest" interpretation="Confirm Event Request message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
           </transition>
 
-         <transition name="transport.Receive">
+          <transition name="transport.Receive">
             <parameter type="RejectEventRequest" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <ns2:internal/>
+            <internal/>
             <action name="handleRejectEventRequest" interpretation="Reject Event Request message">
               <argument value="msg"/>
               <argument value="transportData"/>
@@ -94,21 +82,21 @@
           <transition name="transport.Receive">
             <parameter type="CommandEvent" value="msg"/>
             <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-            <ns2:internal/>
+            <internal/>
             <action name="handleCommandEvent" interpretation="Command Event Request message">
               <argument value="msg"/>
               <argument value="transportData"/>
             </action>
           </transition>
-           <transition name="transport.Receive">
-                <parameter type="Event" value="msg"/>
-                <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
-                <ns2:internal/>
-                <action name="handleEvent">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                </action>
-           </transition>
+          <transition name="transport.Receive">
+            <parameter type="Event" value="msg"/>
+            <parameter type="Receive.Body.ReceiveRec" value="transportData"/>
+            <internal/>
+            <action name="handleEvent">
+              <argument value="msg"/>
+              <argument value="transportData"/>
+            </action>
+          </transition>
 
         </state>
       </state>
