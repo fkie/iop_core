@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set name="AccessControlSet" id="urn:jaus:jss:core:MessageSet:AccessControlSet" version="1.1"
+    xmlns="urn:jaus:jsidl:1.1"
+    xmlns:ns2="urn:jaus:jsidl:plus">
+    <message_def name="RequestControl" message_id="000D" is_command="true">
+        <description xml:space="preserve">This message is used to request interruptible control of the receiving component.  Once control is established, the receiving component shall only execute commands from the sending component.  The authority code parameter is to be set equal to that of the sending component.  The receiving component must always accept the control of the highest authority component that is requesting uninterruptible control.  Commands from all other components are ignored unless from a component with higher authority.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="RequestControlRec" optional="false">
+                <fixed_field name="AuthorityCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReleaseControl" message_id="000E" is_command="true">
+        <description xml:space="preserve">This message is used to relinquish uninterruptible control of the receiving component.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="QueryControl" message_id="200D" is_command="false">
+        <description xml:space="preserve">This message is used by clients to query the current control state of this service.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="QueryAuthority" message_id="2001" is_command="false">
+        <description xml:space="preserve">This message is used by clients to query the current value of the authority code of this service.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="SetAuthority" message_id="0001" is_command="true">
+        <description xml:space="preserve">This message shall set the command authority of the receiving component.  The authority bits range in value from 0 to 255 with 255 being the highest.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="authorityRec" optional="false">
+                <fixed_field name="AuthorityCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="QueryTimeout" message_id="2003" is_command="false">
+        <description xml:space="preserve">This message is used by clients of this service to query the timeout period of this service.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+
+    <message_def name="ReportControl" message_id="400D" is_command="false">
+        <description xml:space="preserve">This message is used to report the current state of control of this service.  If the service is in the Controlled state, this message reports the ID of the controlling component. The ID fields shall be set to zero (0) if this service is in the NotControlled state..</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ReportControlRec" optional="false">
+                <fixed_field name="SubsystemID" optional="false" interpretation="Subsystem ID" field_type="unsigned short integer" field_units="one"/>
+                <fixed_field name="NodeID" optional="false" interpretation="Node ID" field_type="unsigned byte" field_units="one"/>
+                <fixed_field name="ComponentID" optional="false" interpretation="Component ID" field_type="unsigned byte" field_units="one"/>
+                <fixed_field name="AuthorityCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="RejectControl" message_id="0010" is_command="false">
+        <description xml:space="preserve">The Reject Control message is used to notify a component that control has been released (response code = 0), or a request to release control could not be processed (response code = 1).</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="RejectControlRec" optional="false">
+                <fixed_field name="ResponseCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="0" enum_const="CONTROL_RELEASED"/>
+                        <value_enum enum_index="1" enum_const="NOT_AVAILABLE"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ConfirmControl" message_id="000F" is_command="false">
+        <description xml:space="preserve">The Confirm Control message is used to notify a component that it accepts control from that component (or not).  When control has been granted, response code of 0, the component under control will only execute messages from the controlling component until control is released or interrupted.  When the requesting component has lower authority than the current controlling entity, the response will be 2.  For components not supporting interruptible control, or if the component is engaged in other operations that would prevent this service from performing its actions to grant control, the response code value of 1 can be used.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ConfirmControlRec" optional="false">
+                <fixed_field name="ResponseCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="0" enum_const="CONTROL_ACCEPTED"/>
+                        <value_enum enum_index="1" enum_const="NOT_AVAILABLE"/>
+                        <value_enum enum_index="2" enum_const="INSUFFICIENT_AUTHORITY"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReportAuthority" message_id="4001" is_command="false">
+        <description xml:space="preserve">This message is used to report the current command authority.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ReportAuthorityRec" optional="false">
+                <fixed_field name="AuthorityCode" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReportTimeout" message_id="4003" is_command="false">
+        <description xml:space="preserve">This message is used to report the timeout period of this message.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ReportTimoutRec" optional="false">
+                <fixed_field name="Timeout" optional="false" field_type="unsigned byte" field_units="second">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="0" enum_const="TIMEOUT_FEATURE _DISABLED"/>
+                        <value_range lower_limit="1" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+</declared_type_set>

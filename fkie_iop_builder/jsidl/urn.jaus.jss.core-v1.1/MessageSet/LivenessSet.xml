@@ -1,0 +1,24 @@
+<declared_type_set name="LivenessSet" id="urn:jaus:jss:core:MessageSet:LivenessSet" version="1.1"
+    xmlns="urn:jaus:jsidl:1.1"
+    xmlns:ns2="urn:jaus:jsidl:plus">
+    <message_def name="QueryHeartbeatPulse" message_id="2202" is_command="false">
+        <description xml:space="preserve">This message shall be used to query for a heartbeat pulse.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReportHeartbeatPulse" message_id="4202" is_command="false">
+        <description xml:space="preserve">This message notifies the receiver that the sender is alive.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+</declared_type_set>

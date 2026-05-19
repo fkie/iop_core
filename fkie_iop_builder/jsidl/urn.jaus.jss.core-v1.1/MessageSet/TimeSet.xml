@@ -1,0 +1,44 @@
+<declared_type_set name="TimeSet" id="urn:jaus:jss:core:MessageSet:TimeSet" version="1.1"
+    xmlns="urn:jaus:jsidl:1.1"
+    xmlns:ns2="urn:jaus:jsidl:plus">
+    <declared_type_set_ref name="basicTypes" id="urn:jaus:jss:core:MessageSet:BasicTypes" version="1.1"/>
+    <message_def name="SetTime" message_id="0011" is_command="true">
+        <description xml:space="preserve">Time is configured within a JAUS system using the following message.  Accuracy of the time may be dependent on latencies in the transmission of the message.  Proper systems engineering procedures should be used to insure the accuracy of the time messages are within the system tolerance.  All times are in Coordinated Universal Time (UTC).</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <declared_record name="TimeRec" declared_type_ref="basicTypes.TimeRec" optional="false"/>
+
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="QueryTime" message_id="2011" is_command="false">
+        <description xml:space="preserve">This message is used by clients of this service to query the current time of this service.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="QueryTimeRec" optional="false">
+                <fixed_field name="PresenceVector" optional="false" interpretation="See corresponding report time message for presence vector mapping" field_type="unsigned byte" field_units="one"/>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReportTime" message_id="4011" is_command="false">
+        <description xml:space="preserve">This message is used to report the current time of this service to querying clients. All times are in Coordinated Universal Time (UTC).</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <declared_record name="TimeRec" declared_type_ref="basicTypes.TimeRec" optional="false"/>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+</declared_type_set>

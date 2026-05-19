@@ -1,0 +1,114 @@
+<declared_type_set name="ManagementSet" id="urn:jaus:jss:core:MessageSet:ManagementSet" version="1.1"
+    xmlns="urn:jaus:jsidl:1.1"
+    xmlns:ns2="urn:jaus:jsidl:plus">
+    <message_def name="Shutdown" message_id="0002" is_command="true">
+        <description xml:space="preserve">This message is used to cause the receiving component to free all of the resources allocated to its process by the system and then to shutdown.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="Standby" message_id="0003" is_command="true">
+        <description xml:space="preserve">This message is used to transition the receiving component to the standby state.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="Resume" message_id="0004" is_command="true">
+        <description xml:space="preserve">This message is used to transition the receiving component to the ready state.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="Reset" message_id="0005" is_command="true">
+        <description xml:space="preserve">This message is used to cause the receiving component to reinitialize.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="SetEmergency" message_id="0006" is_command="true">
+        <description xml:space="preserve">This message is used to alert the component to a safety critical situation. The component that sends the emergency command shall set the message priority to the safety critical priority range as defined by the Transport. Receive of the emergency command shall result in the component transitioning into the emergency state.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="SetEmergencyRec" optional="false">
+                <fixed_field name="EmergencyCode" optional="false" field_type="unsigned short integer" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="1" enum_const="STOP"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ClearEmergency" message_id="0007" is_command="true">
+        <description xml:space="preserve">This message shall notify the receiving component that the current emergency condition is to be reset and that the component shall transition back to the Ready or Standby state, provided that all emergency conditions have been cleared. JAUS currently defines only one emergency condition, the "Stop" condition.  Future versions of this document could define other emergency conditions.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ClearEmergencyRec" optional="false">
+                <fixed_field name="EmergencyCode" optional="false" field_type="unsigned short integer" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="1" enum_const="STOP"/>
+                    </value_set>
+                </fixed_field>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="QueryStatus" message_id="2002" is_command="false">
+        <description xml:space="preserve">This message is used by clients of this service to query the state of this service.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+    </message_def>
+    <message_def name="ReportStatus" message_id="4002" is_command="false">
+        <description xml:space="preserve">This message is used to report the current status of the sender of the message.</description>
+        <header name="MsgHeader">
+            <record name="HeaderRec" optional="false">
+                <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+            </record>
+        </header>
+        <body name="Body">
+            <record name="ReportStatusRec" optional="false">
+                <fixed_field name="Status" optional="false" field_type="unsigned byte" field_units="one">
+                    <value_set offset_to_lower_limit="false">
+                        <value_enum enum_index="0" enum_const="INITIALIZE"/>
+                        <value_enum enum_index="1" enum_const="READY"/>
+                        <value_enum enum_index="2" enum_const="STANDBY"/>
+                        <value_enum enum_index="3" enum_const="SHUTDOWN"/>
+                        <value_enum enum_index="4" enum_const="FAILURE"/>
+                        <value_enum enum_index="5" enum_const="EMERGENCY"/>
+                    </value_set>
+                </fixed_field>
+                <fixed_field name="Reserved" optional="false" interpretation="This field is reserved for compatibility with previous versions of the Standard." field_type="unsigned integer" field_units="one"/>
+            </record>
+        </body>
+        <footer name="Footer"/>
+    </message_def>
+</declared_type_set>
