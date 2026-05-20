@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<service_def name="RangeSensor" id="urn:jaus:jss:environmentSensing:RangeSensor" version="1.0"
-	xmlns="urn:jaus:jsidl:1.0">
+<service_def name="RangeSensor" id="urn:jaus:jss:environmentSensing:RangeSensor" version="2.0"
+	xmlns="urn:jaus:jsidl:1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus">
 	<description xml:space="preserve">The function of the Range Sensor Service is to provide 
 		information from proximity sensors. This service will output the location of various 
 		Data Points with a certain measure of accuracy. A given Range Sensor service may be 
@@ -42,47 +43,33 @@
 		Properties message and are described therein.</description>
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
-		<inherits_from name="accessControl" id="urn:jaus:jss:core:AccessControl" version="1.0"/>
+		<inherits_from name="accessControl" id="urn:jaus:jss:core:AccessControl" version="1.1"/>
 	</references>
 	<declared_type_set name="Types">
-		<declared_type_set_ref name="environmentSensing" id="urn:jaus:jss:environmentSensing:MessageSet"
-			version="1.0"/>
+		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:RangeSensorSet" version="2.0"/>
 	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="SetRangeSensorConfiguration"
-				declared_type_ref="environmentSensing.commandClass.SetRangeSensorConfiguration"/>
-			<declared_message_def name="QuerySensorGeometricProperties"
-				declared_type_ref="environmentSensing.queryClass.QuerySensorGeometricProperties"/>
-			<declared_message_def name="QueryRangeSensorCompressedData"
-				declared_type_ref="environmentSensing.queryClass.QueryRangeSensorCompressedData"/>
-			<declared_message_def name="QueryRangeSensorData"
-				declared_type_ref="environmentSensing.queryClass.QueryRangeSensorData"/>
-			<declared_message_def name="QueryRangeSensorCapabilities"
-				declared_type_ref="environmentSensing.queryClass.QueryRangeSensorCapabilities"/>
-			<declared_message_def name="QueryRangeSensorConfiguration"
-				declared_type_ref="environmentSensing.queryClass.QueryRangeSensorConfiguration"/>
+			<declared_message_def name="SetRangeSensorConfiguration" declared_type_ref="messages.SetRangeSensorConfiguration"/>
+			<declared_message_def name="QuerySensorGeometricProperties" declared_type_ref="messages.QuerySensorGeometricProperties"/>
+			<declared_message_def name="QueryRangeSensorCompressedData" declared_type_ref="messages.QueryRangeSensorCompressedData"/>
+			<declared_message_def name="QueryRangeSensorData" declared_type_ref="messages.QueryRangeSensorData"/>
+			<declared_message_def name="QueryRangeSensorCapabilities" declared_type_ref="messages.QueryRangeSensorCapabilities"/>
+			<declared_message_def name="QueryRangeSensorConfiguration" declared_type_ref="messages.QueryRangeSensorConfiguration"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="ConfirmSensorConfiguration"
-				declared_type_ref="environmentSensing.commandClass.ConfirmSensorConfiguration"/>
-			<declared_message_def name="ReportRangeSensorCapabilities"
-				declared_type_ref="environmentSensing.informClass.ReportRangeSensorCapabilities"/>
-			<declared_message_def name="ReportRangeSensorConfiguration"
-				declared_type_ref="environmentSensing.informClass.ReportRangeSensorConfiguration"/>
-			<declared_message_def name="ReportRangeSensorData"
-				declared_type_ref="environmentSensing.informClass.ReportRangeSensorData"/>
-			<declared_message_def name="ReportRangeSensorCompressedData"
-				declared_type_ref="environmentSensing.informClass.ReportRangeSensorCompressedData"/>
-			<declared_message_def name="ReportSensorGeometricProperties"
-				declared_type_ref="environmentSensing.informClass.ReportSensorGeometricProperties"/>
+			<declared_message_def name="ConfirmSensorConfiguration" declared_type_ref="messages.ConfirmSensorConfiguration"/>
+			<declared_message_def name="ReportRangeSensorCapabilities" declared_type_ref="messages.ReportRangeSensorCapabilities"/>
+			<declared_message_def name="ReportRangeSensorConfiguration" declared_type_ref="messages.ReportRangeSensorConfiguration"/>
+			<declared_message_def name="ReportRangeSensorData" declared_type_ref="messages.ReportRangeSensorData"/>
+			<declared_message_def name="ReportRangeSensorCompressedData" declared_type_ref="messages.ReportRangeSensorCompressedData"/>
+			<declared_message_def name="ReportSensorGeometricProperties" declared_type_ref="messages.ReportSensorGeometricProperties"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
 	<protocol_behavior is_stateless="false">
-		<start state_machine_name="accessControl.Events.Transport.ReceiveFSM"
-			state_name="Receiving.Ready.NotControlled"/>
-        <start state_machine_name="accessControl.events.transport.SendFSM" state_name="Sending"/>
+		<start state_machine_name="accessControl.Events.Transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
+		<start state_machine_name="accessControl.events.transport.SendFSM" state_name="Sending"/>
 		<state_machine name="accessControl.Events.Transport.ReceiveFSM">
 			<state name="Receiving" initial_state="Ready">
 				<state name="Ready" initial_state="NotControlled">
@@ -90,55 +77,42 @@
 
 						<default_state>
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCapabilities" value="msg"
-									interpretation="enveloped QueryRangeSensorCapabilities message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QueryRangeSensorCapabilities" value="msg" interpretation="enveloped QueryRangeSensorCapabilities message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportRangeSensorCapabilities"
-									interpretation="Send a Report Range Sensor Capabilities message">
+								<action name="sendReportRangeSensorCapabilities" interpretation="Send a Report Range Sensor Capabilities message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorConfiguration" value="msg"
-									interpretation="enveloped QueryRangeSensorConfiguration message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QueryRangeSensorConfiguration" value="msg" interpretation="enveloped QueryRangeSensorConfiguration message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportRangeSensorConfiguration"
-									interpretation="Send a ReportRangeSensorConfiguration message">
+								<action name="sendReportRangeSensorConfiguration" interpretation="Send a ReportRangeSensorConfiguration message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QuerySensorGeometricProperties" value="msg"
-									interpretation="enveloped QuerySensorGeometricProperties message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QuerySensorGeometricProperties" value="msg" interpretation="enveloped QuerySensorGeometricProperties message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportSensorGeometricProperties"
-									interpretation="Send a ReportSensorGeometricProperties message">
+								<action name="sendReportSensorGeometricProperties" interpretation="Send a ReportSensorGeometricProperties message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorData" value="msg"
-									interpretation="enveloped QueryRangeSensorData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="isCoordinateTranformSupported( )"
-									interpretation="True if the service supports coordinate system 
+								<parameter type="QueryRangeSensorData" value="msg" interpretation="enveloped QueryRangeSensorData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="isCoordinateTranformSupported( )" interpretation="True if the service supports coordinate system 
 									transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorData"
-									interpretation="Send a ReportRangeSensorData message using
+								<action name="sendReportRangeSensorData" interpretation="Send a ReportRangeSensorData message using
 									the requested coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'VEHICLE' "/>
@@ -147,16 +121,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorData" value="msg"
-									interpretation="enveloped QueryRangeSensorData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="! isCoordinateTranformSupported( )"
-									interpretation="True if the service does not support 
+								<parameter type="QueryRangeSensorData" value="msg" interpretation="enveloped QueryRangeSensorData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="! isCoordinateTranformSupported( )" interpretation="True if the service does not support 
 									coordinate system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorData"
-									interpretation="Send a ReportRangeSensorData message in 
+								<action name="sendReportRangeSensorData" interpretation="Send a ReportRangeSensorData message in 
 									native coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'NATIVE' "/>
@@ -165,16 +135,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCompressedData" value="msg"
-									interpretation="enveloped QueryRangeSensorCompressedData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="isCoordinateTranformSupported( )"
-									interpretation="True if the service supports coordinate 
+								<parameter type="QueryRangeSensorCompressedData" value="msg" interpretation="enveloped QueryRangeSensorCompressedData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="isCoordinateTranformSupported( )" interpretation="True if the service supports coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorCompressedData"
-									interpretation="Send a ReportRangeSensorCompressedData 
+								<action name="sendReportRangeSensorCompressedData" interpretation="Send a ReportRangeSensorCompressedData 
 									message using the requested coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'VEHICLE' "/>
@@ -183,16 +149,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCompressedData" value="msg"
-									interpretation="enveloped QueryRangeSensorCompressedData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="! isCoordinateTranformSupported( )"
-									interpretation="True if the service does not support 
+								<parameter type="QueryRangeSensorCompressedData" value="msg" interpretation="enveloped QueryRangeSensorCompressedData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="! isCoordinateTranformSupported( )" interpretation="True if the service does not support 
 									coordinate system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorCompressedData"
-									interpretation="Send a ReportRangeSensorCompressedData 
+								<action name="sendReportRangeSensorCompressedData" interpretation="Send a ReportRangeSensorCompressedData 
 									message in native coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'NATIVE' "/>
@@ -204,75 +166,56 @@
 					<state name="Controlled">
 						<default_state>
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="SetRangeSensorConfiguration" value="msg"
-									interpretation="enveloped SetRangeSensorConfiguration message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="accessControl.isControllingClient( transportData )"
-									interpretation="True if the message that triggered the 
+								<parameter type="SetRangeSensorConfiguration" value="msg" interpretation="enveloped SetRangeSensorConfiguration message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="accessControl.isControllingClient( transportData )" interpretation="True if the message that triggered the 
 									transition is received from the client that is in control of this service."/>
 								<simple/>
-								<action name="sendConfirmSensorConfiguration"
-									interpretation="Send sendConfirmSensorConfiguration message">
+								<action name="sendConfirmSensorConfiguration" interpretation="Send sendConfirmSensorConfiguration message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
-								<action name="updateRangeSensorConfiguration"
-									interpretation="Update the sensor user controllable 
-									configuration parameters according to the ones specified."
-								/>
+								<action name="updateRangeSensorConfiguration" interpretation="Update the sensor user controllable 
+									configuration parameters according to the ones specified." />
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCapabilities" value="msg"
-									interpretation="enveloped QueryRangeSensorCapabilities message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QueryRangeSensorCapabilities" value="msg" interpretation="enveloped QueryRangeSensorCapabilities message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportRangeSensorCapabilities"
-									interpretation="Send a Report Range Sensor Capabilities message">
+								<action name="sendReportRangeSensorCapabilities" interpretation="Send a Report Range Sensor Capabilities message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorConfiguration" value="msg"
-									interpretation="enveloped QueryRangeSensorConfiguration message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QueryRangeSensorConfiguration" value="msg" interpretation="enveloped QueryRangeSensorConfiguration message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportRangeSensorConfiguration"
-									interpretation="Send a ReportRangeSensorConfiguration message">
+								<action name="sendReportRangeSensorConfiguration" interpretation="Send a ReportRangeSensorConfiguration message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QuerySensorGeometricProperties" value="msg"
-									interpretation="enveloped QuerySensorGeometricProperties message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
+								<parameter type="QuerySensorGeometricProperties" value="msg" interpretation="enveloped QuerySensorGeometricProperties message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
 								<simple/>
-								<action name="sendReportSensorGeometricProperties"
-									interpretation="Send a ReportSensorGeometricProperties message">
+								<action name="sendReportSensorGeometricProperties" interpretation="Send a ReportSensorGeometricProperties message">
 									<argument value="msg"/>
 									<argument value="transportData"/>
 								</action>
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorData" value="msg"
-									interpretation="enveloped QueryRangeSensorData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="isCoordinateTranformSupported( )"
-									interpretation="True if the service supports coordinate 
+								<parameter type="QueryRangeSensorData" value="msg" interpretation="enveloped QueryRangeSensorData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="isCoordinateTranformSupported( )" interpretation="True if the service supports coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorData"
-									interpretation="Send a ReportRangeSensorData message using 
+								<action name="sendReportRangeSensorData" interpretation="Send a ReportRangeSensorData message using 
 									the requested coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'VEHICLE' "/>
@@ -281,16 +224,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorData" value="msg"
-									interpretation="enveloped QueryRangeSensorData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="! isCoordinateTranformSupported( )"
-									interpretation="True if the service does not support 
+								<parameter type="QueryRangeSensorData" value="msg" interpretation="enveloped QueryRangeSensorData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="! isCoordinateTranformSupported( )" interpretation="True if the service does not support 
 									coordinate system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorData"
-									interpretation="Send a ReportRangeSensorData message in 
+								<action name="sendReportRangeSensorData" interpretation="Send a ReportRangeSensorData message in 
 									native coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'NATIVE' "/>
@@ -299,16 +238,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCompressedData" value="msg"
-									interpretation="enveloped QueryRangeSensorCompressedData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="isCoordinateTranformSupported( )"
-									interpretation="True if the service supports coordinate 
+								<parameter type="QueryRangeSensorCompressedData" value="msg" interpretation="enveloped QueryRangeSensorCompressedData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="isCoordinateTranformSupported( )" interpretation="True if the service supports coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorCompressedData"
-									interpretation="Send a ReportRangeSensorCompressedData message 
+								<action name="sendReportRangeSensorCompressedData" interpretation="Send a ReportRangeSensorCompressedData message 
 									using the requested coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'VEHICLE' "/>
@@ -317,16 +252,12 @@
 							</transition>
 
 							<transition name="accessControl.events.transport.Receive">
-								<parameter type="QueryRangeSensorCompressedData" value="msg"
-									interpretation="enveloped QueryRangeSensorCompressedData message"/>
-								<parameter type="Receive.Body.ReceiveRec" value="transportData"
-									interpretation="transport data"/>
-								<guard condition="! isCoordinateTranformSupported( )"
-									interpretation="True if the service does not support coordinate 
+								<parameter type="QueryRangeSensorCompressedData" value="msg" interpretation="enveloped QueryRangeSensorCompressedData message"/>
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+								<guard condition="! isCoordinateTranformSupported( )" interpretation="True if the service does not support coordinate 
 									system transformations for data reports."/>
 								<simple/>
-								<action name="sendReportRangeSensorCompressedData"
-									interpretation="Send a ReportRangeSensorCompressedData message 
+								<action name="sendReportRangeSensorCompressedData" interpretation="Send a ReportRangeSensorCompressedData message 
 									in native coordinate system">
 									<argument value="msg"/>
 									<argument value=" 'NATIVE' "/>
