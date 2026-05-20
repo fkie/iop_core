@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service_def xmlns="urn:jaus:jsidl:1.0" xmlns:ns2="urn:jaus:jsidl:1.1"
-  name="UnsolicitedHeartbeat" id="urn:jaus:jss:iop:UnsolicitedHeartbeat" version="1.1">
+<service_def name="UnsolicitedHeartbeat" id="urn:jaus:jss:iop:UnsolicitedHeartbeat" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
   <description>This service extends the Liveness Service to automatically generate periodic Report Heartbeat Pulse messages. </description>
   <assumptions>Messages may be delayed, lost or reordered.</assumptions>
   <references>
@@ -35,7 +36,7 @@
       </state>
     </state_machine>
     <state_machine name="liveness.events.transport.SendFSM">
-        <state name="Sending"/>
+      <state name="Sending"/>
     </state_machine>
   </protocol_behavior>
 </service_def>

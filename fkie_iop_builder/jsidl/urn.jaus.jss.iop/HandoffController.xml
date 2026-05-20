@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="HandoffController" id="urn:jaus:jss:iop:HandoffController" version="2.0"
+	xmlns="urn:jaus:jsidl:1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">The Handoff Controller service runs on an entity such as an OCU that support handing off control.</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="Transport" id="urn:jaus:jss:core:Transport" version="1.1"/>
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="messages" id="urn:jaus:jss:iop:MessageSet:HandoffControllerSet" version="2.0"/>
+		<declared_type_set_ref name="eacMessages" id="urn:jaus:jss:iop:MessageSet:EnhancedAccessControlSet" version="2.0"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="RequestReleaseControl" declared_type_ref="messages.RequestReleaseControl"/>
+			<declared_message_def name="RemoveRequestReleaseControl" declared_type_ref="messages.RemoveRequestReleaseControl"/>
+			<declared_message_def name="ConfirmHandoffRequest" declared_type_ref="eacMessages.ConfirmHandoffRequest"/>
+			<declared_message_def name="ReportHandoffDecisionTimeout" declared_type_ref="eacMessages.ReportHandoffDecisionTimeout"/>
+			<declared_message_def name="ReportHandoffRequestTimeout" declared_type_ref="eacMessages.ReportHandoffRequestTimeout"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="ConfirmReleaseControl" declared_type_ref="messages.ConfirmReleaseControl"/>
+			<declared_message_def name="RequestHandoff" declared_type_ref="eacMessages.RequestHandoff"/>
+			<declared_message_def name="QueryHandoffDecisionTimeout" declared_type_ref="eacMessages.QueryHandoffDecisionTimeout"/>
+			<declared_message_def name="QueryHandoffRequestTimeout" declared_type_ref="eacMessages.QueryHandoffRequestTimeout"/>
+			<declared_message_def name="RemoveHandoffRequest" declared_type_ref="eacMessages.RemoveHandoffRequest"/>
+		</output_set>
+	</message_set>
+	<internal_events_set>
+		<!-- <event_def name="HandoffDecisionMade">
+			<description>Occurs when a decision on requested handoffs has been made.</description>
+			<header name="Header" />
+			<body name="Body">
+				<record name="ReleaseControlRec" optional="false">
+					<fixed_field name="ID" optional="false" field_units="one" field_type="unsigned byte" interpretation="Matches the ID from a RequestReleaseControlRec in the RequestReleaseControl message."/>
+					<fixed_field name="ResponseCode" optional="false" field_units="one" field_type="unsigned byte">
+						<value_set offset_to_lower_limit="false">
+							<value_enum enum_index="0" enum_const="GRANTED"/>
+							<value_enum enum_index="1" enum_const="DENIED"/>
+							<value_enum enum_index="2" enum_const="WAIT"/>
+							<value_enum enum_index="3" enum_const="REMOVED"/>
+						</value_set>
+					</fixed_field>
+				</record>
+			</body>
+			<footer name="Footer" />
+		</event_def> -->
+	</internal_events_set>
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="transport.ReceiveFSM" state_name="Receiving" interpretation="Extending ReceiveFSM from base."/>
+		<state_machine name="transport.ReceiveFSM" interpretation="redefine state in order to extend">
+			<state name="Receiving">
+				<default_state>
+					<transition name="transport.Receive">
+						<parameter type="RequestReleaseControl" value="msg" interpretation="enveloped Request Release Control message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<internal/>
+						<action name="processHandoffRequest" interpretation="Process the handoff request, determining if it should be denied, accepted, or delayed.  This may involve displaying to the human operator all handoff requests so he can make his decision(s).  This could also mean 'convey for processing' in the case that a non-human operator is responding to the hand-off request.">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+
+					<transition name="transport.Receive">
+						<parameter type="RemoveRequestReleaseControl" value="msg" interpretation="enveloped Remove Request Release Control message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<internal/>
+						<action name="removeRequestAndSendConfirmReleaseControl" interpretation="Send a ConfirmReleaseControl message to requesting client">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+
+					<transition name="transport.Receive">
+						<parameter type="ConfirmHandoffRequest" value="msg" interpretation="enveloped ConfirmHandoffRequest message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processConfirmHandoffRequest" interpretation="Process the ConfirmHandoffRequest">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+
+					<transition name="transport.Receive">
+						<parameter type="ReportHandoffDecisionTimeout" value="msg" interpretation="enveloped ReportHandoffDecisionTimeout message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processReportHandoffDecisionTimeout" interpretation="Process the ReportHandoffDecisionTimeout">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+
+					<transition name="transport.Receive">
+						<parameter type="ReportHandoffRequestTimeout" value="msg" interpretation="enveloped ReportHandoffRequestTimeout message"/>
+						<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
+						<simple/>
+						<action name="processReportHandoffRequestTimeout" interpretation="Process the ReportHandoffRequestTimeout">
+							<argument value="msg"/>
+							<argument value="transportData"/>
+						</action>
+					</transition>
+					<!-- <transition name="HandoffDecisionMade">
+						<parameter type="HandoffDecisionMade.Body.ReleaseControlRec.ID" value="ID" interpretation="Matches the ID from a RequestReleaseControlRec in the RequestReleaseControl message."/>
+						<parameter type="HandoffDecisionMade.Body.ReleaseControlRec.ResponseCode" value="response" interpretation="The response to the handoff request identified by ID"/>
+						<internal/>
+						<action name="sendConfirmReleaseControl" interpretation="Send a ConfirmReleaseControl message to requesting client">
+							<argument value="ID"/>
+							<argument value="response"/>
+						</action>
+					</transition> -->
+				</default_state>
+			</state>			<!--Receiving-->
+		</state_machine>
+	</protocol_behavior>
+</service_def>
