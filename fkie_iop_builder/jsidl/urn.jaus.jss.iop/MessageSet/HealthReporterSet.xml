@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declared_type_set name="HealthReporterSet" id="urn:jaus:jss:iop:MessageSet:HealthReporterSet" version="1.5"
+	xmlns="urn:jaus:jsidl:1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus">
+
+	<message_def name="QueryHealthDetails" message_id="ED01" is_command="false">
+		<description xml:space="preserve">QueryHealthDetails in used to request the most recent health status for each Service provide by each component that the Health Reporter is responsible for.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="UpdateHealthReporter" message_id="DD01" is_command="true">
+		<description xml:space="preserve">This message is used to request Health Reporter initiation of commanded built-in-test (CBIT) for each Component the Health Reporter is responsible for.  Receipt of the UpdateHealthReporter causes the receiving HealthReporter to perform CBIT, the results of the test are returned via a subsequent ReportHealthDetails message, which provides the per-service heatlh status details.  A summarized health status report is available via ReportHealthSummary.  It is expected that if an UpdateHealthReporter request is pending, additional requests will neither queue an additional update nor interrupt an update in progress.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryHealthSummary" message_id="ED02" is_command="false">
+		<description xml:space="preserve">QueryHealthSummary is used to request a summary of the status of each Component that the Health Reporter is responsible for.  The health summary provides a list of (ComponentID, severityCode), in which a severity of zero represents operational status.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryHourMeter" message_id="ED03" is_command="false">
+		<description xml:space="preserve">QueryHourMeter is used to request a report providing cumulative operational inutes for the location hosting the HealthReporter service.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryReminderSummary" message_id="ED04" is_command="false">
+		<description xml:space="preserve">QueryReminderSummary is used to request a report providing the status of each configured maintenance reminder associated with the HealthReporter's location.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body" />
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="ResetReminder" message_id="DD05" is_command="true">
+		<description xml:space="preserve">ResetReminder causes the maintenance reminder specified by ReminderID to be reset (sets the ReminderValue to zero).</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ReminderIDRec" optional="false">
+				<fixed_field name="ReminderID" optional="false" field_units="one" field_type="unsigned byte" interpretation="Unique ID for each maintenance reminder. Range [0..15]">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="15" upper_limit_type="inclusive" />
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="QueryReminder" message_id="ED05" is_command="false">
+		<description xml:space="preserve">QueryReminder requests a detailed report of parameters and status of the reminder specified by the query's ReminderID field.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ReminderIDRec" optional="false">
+				<fixed_field name="ReminderID" optional="false" field_units="one" field_type="unsigned byte" interpretation="Unique ID for each maintenance reminder. Range [0..15]">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="15" upper_limit_type="inclusive" />
+					</value_set>
+				</fixed_field>
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+	<message_def name="ReportHealthDetails" message_id="FD01" is_command="false">
+		<description xml:space="preserve">ReportHealthDetails provides a report of the most recent health status for all Services provide by each Component the HealthReporter is responsible for.  The report is constituted as a nested list.  A list of Components contains, for each Component, a list of status records for each Service provided.  Errors not local to a specific service (e.g., general hardware faults of the node) are to be reported in the HealthReporter component's list, as Health Reporter errors.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<list name="DetailedStatusList" optional="false">
+				<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte" />
+				<sequence name="DetailedSequence" optional="false">
+					<record name="ComponentRec" optional="false">
+						<fixed_field name="ComponentID" optional="false" field_units="one" field_type="unsigned byte" interpretation="JAUS Component ID" />
+					</record>
+					<list name="ComponentStatusList" optional="false">
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte" />
+						<record name="HealthStatusRec" optional="false">
+							<variable_length_string name="service_urn" optional="false">
+								<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte" />
+							</variable_length_string>
+							<fixed_field name="severity" optional="false" field_units="one" field_type="unsigned byte">
+								<value_set offset_to_lower_limit="false">
+									<value_enum enum_index="0" enum_const="NONE" interpretation="This indicates that no error condition exists." />
+									<value_enum enum_index="1" enum_const="NOTIFICATION" interpretation="This indicates that information is provided that does not represent an error state" />
+									<value_enum enum_index="2" enum_const="ADVISORY" interpretation="An error condition is reported, but impact on operation and performance is minimal." />
+									<value_enum enum_index="3" enum_const="CAUTION" interpretation="An error condition is reported and expected to seriously compromise use of the reporting component or device.  This could also represent a potential hazard." />
+									<value_enum enum_index="4" enum_const="WARNING" interpretation="An error condition is reported with severity indicating component or device failure.  This could also represent a significant hazard." />
+								</value_set>
+							</fixed_field>
+							<fixed_field name="code" optional="false" field_units="one" field_type="unsigned byte">
+								<value_set offset_to_lower_limit="false">
+									<value_enum enum_index="0" enum_const="NONE" />
+									<value_enum enum_index="1" enum_const="PROCESSOR" />
+									<value_enum enum_index="2" enum_const="RAM" />
+									<value_enum enum_index="3" enum_const="ROM" />
+									<value_enum enum_index="4" enum_const="FILESYS" />
+									<value_enum enum_index="5" enum_const="POWER" />
+									<value_enum enum_index="6" enum_const="SENSOR" />
+									<value_enum enum_index="7" enum_const="ACTUATOR" />
+									<value_enum enum_index="8" enum_const="SOFTWARE" />
+									<value_range lower_limit="9" lower_limit_type="inclusive" upper_limit="15" upper_limit_type="inclusive" interpretation="Reserved for future IOP use" />
+									<value_range lower_limit="16" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific codes" />
+								</value_set>
+							</fixed_field>
+							<bit_field name="Logtime" optional="false" field_type_unsigned="unsigned integer">
+								<sub_field name="milliseconds">
+									<bit_range from_index="0" to_index="9" interpretation="milliseconds" />
+									<value_set offset_to_lower_limit="false">
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="999" upper_limit_type="inclusive" />
+									</value_set>
+								</sub_field>
+								<sub_field name="seconds">
+									<bit_range from_index="10" to_index="15" interpretation="seconds" />
+									<value_set offset_to_lower_limit="false">
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="59" upper_limit_type="inclusive" />
+									</value_set>
+								</sub_field>
+								<sub_field name="minute">
+									<bit_range from_index="16" to_index="21" interpretation="minute" />
+									<value_set offset_to_lower_limit="false">
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="59" upper_limit_type="inclusive" />
+									</value_set>
+								</sub_field>
+								<sub_field name="hour">
+									<bit_range from_index="22" to_index="26" interpretation="hour" />
+									<value_set offset_to_lower_limit="false">
+										<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="23" upper_limit_type="inclusive" />
+									</value_set>
+								</sub_field>
+								<sub_field name="day">
+									<bit_range from_index="27" to_index="31" interpretation="day" />
+									<value_set offset_to_lower_limit="false">
+										<value_range lower_limit="1" lower_limit_type="inclusive" upper_limit="31" upper_limit_type="inclusive" />
+									</value_set>
+								</sub_field>
+							</bit_field>
+							<variable_length_string name="descriptor" optional="false">
+								<count_field min_count="0" max_count="64" field_type_unsigned="unsigned byte" />
+							</variable_length_string>
+						</record>
+					</list>
+				</sequence>
+			</list>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="ReportHealthSummary" message_id="FD02" is_command="false">
+		<description xml:space="preserve">ReportHealthSummary provides a list of (ComponentID, severityCode) for each Component.  A zero-valued severity code indicates normal operation of the Component; otherwise the severity code reported for a Component will be the highest severity code by any Service provided by that Component.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<list name="SummaryStatusList" optional="false">
+				<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte" />
+				<sequence name="SummarySequence" optional="false">
+					<record name="ComponentRec" optional="false">
+						<fixed_field name="ComponentID" optional="false" field_units="one" field_type="unsigned byte" interpretation="JAUS Component ID">
+							<value_set offset_to_lower_limit="false">
+								<value_range lower_limit="1" lower_limit_type="inclusive" upper_limit="254" upper_limit_type="inclusive" />
+							</value_set>
+						</fixed_field>
+					</record>
+					<record name="SeverityRec" optional="false">
+						<fixed_field name="severity" optional="false" field_units="one" field_type="unsigned byte">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="NONE" interpretation="This indicates that no error condition exists." />
+								<value_enum enum_index="1" enum_const="NOTIFICATION" interpretation="This indicates that information is provided that does not represent an error state" />
+								<value_enum enum_index="2" enum_const="ADVISORY" interpretation="An error condition is reported, but impact on operation and performance is minimal." />
+								<value_enum enum_index="3" enum_const="CAUTION" interpretation="An error condition is reported and expected to seriously compromise use of the reporting component or device.  This could also represent a potential hazard." />
+								<value_enum enum_index="4" enum_const="WARNING" interpretation="An error condition is reported with severity indicating component or device failure.  This could also represent a significant hazard." />
+							</value_set>
+						</fixed_field>
+					</record>
+				</sequence>
+			</list>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="ReportHourMeter" message_id="FD03" is_command="false">
+		<description xml:space="preserve">ReportHourMeter provides cumulative operation (powered-on) minutes for the node or component hosting the HealthReporter.</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="HourMeterRec" optional="false">
+				<fixed_field name="ElapsedMinutes" optional="false" field_units="minute" field_type="unsigned integer" interpretation="Operational (powered-on) minutes for CM" />
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="ReportReminderSummary" message_id="FD04" is_command="false">
+		<description xml:space="preserve">ReportReminderSummary provides a simple status report for each maintenance reminder.  Each reminder configured is represented by a record containing its reminder ID and a binary status (expired/non-expired).</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<list name="ReminderSummaryList" optional="false">
+				<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte" />
+				<record name="ReminderSummaryRec" optional="false">
+					<fixed_field name="ReminderID" optional="false" field_units="one" field_type="unsigned byte" interpretation="Unique ID for each maintenance reminder. Range [0..15]">
+						<value_set offset_to_lower_limit="false">
+							<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="15" upper_limit_type="inclusive" />
+						</value_set>
+					</fixed_field>
+					<fixed_field name="ReminderStatus" optional="false" field_units="one" field_type="unsigned byte">
+						<value_set offset_to_lower_limit="false">
+							<value_enum enum_index="0" enum_const="NotExpired" />
+							<value_enum enum_index="1" enum_const="Expired" />
+						</value_set>
+					</fixed_field>
+				</record>
+			</list>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+	<message_def name="ReportReminder" message_id="FD05" is_command="false">
+		<description xml:space="preserve">ReportReminder conveys a reprot of status and configuration for the maintenance reminder specified by ReminderID.  Configuration information includes the ReminderID, a human-readable string identifying the reminder and its purpose, and the reminders service interval.  Status includes a Boolean indicating whether the reminder has been asserted (service interval reached) and the current elapsed (power-on) time since the reminder was last reset (serviced).</description>
+		<header name="JAUSApplicationLayerHeader">
+			<record name="HeaderRec" optional="false">
+				<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer" />
+			</record>
+		</header>
+		<body name="Body">
+			<record name="ReminderRec" optional="false">
+				<fixed_field name="ReminderID" optional="false" field_units="one" field_type="unsigned byte" interpretation="Unique ID for each maintenance reminder. Range [0..15]. If the requested ReminderID is not configured, set Bit 7 of the ReminderID field in this message.">
+					<value_set offset_to_lower_limit="false">
+						<value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="15" upper_limit_type="inclusive" />
+						<value_range lower_limit="128" lower_limit_type="inclusive" upper_limit="143" upper_limit_type="inclusive"/>
+					</value_set>
+				</fixed_field>
+				<fixed_field name="ReminderStatus" optional="false" field_units="one" field_type="unsigned byte">
+					<value_set offset_to_lower_limit="false">
+						<value_enum enum_index="0" enum_const="NotExpired" />
+						<value_enum enum_index="1" enum_const="Expired" />
+					</value_set>
+				</fixed_field>
+				<variable_length_string name="descriptor" optional="false" interpretation="Human-readable string describing the maintenance reminder associated with ReminderID.">
+					<count_field min_count="0" max_count="64" field_type_unsigned="unsigned byte" />
+				</variable_length_string>
+				<fixed_field name="ServiceInterval" optional="false" field_units="minute" field_type="unsigned integer" interpretation="Service reminder (duration) in minutes." />
+				<fixed_field name="ElapsedTime" optional="false" field_units="minute" field_type="unsigned integer" interpretation="Current elapsed CM powered-on time since last service interval reset." />
+			</record>
+		</body>
+		<footer name="Footer" />
+	</message_def>
+
+</declared_type_set>
+

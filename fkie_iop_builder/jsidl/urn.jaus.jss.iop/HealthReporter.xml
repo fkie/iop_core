@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<service_def name="HealthReporter" id="urn:jaus:jss:iop:HealthReporter" version="1.5"
+	xmlns="urn:jaus:jsidl:1.1"
+	xmlns:ns2="urn:jaus:jsidl:plus">
+	<description xml:space="preserve">The Health Reporter service implementation initiates built-in test (BIT) operations at Power-On (PBIT), and subsets of built-in-test in the background during runtime (RBIT) and when requested via command message (CBIT). The Health Reporter implementation should maintain the most current BIT results, and provide reports of BIT results. The Health Reporter should provide maintenance reminder timers as well, with support for up to 16 maintenance timers per Health Reporter instance.</description>
+	<assumptions xml:space="preserve">Messages may be delayed, lost, or reordered.</assumptions>
+	<references>
+		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.1" />
+	</references>
+	<declared_type_set name="Types">
+		<declared_type_set_ref name="messages" id="urn:jaus:jss:iop:MessageSet:HealthReporterSet" version="1.5"/>
+	</declared_type_set>
+	<message_set>
+		<input_set>
+			<declared_message_def name="QueryHealthDetails" declared_type_ref="messages.QueryHealthDetails"/>
+			<declared_message_def name="UpdateHealthReporter" declared_type_ref="messages.UpdateHealthReporter"/>
+			<declared_message_def name="QueryHealthSummary" declared_type_ref="messages.QueryHealthSummary"/>
+			<declared_message_def name="QueryHourMeter" declared_type_ref="messages.QueryHourMeter"/>
+			<declared_message_def name="QueryReminderSummary" declared_type_ref="messages.QueryReminderSummary"/>
+			<declared_message_def name="ResetReminder" declared_type_ref="messages.ResetReminder"/>
+			<declared_message_def name="QueryReminder" declared_type_ref="messages.QueryReminder"/>
+		</input_set>
+		<output_set>
+			<declared_message_def name="ReportHealthDetails" declared_type_ref="messages.ReportHealthDetails"/>
+			<declared_message_def name="ReportHealthSummary" declared_type_ref="messages.ReportHealthSummary"/>
+			<declared_message_def name="ReportHourMeter" declared_type_ref="messages.ReportHourMeter"/>
+			<declared_message_def name="ReportReminderSummary" declared_type_ref="messages.ReportReminderSummary"/>
+			<declared_message_def name="ReportReminder" declared_type_ref="messages.ReportReminder"/>
+		</output_set>
+	</message_set>
+	<internal_events_set />
+	<protocol_behavior is_stateless="false">
+		<start state_machine_name="accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled" />
+		<state_machine name="accessControl.events.transport.ReceiveFSM" interpretation="Extending ReceiveFSM from base">
+			<state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+				<state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
+					<state name="NotControlled">
+						<default_state>
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHealthDetails" value="msg" interpretation="enveloped Query Health Details message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHealthDetails" interpretation="Send a ReportHealthDetails message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHealthSummary" value="msg" interpretation="enveloped Query Health Summary message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHealthSummary" interpretation="Send a ReportHealthSummary message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHourMeter" value="msg" interpretation="enveloped Query Hour Meter message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHourMeter" interpretation="Send a ReportHourMeter message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryReminderSummary" value="msg" interpretation="enveloped Query Reminder Summary message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportReminderSummary" interpretation="Send a ReportReminderSummary message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryReminder" value="msg" interpretation="enveloped Query Reminder message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportReminder" interpretation="Send a ReportReminder message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+						</default_state>
+					</state>
+					<state name="Controlled">
+						<default_state>
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHealthDetails" value="msg" interpretation="enveloped Query Health Details message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHealthDetails" interpretation="Send a ReportHealthDetails message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHealthSummary" value="msg" interpretation="enveloped Query Health Summary message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHealthSummary" interpretation="Send a ReportHealthSummary message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryHourMeter" value="msg" interpretation="enveloped Query Hour Meter message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportHourMeter" interpretation="Send a ReportHourMeter message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryReminderSummary" value="msg" interpretation="enveloped Query Reminder Summary message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportReminderSummary" interpretation="Send a ReportReminderSummary message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="QueryReminder" value="msg" interpretation="enveloped Query Reminder message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<internal/>
+								<action name="sendReportReminder" interpretation="Send a ReportReminder message">
+									<argument value="msg" />
+									<argument value="transportData" />
+								</action>
+							</transition>
+
+							<!-- B -->
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="UpdateHealthReporter" value="msg" interpretation="enveloped Update Health Reporter message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<guard condition="isControllingClient( transportData )" interpretation="True if requestor currently holds access control of the Component enclosing the Service." />
+								<internal/>
+								<action name="updateHealthReporterAction" interpretation="Initiate command built-in test (CBIT) non-destructive tests, and store results for subsequent reporting via ReportHealthSummary and ReportHealthDetails."></action>
+							</transition>
+
+							<transition name="accessControl.events.transport.Receive">
+								<parameter type="ResetReminder" value="msg" interpretation="enveloped Reset Reminder message" />
+								<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
+								<guard condition="isControllingClient( transportData )" interpretation="True if requestor currently holds access control of the Component enclosing the Service." />
+								<internal/>
+								<action name="resetReminderAction" interpretation="Reset the Reminder whose ID was specified in the ResetReminder message.">
+									<argument value="msg" />
+								</action>
+							</transition>
+						</default_state>
+					</state>
+				</state>
+			</state>
+		</state_machine>
+	</protocol_behavior>
+</service_def>
