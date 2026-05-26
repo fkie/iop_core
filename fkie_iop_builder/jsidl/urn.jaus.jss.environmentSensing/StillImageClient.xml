@@ -18,6 +18,7 @@
 	<message_set>
 		<input_set>
 			<declared_message_def name="ReportStillImageData" declared_type_ref="messages.ReportStillImageData"/>
+			<declared_message_def name="ReportStillImageDataExt" declared_type_ref="messages.ReportStillImageDataExt"/>
 			<declared_message_def name="ReportStillImageSensorConfiguration" declared_type_ref="messages.ReportStillImageSensorConfiguration"/>
 			<declared_message_def name="ReportStillImageSensorCapabilities" declared_type_ref="messages.ReportStillImageSensorCapabilities"/>
 		</input_set>
