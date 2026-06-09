@@ -1,4 +1,4 @@
-name: ros2
+name: ros2_iop6
 
 on: [push, pull_request]
 
