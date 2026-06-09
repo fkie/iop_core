@@ -6,23 +6,21 @@
   <assumptions>Messages may be delayed, lost or reordered.</assumptions>
   <references>
     <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+    <client_of name="GlobalPoseSensor" id="urn:jaus:jss:mobility:GlobalPoseSensor" version="1.1" />
   </references>
-  <declared_type_set name="Types">
-    <declared_type_set_ref name="messages" id="urn:jaus:jss:mobility:MessageSet:GlobalPoseSensorSet" version="1.1"/>
-  </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="ReportGlobalPose" declared_type_ref="messages.ReportGlobalPose"/>
-      <declared_message_def name="ReportGlobalPoseExt" declared_type_ref="messages.ReportGlobalPoseExt"/>
-      <declared_message_def name="ReportGeomagneticProperty" declared_type_ref="messages.ReportGeomagneticProperty"/>
+      <declared_message_def name="ReportGlobalPose" declared_type_ref="GlobalPoseSensor.ReportGlobalPose"/>
+      <declared_message_def name="ReportGlobalPoseExt" declared_type_ref="GlobalPoseSensor.ReportGlobalPoseExt"/>
+      <declared_message_def name="ReportGeomagneticProperty" declared_type_ref="GlobalPoseSensor.ReportGeomagneticProperty"/>
     </input_set>
     <output_set>
-      <declared_message_def name="SetGlobalPose" declared_type_ref="messages.SetGlobalPose"/>
-      <declared_message_def name="SetGlobalPoseExt" declared_type_ref="messages.SetGlobalPoseExt"/>
-      <declared_message_def name="SetGeomagneticProperty" declared_type_ref="messages.SetGeomagneticProperty"/>
-      <declared_message_def name="QueryGlobalPose" declared_type_ref="messages.QueryGlobalPose"/>
-      <declared_message_def name="QueryGlobalPoseExt" declared_type_ref="messages.QueryGlobalPoseExt"/>
-      <declared_message_def name="QueryGeomagneticProperty" declared_type_ref="messages.QueryGeomagneticProperty"/>
+      <declared_message_def name="SetGlobalPose" declared_type_ref="GlobalPoseSensor.SetGlobalPose"/>
+      <declared_message_def name="SetGlobalPoseExt" declared_type_ref="GlobalPoseSensor.SetGlobalPoseExt"/>
+      <declared_message_def name="SetGeomagneticProperty" declared_type_ref="GlobalPoseSensor.SetGeomagneticProperty"/>
+      <declared_message_def name="QueryGlobalPose" declared_type_ref="GlobalPoseSensor.QueryGlobalPose"/>
+      <declared_message_def name="QueryGlobalPoseExt" declared_type_ref="GlobalPoseSensor.QueryGlobalPoseExt"/>
+      <declared_message_def name="QueryGeomagneticProperty" declared_type_ref="GlobalPoseSensor.QueryGeomagneticProperty"/>
     </output_set>
   </message_set>
   <internal_events_set/>

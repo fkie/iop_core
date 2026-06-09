@@ -1,100 +1,124 @@
-<?xml version="1.0" encoding="UTF-8"?> <?oxygen RNGSchema="../jsidl/iop_service_interface_definition_language.rnc" type="compact"?>
-<service_def name="PrimitivePanTilt" id="urn:jaus:jss:manipulator:PrimitivePanTilt"
-  version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1" >
+<?xml version="1.1" encoding="UTF-8"?>
+<service_def name="PrimitivePanTilt" id="urn:jaus:jss:manipulator:PrimitivePanTilt" version="2.0"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
   <description xml:space="preserve">
-  	The Primitive Pan Tilt Service is the low level interface to a pan tilt mechanism.  The Report Pan Tilt Specification Message returns the 
-    minimum and maximum allowable value and the maximum velocity for each of the two joints as well as the position and orientation of the pan 
-    tilt base coordinate system relative to the vehicle coordinate system.  Motion of the pan tilt mechanism is accomplished via the 
-    Set Pan Tilt Joint Effort message.  In this message, each actuator is commanded to move with a percentage of maximum effort.
+  	The Primitive Pan Tilt Service is the low level interface to a pan tilt mechanism.  
+  	Motion of the pan tilt mechanism is accomplished via the Set Pan Tilt Joint Effort 
+  	message.  In this message, each actuator is commanded to move with a percentage of 
+  	maximum effort.  To ensure backward compatibility with 1.0 implementations of this 
+  	service, it is recommended that this service be co-located on the same component 
+  	as a Pan Tilt Specification Service.  
   </description>
-  <assumptions>
-    Messages may be delayed, lost, or reordered.
-  </assumptions>
+  <assumptions> Messages may be delayed, lost, or reordered. </assumptions>
   <references>
-    <inherits_from name="management" id="urn:jaus:jss:core:Management" version="1.0" />
+    <inherits_from name="management" id="urn:jaus:jss:core:Management" version="1.1"/>
   </references>
-  <declared_type_set name="types">
-    <declared_type_set_ref name="manipulator" id="urn:jaus:jss:manipulator:MessageSet" version="1.0" />
-  </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="QueryPanTiltSpecifications" declared_type_ref="manipulator.queryClass.QueryPanTiltSpecifications" />
-      <declared_message_def name="QueryPanTiltJointEffort" declared_type_ref="manipulator.queryClass.QueryPanTiltJointEffort" />
-      <declared_message_def name="SetPanTiltJointEffort" declared_type_ref="manipulator.commandClass.SetPanTiltJointEffort" />
+      <message_def name="QueryPanTiltJointEffort" message_id="2621" is_command="false">
+        <description xml:space="preserve">This message shall cause the receiving service to reply to the requestor with a ID 4621h: ReportPanTiltJointEffort message.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body"/>
+        <footer name="Footer"/>
+      </message_def>
+      <message_def name="SetPanTiltJointEffort" message_id="0621" is_command="true">
+        <description xml:space="preserve">This message is used to control the two joint actuators for a pan tilt mechanism in an open loop fashion. The command states the percentage level of effort that each actuator should exercise in order to move its corresponding joint.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <record name="PanTiltJointEffortRec" optional="false">
+            <fixed_field name="Joint1Effort" optional="false" interpretation="Percent of maximum" field_type="unsigned short integer" field_units="one">
+              <scale_range real_lower_limit="-100" real_upper_limit="100" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Joint2Effort" optional="false" interpretation="Percent of Maximum" field_type="unsigned short integer" field_units="one">
+              <scale_range real_lower_limit="-100" real_upper_limit="100" integer_function="round"/>
+            </fixed_field>
+          </record>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
     </input_set>
     <output_set>
-      <declared_message_def name="ReportPanTiltSpecifications" declared_type_ref="manipulator.informClass.ReportPanTiltSpecifications" />
-      <declared_message_def name="ReportPanTiltJointEffort" declared_type_ref="manipulator.informClass.ReportPanTiltJointEffort" />
+      <message_def name="ReportPanTiltJointEffort" message_id="4621" is_command="false">
+        <description xml:space="preserve">This message is used to provide the receiver the percent effort that is currently being applied to the two joints of the pan tilt mechanism.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <record name="PanTiltJointEffortRec" optional="false">
+            <fixed_field name="Joint1Effort" optional="false" interpretation="Percent of maximum" field_type="unsigned short integer" field_units="one">
+              <scale_range real_lower_limit="-100" real_upper_limit="100" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Joint2Effort" optional="false" interpretation="Percent of Maximum" field_type="unsigned short integer" field_units="one">
+              <scale_range real_lower_limit="-100" real_upper_limit="100" integer_function="round"/>
+            </fixed_field>
+          </record>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
     </output_set>
   </message_set>
-  <internal_events_set />
+  <internal_events_set/>
   <protocol_behavior is_stateless="false">
-    <start state_machine_name="management.accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled.StateA" />
+    <start state_machine_name="management.accessControl.events.transport.ReceiveFSM" state_name="Receiving.Ready.NotControlled"/>
     <state_machine name="management.accessControl.events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready" initial_state="NotControlled" interpretation="redefine state in order to extend">
-          <state name="NotControlled" initial_state="StateA" interpretation="redefine state in order to extend">
-            <state name="StateA" initial_state="Init">
-              <default_state>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryPanTiltSpecifications" value="msg"
-                    interpretation="enveloped query Pan Tilt specifications message" />
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
-                  <simple />
-                  <action name="management.accessControl.events.transport.Send" interpretation="Send a report Pan Tilt specifications message">
-                    <argument value=" 'ReportPanTiltSpecifications' " />
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryPanTiltJointEffort" value="msg" interpretation="enveloped query Pan Tilt joint efforts message" />
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
-                  <simple />
-                  <action name="management.accessControl.events.transport.Send" interpretation="Send a report Pan Tilt joint efforts message">
-                    <argument value=" 'ReportPanTiltJointEffort' " />
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
-            </state>
+          <state name="NotControlled" initial_state="Standby">
+            <state name="Standby"/>
+
+            <default_state>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryPanTiltJointEffort" value="msg" interpretation="enveloped query Pan Tilt joint efforts message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportPanTiltJointEffort" interpretation="Send a report Pan Tilt joint efforts message">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+            </default_state>
+
           </state>
-          <state name="Controlled" interpretation="redefine state in order to extend">
-            <state name="StateB" initial_state="Standby">
-              <state name="Ready">
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="SetPanTiltJointEffort" value="msg" interpretation="enveloped set Pan Tilt joint efforts message" />
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
-                  <guard condition="management.accessControl.isControllingClient(transportData)"
-                    interpretation="True if the message that triggered the transition is received from the client that is in control of this service" />
-                  <simple />
-                  <action name="setPanTiltJointEffort"
-                    interpretation="Set the joint motion efforts for the two joints of the pan tilt mechanism">
-                    <argument value="msg" />
-                  </action>
-                </transition>
-              </state>
-              <default_state>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryPanTiltSpecifications" value="msg"
-                    interpretation="enveloped query Pan Tilt specifications message" />
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
-                  <simple />
-                  <action name="management.accessControl.events.transport.Send" interpretation="Send a report Pan Tilt specifications message">
-                    <argument value=" 'ReportPanTiltSpecifications' " />
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-                <transition name="management.accessControl.events.transport.Receive">
-                  <parameter type="QueryPanTiltJointEffort" value="msg" interpretation="enveloped query Pan Tilt joint efforts message" />
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data" />
-                  <simple />
-                  <action name="management.accessControl.events.transport.Send" interpretation="Send a report Pan Tilt joint efforts message">
-                    <argument value=" 'ReportPanTiltJointEffort' " />
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
+          <state name="Controlled" initial_state="Standby" interpretation="redefine state in order to extend">
+            <exit>
+              <action name="stopMotion" interpretation="Stop motion of the pan tilt unit."/>
+            </exit>
+            <state name="Standby"/>
+            <state name="Ready">
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="SetPanTiltJointEffort" value="msg" interpretation="enveloped set Pan Tilt joint efforts message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <guard condition="management.accessControl.isControllingClient(transportData)" interpretation="True if the message that triggered the transition is 
+                    received from the client that is in control of this service"/>
+                <internal/>
+                <action name="setPanTiltJointEffort" interpretation="Set the joint motion efforts for the two joints of the 
+                    pan tilt mechanism">
+                  <argument value="msg"/>
+                </action>
+              </transition>
             </state>
+            <default_state>
+              <transition name="management.accessControl.events.transport.Receive">
+                <parameter type="QueryPanTiltJointEffort" value="msg" interpretation="enveloped query Pan Tilt joint efforts message"/>
+                <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+                <internal/>
+                <action name="sendReportPanTiltJointEffort" interpretation="Send a report Pan Tilt joint efforts message">
+                  <argument value="msg"/>
+                  <argument value="transportData"/>
+                </action>
+              </transition>
+            </default_state>
           </state>
         </state>
       </state>

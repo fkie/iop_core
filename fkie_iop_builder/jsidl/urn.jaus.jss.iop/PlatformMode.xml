@@ -7,23 +7,236 @@
 	<references>
 		<inherits_from name="AccessControl" id="urn:jaus:jss:core:AccessControl" version="1.1"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:iop:MessageSet:PlatformModeSet" version="1.2"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="SetPlatformMode" declared_type_ref="messages.SetPlatformMode"/>
-			<declared_message_def name="QueryPlatformMode" declared_type_ref="messages.QueryPlatformMode"/>
-			<declared_message_def name="QuerySupportedPlatformModes" declared_type_ref="messages.QuerySupportedPlatformModes"/>
-			<declared_message_def name="QuerySupportedPlatformModesExt" declared_type_ref="messages.QuerySupportedPlatformModesExt"/>
-			<declared_message_def name="QueryAllowedPlatformModeTransitions" declared_type_ref="messages.QueryAllowedPlatformModeTransitions"/>
+			<message_def name="SetPlatformMode" message_id="FF20" is_command="true">
+				<description xml:space="preserve">Sets the platform mode.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<record name="PlatformModeRec" optional="false">
+						<fixed_field name="PlatformMode" optional="false" field_units="one" field_type="unsigned byte">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Standard_Operating"/>
+								<value_enum enum_index="1" enum_const="Training"/>
+								<value_enum enum_index="2" enum_const="Maintenance"/>
+								<value_enum enum_index="3" enum_const="LowPower"/>
+								<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+							</value_set>
+						</fixed_field>
+					</record>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="QueryPlatformMode" message_id="FF21" is_command="false">
+				<description xml:space="preserve">Causes the service to issue a ReportPlatformMode message.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body"/>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="QuerySupportedPlatformModes" message_id="FF22" is_command="false">
+				<description xml:space="preserve">Causes the service to issue a ReportSupportedPlatformModes message.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body"/>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="QuerySupportedPlatformModesExt" message_id="FF2B" is_command="false">
+				<description xml:space="preserve">Causes the service to issue a ReportSupportedPlatformModesExt message.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body"/>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="QueryAllowedPlatformModeTransitions" message_id="FF2D" is_command="false">
+				<description xml:space="preserve">Causes the service to issue a ReportAllowedPlatformModeTransitions message.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body"/>
+				<footer name="Footer"/>
+			</message_def>
 		</input_set>
 		<output_set>
-			<declared_message_def name="SetPlatformModeResponse" declared_type_ref="messages.SetPlatformModeResponse"/>
-			<declared_message_def name="ReportPlatformMode" declared_type_ref="messages.ReportPlatformMode"/>
-			<declared_message_def name="ReportSupportedPlatformModes" declared_type_ref="messages.ReportSupportedPlatformModes"/>
-			<declared_message_def name="ReportSupportedPlatformModesExt" declared_type_ref="messages.ReportSupportedPlatformModesExt"/>
-			<declared_message_def name="ReportAllowedPlatformModeTransitions" declared_type_ref="messages.ReportAllowedPlatformModeTransitions"/>
+			<message_def name="SetPlatformModeResponse" message_id="FF2A" is_command="false">
+				<description xml:space="preserve">
+                    Response to a SetPlatformMode request. If a transition request is denied,
+                    the implementation should specify if the transition is not supported or is 
+                    just currently unavailable due to the system state.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<record name="PlatformModeResponseRec" optional="false">
+						<fixed_field name="RequestedPlatformMode" optional="false" field_units="one" field_type="unsigned byte" interpretation="Requested platform mode to transition to">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Standard_Operating"/>
+								<value_enum enum_index="1" enum_const="Training"/>
+								<value_enum enum_index="2" enum_const="Maintenance"/>
+								<value_enum enum_index="3" enum_const="LowPower"/>
+								<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+							</value_set>
+						</fixed_field>
+						<fixed_field name="StartingPlatformMode" optional="false" field_units="one" field_type="unsigned byte" interpretation="Actual mode at the time the request was received">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Standard_Operating"/>
+								<value_enum enum_index="1" enum_const="Training"/>
+								<value_enum enum_index="2" enum_const="Maintenance"/>
+								<value_enum enum_index="3" enum_const="LowPower"/>
+								<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+							</value_set>
+						</fixed_field>
+						<fixed_field name="EndingPlatformMode" optional="false" field_units="one" field_type="unsigned byte" interpretation="Current mode. This is expected to be RequestedPlatformMode if the request was successful, and StartingPlatformMode if not.">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Standard_Operating"/>
+								<value_enum enum_index="1" enum_const="Training"/>
+								<value_enum enum_index="2" enum_const="Maintenance"/>
+								<value_enum enum_index="3" enum_const="LowPower"/>
+								<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+							</value_set>
+						</fixed_field>
+						<fixed_field name="SetPlatformModeResult" optional="false" field_units="one" field_type="unsigned byte">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Success"/>
+								<value_enum enum_index="1" enum_const="RequestedTransitionNotSupported"/>
+								<value_enum enum_index="2" enum_const="RequestedTransitionCurrentlyInvalid"/>
+							</value_set>
+						</fixed_field>
+					</record>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="ReportPlatformMode" message_id="FF23" is_command="false">
+				<description xml:space="preserve">Sent in response to a Query Platform Mode message.  Reports the current platform mode.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<record name="ReportPlatformModeRec" optional="false">
+						<fixed_field name="PlatformMode" optional="false" field_units="one" field_type="unsigned byte">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Standard_Operating"/>
+								<value_enum enum_index="1" enum_const="Training"/>
+								<value_enum enum_index="2" enum_const="Maintenance"/>
+								<value_enum enum_index="3" enum_const="LowPower"/>
+								<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+							</value_set>
+						</fixed_field>
+						<fixed_field name="Status" optional="false" field_units="one" field_type="unsigned byte">
+							<value_set offset_to_lower_limit="false">
+								<value_enum enum_index="0" enum_const="Initializing"/>
+								<value_enum enum_index="1" enum_const="Active"/>
+								<value_enum enum_index="2" enum_const="Exiting"/>
+							</value_set>
+						</fixed_field>
+					</record>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="ReportSupportedPlatformModes" message_id="FF24" is_command="false">
+				<description xml:space="preserve">Sent in response to a Query Supported Platform Modes message.  Reports the support platform modes.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<list name="SupportedPlatformModesList" optional="false">
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+						<record name="PlatformModeRec" optional="false">
+							<fixed_field name="PlatformMode" optional="false" field_units="one" field_type="unsigned byte">
+								<value_set offset_to_lower_limit="false">
+									<value_enum enum_index="0" enum_const="Standard_Operating"/>
+									<value_enum enum_index="1" enum_const="Training"/>
+									<value_enum enum_index="2" enum_const="Maintenance"/>
+									<value_enum enum_index="3" enum_const="LowPower"/>
+									<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+								</value_set>
+							</fixed_field>
+						</record>
+					</list>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="ReportSupportedPlatformModesExt" message_id="FF2C" is_command="false">
+				<description xml:space="preserve">Sent in response to a Query Supported Platform Modes Ext message.  Reports the support platform modes.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<list name="SupportedPlatformModesExtList" optional="false">
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+						<record name="PlatformModeExtRec" optional="false">
+							<presence_vector field_type_unsigned="unsigned byte"/>
+							<fixed_field name="PlatformMode" optional="false" field_units="one" field_type="unsigned byte">
+								<value_set offset_to_lower_limit="false">
+									<value_enum enum_index="0" enum_const="Standard_Operating"/>
+									<value_enum enum_index="1" enum_const="Training"/>
+									<value_enum enum_index="2" enum_const="Maintenance"/>
+									<value_enum enum_index="3" enum_const="LowPower"/>
+									<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+								</value_set>
+							</fixed_field>
+							<variable_length_string name="Name" optional="true" interpretation="Human readable name of the mode">
+								<count_field min_count="0" max_count="20" field_type_unsigned="unsigned byte"/>
+							</variable_length_string>
+							<variable_length_string name="Description" optional="true" interpretation="Human readable description of the mode">
+								<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+							</variable_length_string>
+						</record>
+					</list>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
+			<message_def name="ReportAllowedPlatformModeTransitions" message_id="FF2E" is_command="false">
+				<description xml:space="preserve">
+                    Sent in response to a Query Allowed Platform Mode Transitions message.  Reports the allowed transitions
+                    based on the current platform mode and system state. For example, some systems may generally
+                    allow a transition from Standard_Operating to Maintenance, but only when the platform velocity is zero.</description>
+				<header name="JAUSApplicationLayerHeader">
+					<record name="HeaderRec" optional="false">
+						<fixed_field name="MessageID" optional="false" field_units="one" field_type="unsigned short integer"/>
+					</record>
+				</header>
+				<body name="Body">
+					<list name="AllowedPlatformModeTransitionsList" optional="false">
+						<count_field min_count="0" max_count="255" field_type_unsigned="unsigned byte"/>
+						<record name="AllowedPlatformModeTransitionsRec" optional="false">
+							<fixed_field name="EndingPlatformMode" optional="false" field_units="one" field_type="unsigned byte">
+								<value_set offset_to_lower_limit="false">
+									<value_enum enum_index="0" enum_const="Standard_Operating"/>
+									<value_enum enum_index="1" enum_const="Training"/>
+									<value_enum enum_index="2" enum_const="Maintenance"/>
+									<value_enum enum_index="3" enum_const="LowPower"/>
+									<value_range lower_limit="175" lower_limit_type="inclusive" upper_limit="255" upper_limit_type="inclusive" interpretation="Reserved for program specific modes"/>
+								</value_set>
+							</fixed_field>
+						</record>
+					</list>
+				</body>
+				<footer name="Footer"/>
+			</message_def>
 		</output_set>
 	</message_set>
 	<internal_events_set/>

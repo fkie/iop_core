@@ -140,17 +140,18 @@ Component::~Component()
 
 void Component::p_connect_2_rte()
 {
-	RCLCPP_INFO(this->get_logger(), "Connect to JAUS nodeManager...");
+	RCLCPP_INFO(this->get_logger(), "Connect to JAUS nodeManager with JAUS ID %s...", p_own_address.str().c_str());
 	send_diagnostic(3, "Connecting to RTE");
 	this->jausRouter = new JTS::JausRouter(p_own_address, ieHandler, p_config_path);
 	while (rclcpp::ok() && ! jausRouter->isConnected()) {
 		sleep(1);
 		delete this->jausRouter;
 		send_diagnostic(2, "Timeout, connecting to RTE");
+		RCLCPP_INFO(this->get_logger(), "Reconnect to JAUS nodeManager with JAUS ID %s...", p_own_address.str().c_str());
 		this->jausRouter = new JTS::JausRouter(p_own_address, ieHandler, p_config_path);
 	}
 	if (rclcpp::ok() && jausRouter->isConnected()) {
-		RCLCPP_INFO(this->get_logger(), "JAUS ID: %d", this->jausRouter->getJausAddress()->get());
+		RCLCPP_INFO(this->get_logger(), "JAUS ID: %s", this->jausRouter->getJausAddress()->str().c_str());
 		send_diagnostic(3, "Load Plug-Ins");
 		load_plugins();
 		start_component();

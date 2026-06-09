@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service_def name="VelocityStateSensor" id="urn:jaus:jss:mobility:VelocityStateSensor" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+<service_def name="VelocityStateSensor" id="urn:jaus:jss:mobility:VelocityStateSensor" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
   <description>
     The Velocity State Sensor has the responsibility of reporting the instantaneous velocity of the platform.  
     The velocity state of a rigid body is defined as the set of parameters that are necessary to calculate 
@@ -20,40 +22,223 @@
   </description>
   <assumptions>Messages may be delayed, lost or reordered.</assumptions>
   <references>
-    <inherits_from name="events" id="urn:jaus:jss:core:Events" version="1.0"/>
+    <inherits_from name="events" id="urn:jaus:jss:core:Events" version="1.1"/>
   </references>
-  <declared_type_set name="Types">
-    <declared_type_set_ref name="mobility" id="urn:jaus:jss:mobility:MessageSet" version="1.0"/>
-  </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="QueryVelocityState" declared_type_ref="mobility.queryClass.QueryVelocityState"/>
+      <message_def name="QueryVelocityState" message_id="2404" is_command="false" deprecated="true">
+        <description xml:space="preserve">This message shall cause the receiving component to reply to the requestor with a ID 4404h: ReportVelocityState (Deprecated) message.  A logical AND shall be performed on the requested presence vector and that representing the available fields from the responder.  The resulting message shall contain the fields indicated by the result of this logical AND operation.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <record name="QueryVelocityStateRec" optional="false">
+            <fixed_field name="PresenceVector" optional="false" interpretation="See Report Velocity State Message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
+      <message_def name="QueryVelocityStateExt" message_id="24A4" is_command="false">
+        <description xml:space="preserve">This message shall cause the receiving component to reply to the requestor with a ID 44A4h: ReportVelocityStateExt message.  A logical AND shall be performed on the requested presence vector and that representing the available fields from the responder.  The resulting message shall contain the fields indicated by the result of this logical AND operation.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <record name="QueryVelocityStateExtRec" optional="false">
+            <fixed_field name="VelocityVarPresenceVector" optional="false" interpretation="Requested presence vector associated with the velocity variant" field_type="unsigned byte" field_units="one"/>
+            <fixed_field name="ReportVelocityStateExtRecPresenceVector" optional="false" interpretation="Requested presence vector associated with the ReportVelocityStateExtRec" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
     </input_set>
     <output_set>
-      <declared_message_def name="ReportVelocityState" declared_type_ref="mobility.informClass.ReportVelocityState"/>
+      <message_def name="ReportVelocityState" message_id="4404" is_command="false" deprecated="true">
+        <description xml:space="preserve">This message is used to provide the receiver the linear velocity and rotational rate of the platform.</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <record name="ReportVelocityStateRec" optional="false">
+            <presence_vector field_type_unsigned="unsigned short integer"/>
+            <fixed_field name="Velocity_X" optional="true" field_type="unsigned integer" field_units="meter per second">
+              <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Velocity_Y" optional="true" field_type="unsigned integer" field_units="meter per second">
+              <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Velocity_Z" optional="true" field_type="unsigned integer" field_units="meter per second">
+              <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Velocity_RMS" optional="true" interpretation="An RMS value indicating the validity of the velocity data." field_type="unsigned integer" field_units="meter per second">
+              <scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="RollRate" optional="true" field_type="unsigned short integer" field_units="radian per second">
+              <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="PitchRate" optional="true" field_type="unsigned short integer" field_units="radian per second">
+              <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="YawRate" optional="true" field_type="unsigned short integer" field_units="radian per second">
+              <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+            </fixed_field>
+            <fixed_field name="Rate_RMS" optional="true" interpretation="An RMS value indicating the validity of the rotational velocity data." field_type="unsigned short integer" field_units="radian per second">
+              <scale_range real_lower_limit="0" real_upper_limit="3.14159265358979323846" integer_function="round"/>
+            </fixed_field>
+            <bit_field name="TimeStamp" optional="true" field_type_unsigned="unsigned integer">
+              <sub_field name="Milliseconds">
+                <bit_range from_index="0" to_index="9"/>
+                <value_set offset_to_lower_limit="false">
+                  <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="999" upper_limit_type="inclusive"/>
+                </value_set>
+              </sub_field>
+              <sub_field name="Seconds">
+                <bit_range from_index="10" to_index="15"/>
+                <value_set offset_to_lower_limit="false">
+                  <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="59" upper_limit_type="inclusive"/>
+                </value_set>
+              </sub_field>
+              <sub_field name="Minutes">
+                <bit_range from_index="16" to_index="21"/>
+                <value_set offset_to_lower_limit="false">
+                  <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="59" upper_limit_type="inclusive"/>
+                </value_set>
+              </sub_field>
+              <sub_field name="Hour">
+                <bit_range from_index="22" to_index="26"/>
+                <value_set offset_to_lower_limit="false">
+                  <value_range lower_limit="0" lower_limit_type="inclusive" upper_limit="23" upper_limit_type="inclusive"/>
+                </value_set>
+              </sub_field>
+              <sub_field name="Day">
+                <bit_range from_index="27" to_index="31"/>
+                <value_set offset_to_lower_limit="false">
+                  <value_range lower_limit="1" lower_limit_type="inclusive" upper_limit="31" upper_limit_type="inclusive"/>
+                </value_set>
+              </sub_field>
+            </bit_field>
+          </record>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
+      <message_def name="ReportVelocityStateExt" message_id="44A4" is_command="false">
+        <description xml:space="preserve">This message is used to provide the receiver the linear velocity and rotational rate of the platform.  All times are in Coordinated Universal Time (UTC).</description>
+        <header name="AppHeader">
+          <record name="HeaderRec" optional="false">
+            <fixed_field name="MessageID" optional="false" interpretation="A two byte field to hold the message ID of a message" field_type="unsigned short integer" field_units="one"/>
+          </record>
+        </header>
+        <body name="Body">
+          <sequence name="ReportVelocityStateExtSeq" optional="false">
+            <variant name="VelocityVar" optional="false">
+              <vtag_field min_count="0" max_count="2" field_type_unsigned="unsigned byte"/>
+              <record name="VelocityVehicleXYZRec" optional="false" interpretation="Velocity measured in platform frame">
+                <presence_vector field_type_unsigned="unsigned byte"/>
+                <fixed_field name="Velocity_X" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_Y" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_Z" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+              </record>
+              <record name="VelocityLocalXYZRec" optional="false" interpretation="Velocity measured in local coordinate frame">
+                <presence_vector field_type_unsigned="unsigned byte"/>
+                <fixed_field name="Velocity_X" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_Y" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_Z" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+              </record>
+              <record name="VelocityNEDRec" optional="false" interpretation="Velocity measured in global (north, east, down) coordinate frame">
+                <presence_vector field_type_unsigned="unsigned byte"/>
+                <fixed_field name="Velocity_N" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_E" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+                <fixed_field name="Velocity_D" optional="true" field_type="unsigned integer" field_units="meter per second">
+                  <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+                </fixed_field>
+              </record>
+            </variant>
+            <record name="ReportVelocityStateExtRec" optional="false">
+              <presence_vector field_type_unsigned="unsigned short integer"/>
+              <fixed_field name="Velocity_RMS" optional="true" interpretation="An RMS value indicating the validity of the velocity data." field_type="unsigned integer" field_units="meter per second">
+                <scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="RollRate" optional="true" field_type="unsigned integer" field_units="radian per second">
+                <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="PitchRate" optional="true" field_type="unsigned integer" field_units="radian per second">
+                <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="YawRate" optional="true" field_type="unsigned integer" field_units="radian per second">
+                <scale_range real_lower_limit="-32.768" real_upper_limit="32.767" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="Rate_RMS" optional="true" interpretation="An RMS value indicating the validity of the rotational velocity data." field_type="unsigned short integer" field_units="radian per second">
+                <scale_range real_lower_limit="0" real_upper_limit="100" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="SpeedOverGround" optional="true" interpretation="Scalar speed measured relative to fixed coordinate system" field_type="unsigned short integer" field_units="meter per second">
+                <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="SpeedRelativeToMedium" optional="true" interpretation="Scalar speed measured relative to medium, such as air or water currents" field_type="unsigned short integer" field_units="meter per second">
+                <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="RotationsPerMinute" optional="true" field_type="unsigned short integer" field_units="rotations per minute">
+                <scale_range real_lower_limit="-1000" real_upper_limit="1000" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="IndicatedSpeed" optional="true" field_type="unsigned short integer" field_units="meter per second">
+                <scale_range real_lower_limit="-327.68" real_upper_limit="327.67" integer_function="round"/>
+              </fixed_field>
+              <fixed_field name="TimeSeconds" optional="true" interpretation="UTC POSIX-style time in seconds since 1 January 1970" field_type="unsigned integer" field_units="second"/>
+              <fixed_field name="TimeNanoSeconds" optional="true" interpretation="Nanoseconds component of POSIX-style time" field_type="unsigned integer" field_units="one"/>
+            </record>
+          </sequence>
+        </body>
+        <footer name="Footer"/>
+      </message_def>
     </output_set>
   </message_set>
   <internal_events_set/>
   <protocol_behavior>
-    <start state_machine_name="events.transport.ReceiveFSM"
-      state_name="Receiving.Ready"/>
-    <state_machine name="events.transport.ReceiveFSM" 
-        interpretation="extending ReceiveFSM of base service (transport)">
+    <start state_machine_name="events.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="events.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready" interpretation="redefine state in order to extend">
-              <default_state>
-                <transition name="events.transport.Receive">
-                  <parameter type="QueryVelocityState" value="msg" interpretation="enveloped query velocity
-                    state message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                  <simple/>
-                  <action name="events.transport.Send" interpretation="Send a Report
-                    Velocity State message">
-                    <argument value=" 'ReportVelocityState' "/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
+          <default_state>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryVelocityState" value="msg" interpretation="enveloped query velocity                     state message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="sendReportVelocityState" interpretation="Send a Report                     Velocity State message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryVelocityStateExt" value="msg" interpretation="enveloped query velocity ext                     state message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="sendReportVelocityStateExt" interpretation="Send a Report                     Velocity State Ext message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+          </default_state>
         </state>
       </state>
     </state_machine>

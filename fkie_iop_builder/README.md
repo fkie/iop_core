@@ -59,12 +59,12 @@ ament_package()
 ```makefile
 iop_code_generator(
   IDLS
-    urn.jaus.jss.core-v1.0/AccessControl.xml
-    urn.jaus.jss.core-v1.0/DiscoveryClient.xml
-    urn.jaus.jss.core-v1.0/Events.xml
-    urn.jaus.jss.core-v1.0/Liveness.xml
-    urn.jaus.jss.core-v1.0/Management.xml
-    urn.jaus.jss.core-v1.0/Transport.xml
+    urn.jaus.jss.core/AccessControl.xml
+    urn.jaus.jss.core/DiscoveryClient.xml
+    urn.jaus.jss.core/Events.xml
+    urn.jaus.jss.core/Liveness.xml
+    urn.jaus.jss.core/Management.xml
+    urn.jaus.jss.core/Transport.xml
     urn.jaus.jss.mobility/PrimitiveDriver.xml
   OWN_IDLS
   OVERRIDES

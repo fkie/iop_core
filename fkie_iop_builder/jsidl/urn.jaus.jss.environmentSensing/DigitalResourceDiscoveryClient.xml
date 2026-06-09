@@ -9,18 +9,15 @@
 		<inherits_from name="EventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
 		<client_of name="DigitalResourceDiscovery" id="urn:jaus:jss:environmentSensing:DigitalResourceDiscovery" version="2.0"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:DigitalResourceDiscoverySet" version="2.0"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ReportDigitalResourceEndpoint" declared_type_ref="messages.ReportDigitalResourceEndpoint"/>
-			<declared_message_def name="ConfirmDigitalResourceEndpoint" declared_type_ref="messages.ConfirmDigitalResourceEndpoint"/>
+			<declared_message_def name="ReportDigitalResourceEndpoint" declared_type_ref="DigitalResourceDiscovery.ReportDigitalResourceEndpoint"/>
+			<declared_message_def name="ConfirmDigitalResourceEndpoint" declared_type_ref="DigitalResourceDiscovery.ConfirmDigitalResourceEndpoint"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="QueryDigitalResourceEndpoint" declared_type_ref="messages.QueryDigitalResourceEndpoint"/>
-			<declared_message_def name="RegisterDigitalResourceEndpoint" declared_type_ref="messages.RegisterDigitalResourceEndpoint"/>
-			<declared_message_def name="RemoveDigitalResourceEndpoint" declared_type_ref="messages.RemoveDigitalResourceEndpoint"/>
+			<declared_message_def name="QueryDigitalResourceEndpoint" declared_type_ref="DigitalResourceDiscovery.QueryDigitalResourceEndpoint"/>
+			<declared_message_def name="RegisterDigitalResourceEndpoint" declared_type_ref="DigitalResourceDiscovery.RegisterDigitalResourceEndpoint"/>
+			<declared_message_def name="RemoveDigitalResourceEndpoint" declared_type_ref="DigitalResourceDiscovery.RemoveDigitalResourceEndpoint"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>

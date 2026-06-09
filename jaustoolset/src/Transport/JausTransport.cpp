@@ -45,7 +45,7 @@ JausRouter::JausRouter(JausAddress jausAddress, InternalEventHandler* ieHandler,
 	this->jausAddress = jausAddress;
 	jrHandle = 0;
 	isRunning = false;
-	int error = JrConnect(jausAddress.get(), config.c_str(), &jrHandle);
+	int error = JrConnect(jausAddress, config.c_str(), &jrHandle);
 	if (error != 0) {
 		pIsConnected = false;
 	} else {

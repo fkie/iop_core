@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service_def name="ListManagerClient" id="urn:jaus:jss:core:ListManagerClient" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:plus="urn:jaus:jsidl:plus">
+  <description> Client service for ListManager used in e.g. OCU.  </description>
+  <assumptions>Messages may be delayed, lost or reordered.</assumptions>
+  <references>
+    <inherits_from name="managementClient" id="urn:jaus:jss:core:ManagementClient" version="1.1"/>
+    <client_of name="ListManager" id="urn:jaus:jss:core:ListManager" version="1.1"/>
+  </references>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ConfirmElementRequest" declared_type_ref="ListManager.ConfirmElementRequest"/>
+      <declared_message_def name="RejectElementRequest" declared_type_ref="ListManager.RejectElementRequest"/>
+      <declared_message_def name="ReportElement" declared_type_ref="ListManager.ReportElement"/>
+      <declared_message_def name="ReportElementList" declared_type_ref="ListManager.ReportElementList"/>
+      <declared_message_def name="ReportElementCount" declared_type_ref="ListManager.ReportElementCount"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="SetElement" declared_type_ref="ListManager.SetElement"/>
+      <declared_message_def name="DeleteElement" declared_type_ref="ListManager.DeleteElement"/>
+      <declared_message_def name="QueryElement" declared_type_ref="ListManager.QueryElement"/>
+      <declared_message_def name="QueryElementList" declared_type_ref="ListManager.QueryElementList"/>
+      <declared_message_def name="QueryElementCount" declared_type_ref="ListManager.QueryElementCount"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior>
+    <start state_machine_name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="managementClient.accessControlClient.eventsClient.transport.ReceiveFSM">
+      <state name="Receiving" initial_state="Ready">
+        <state name="Ready">
+          <default_state>
+            <transition name="ConfirmElementRequest">
+              <parameter type="ConfirmElementRequest" value="msg" interpretation="enveloped ConfirmElementRequest message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleConfirmElementRequest" interpretation="handle a ConfirmElementRequest message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="RejectElementRequest">
+              <parameter type="RejectElementRequest" value="msg" interpretation="enveloped RejectElementRequest message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleRejectElementRequest" interpretation="handle a RejectElementRequest message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="ReportElement">
+              <parameter type="ReportElement" value="msg" interpretation="enveloped ReportElement message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportElement" interpretation="handle a ReportElement message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="ReportElementList">
+              <parameter type="ReportElementList" value="msg" interpretation="enveloped ReportElementList message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportElementList" interpretation="handle a ReportElementList message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="ReportElementCount">
+              <parameter type="ReportElementCount" value="msg" interpretation="enveloped ReportElementCount message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportElementCount" interpretation="handle a ReportElementCount message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+          </default_state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>

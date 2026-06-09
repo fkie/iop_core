@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<service_def name="PanTiltSpecificationClient" id="urn:jaus:jss:manipulator:PanTiltSpecificationClient" version="2.0"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
+  <description xml:space="preserve">
+    Client/Consumer Service for the Pan Tilt Specification Service.
+  </description>
+  <assumptions> Messages may be delayed, lost, or reordered. </assumptions>
+  <references>
+    <inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
+    <client_of name="PanTiltSpecification" id="urn:jaus:jss:manipulator:PanTiltSpecification" version="2.0" />
+  </references>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportPanTiltSpecifications" declared_type_ref="PanTiltSpecification.ReportPanTiltSpecifications"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="QueryPanTiltSpecifications" declared_type_ref="PanTiltSpecification.QueryPanTiltSpecifications"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior is_stateless="false">
+    <start state_machine_name="eventsClient.transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
+      <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
+        <state name="Ready">
+          <default_state>
+            <transition name="ReportPanTiltSpecifications">
+              <parameter type="ReportPanTiltSpecifications" value="msg" interpretation="enveloped report pan tilt specifications message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportPanTiltSpecifications" interpretation="Handle a Report Pan Tilt Specifications message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+          </default_state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>

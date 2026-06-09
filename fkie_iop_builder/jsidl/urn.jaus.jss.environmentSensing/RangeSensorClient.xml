@@ -6,26 +6,24 @@
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
 		<inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+		<client_of name="RangeSensor" id="urn:jaus:jss:environmentSensing:RangeSensor" version="2.0"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:RangeSensorSet" version="2.0"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ConfirmSensorConfiguration" declared_type_ref="messages.ConfirmSensorConfiguration"/>
-			<declared_message_def name="ReportRangeSensorCapabilities" declared_type_ref="messages.ReportRangeSensorCapabilities"/>
-			<declared_message_def name="ReportRangeSensorConfiguration" declared_type_ref="messages.ReportRangeSensorConfiguration"/>
-			<declared_message_def name="ReportRangeSensorData" declared_type_ref="messages.ReportRangeSensorData"/>
-			<declared_message_def name="ReportRangeSensorCompressedData" declared_type_ref="messages.ReportRangeSensorCompressedData"/>
-			<declared_message_def name="ReportSensorGeometricProperties" declared_type_ref="messages.ReportSensorGeometricProperties"/>
+			<declared_message_def name="ConfirmSensorConfiguration" declared_type_ref="RangeSensor.ConfirmSensorConfiguration"/>
+			<declared_message_def name="ReportRangeSensorCapabilities" declared_type_ref="RangeSensor.ReportRangeSensorCapabilities"/>
+			<declared_message_def name="ReportRangeSensorConfiguration" declared_type_ref="RangeSensor.ReportRangeSensorConfiguration"/>
+			<declared_message_def name="ReportRangeSensorData" declared_type_ref="RangeSensor.ReportRangeSensorData"/>
+			<declared_message_def name="ReportRangeSensorCompressedData" declared_type_ref="RangeSensor.ReportRangeSensorCompressedData"/>
+			<declared_message_def name="ReportSensorGeometricProperties" declared_type_ref="RangeSensor.ReportSensorGeometricProperties"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="SetRangeSensorConfiguration" declared_type_ref="messages.SetRangeSensorConfiguration"/>
-			<declared_message_def name="QuerySensorGeometricProperties" declared_type_ref="messages.QuerySensorGeometricProperties"/>
-			<declared_message_def name="QueryRangeSensorCompressedData" declared_type_ref="messages.QueryRangeSensorCompressedData"/>
-			<declared_message_def name="QueryRangeSensorData" declared_type_ref="messages.QueryRangeSensorData"/>
-			<declared_message_def name="QueryRangeSensorCapabilities" declared_type_ref="messages.QueryRangeSensorCapabilities"/>
-			<declared_message_def name="QueryRangeSensorConfiguration" declared_type_ref="messages.QueryRangeSensorConfiguration"/>
+			<declared_message_def name="SetRangeSensorConfiguration" declared_type_ref="RangeSensor.SetRangeSensorConfiguration"/>
+			<declared_message_def name="QuerySensorGeometricProperties" declared_type_ref="RangeSensor.QuerySensorGeometricProperties"/>
+			<declared_message_def name="QueryRangeSensorCompressedData" declared_type_ref="RangeSensor.QueryRangeSensorCompressedData"/>
+			<declared_message_def name="QueryRangeSensorData" declared_type_ref="RangeSensor.QueryRangeSensorData"/>
+			<declared_message_def name="QueryRangeSensorCapabilities" declared_type_ref="RangeSensor.QueryRangeSensorCapabilities"/>
+			<declared_message_def name="QueryRangeSensorConfiguration" declared_type_ref="RangeSensor.QueryRangeSensorConfiguration"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
@@ -38,7 +36,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ConfirmSensorConfiguration" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleConfirmSensorConfiguration" interpretation="handle ConfirmSensorConfiguration after setSensorConfiguration was send">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -47,7 +45,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ReportRangeSensorCapabilities" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleReportRangeSensorCapabilities">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -56,7 +54,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ReportRangeSensorConfiguration" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleReportRangeSensorConfiguration">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -65,7 +63,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ReportRangeSensorData" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleReportRangeSensorData">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -74,7 +72,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ReportRangeSensorCompressedData" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleReportRangeSensorCompressedData">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -83,7 +81,7 @@
 						<transition name="accessControl.events.transport.Receive">
 							<parameter type="ReportSensorGeometricProperties" value="msg" />
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" />
-							<simple/>
+							<internal/>
 							<action name="handleReportSensorGeometricProperties">
 								<argument value="msg"/>
 								<argument value="transportData"/>

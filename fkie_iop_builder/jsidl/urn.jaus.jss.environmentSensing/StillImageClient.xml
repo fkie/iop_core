@@ -11,23 +11,21 @@
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
 		<inherits_from name="visualSensorClient" id="urn:jaus:jss:environmentSensing:VisualSensorClient" version="2.0"/>
+		<client_of name="StillImage" id="urn:jaus:jss:environmentSensing:StillImage" version="2.0"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:StillImageSet" version="2.0"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ReportStillImageData" declared_type_ref="messages.ReportStillImageData"/>
-			<declared_message_def name="ReportStillImageDataExt" declared_type_ref="messages.ReportStillImageDataExt"/>
-			<declared_message_def name="ReportStillImageSensorConfiguration" declared_type_ref="messages.ReportStillImageSensorConfiguration"/>
-			<declared_message_def name="ReportStillImageSensorCapabilities" declared_type_ref="messages.ReportStillImageSensorCapabilities"/>
+			<declared_message_def name="ReportStillImageData" declared_type_ref="StillImage.ReportStillImageData"/>
+			<declared_message_def name="ReportStillImageDataExt" declared_type_ref="StillImage.ReportStillImageDataExt"/>
+			<declared_message_def name="ReportStillImageSensorConfiguration" declared_type_ref="StillImage.ReportStillImageSensorConfiguration"/>
+			<declared_message_def name="ReportStillImageSensorCapabilities" declared_type_ref="StillImage.ReportStillImageSensorCapabilities"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="SetStillImageSensorConfiguration" declared_type_ref="messages.SetStillImageSensorConfiguration"/>
-			<declared_message_def name="QueryStillImageData" declared_type_ref="messages.QueryStillImageData"/>
-			<declared_message_def name="QueryStillImageDataExt" declared_type_ref="messages.QueryStillImageDataExt"/>
-			<declared_message_def name="QueryStillImageSensorConfiguration" declared_type_ref="messages.QueryStillImageSensorConfiguration"/>
-			<declared_message_def name="QueryStillImageSensorCapabilities" declared_type_ref="messages.QueryStillImageSensorCapabilities"/>
+			<declared_message_def name="SetStillImageSensorConfiguration" declared_type_ref="StillImage.SetStillImageSensorConfiguration"/>
+			<declared_message_def name="QueryStillImageData" declared_type_ref="StillImage.QueryStillImageData"/>
+			<declared_message_def name="QueryStillImageDataExt" declared_type_ref="StillImage.QueryStillImageDataExt"/>
+			<declared_message_def name="QueryStillImageSensorConfiguration" declared_type_ref="StillImage.QueryStillImageSensorConfiguration"/>
+			<declared_message_def name="QueryStillImageSensorCapabilities" declared_type_ref="StillImage.QueryStillImageSensorCapabilities"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
@@ -40,7 +38,7 @@
 						<transition name="ReportStillImageData">
 							<parameter type="ReportStillImageData" value="msg" interpretation="enveloped ReportStillImageData message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportStillImageData" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -50,7 +48,7 @@
 						<transition name="ReportStillImageDataExt">
 							<parameter type="ReportStillImageDataExt" value="msg" interpretation="enveloped ReportStillImageDataExt message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportStillImageDataExt" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -60,7 +58,7 @@
 						<transition name="ReportStillImageSensorConfiguration">
 							<parameter type="ReportStillImageSensorConfiguration" value="msg" interpretation="enveloped ReportStillImageSensorConfiguration message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportStillImageSensorConfiguration" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -70,7 +68,7 @@
 						<transition name="ReportStillImageSensorCapabilities">
 							<parameter type="ReportStillImageSensorCapabilities" value="msg" interpretation="enveloped ReportStillImageSensorCapabilities message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportStillImageSensorCapabilities" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>

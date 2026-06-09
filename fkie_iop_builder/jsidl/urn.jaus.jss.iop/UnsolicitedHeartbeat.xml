@@ -28,7 +28,7 @@
           <default_state>
             <transition name="PeriodicTimerTrigger">
               <guard condition="hasJAUS_ID()" interpretation="True if the JAUS ID for the component hosting this service is completely known"/>
-              <simple/>
+              <internal/>
               <action name="broadcastReportHeartBeatPulse" interpretation="Broadcast a Report Heartbeat Pulse to the hosting platform"/>
             </transition>
           </default_state>

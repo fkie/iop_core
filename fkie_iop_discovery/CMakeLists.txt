@@ -25,11 +25,11 @@ iop_export_service(
 )
 iop_code_generator(
   IDLS
-    urn.jaus.jss.core-v1.1/Events.xml
-    urn.jaus.jss.core-v1.1/EventsClient.xml
-    urn.jaus.jss.core-v1.1/Transport.xml
-    urn.jaus.jss.core-v1.1/Discovery.xml
-    urn.jaus.jss.core-v1.1/DiscoveryClient.xml
+    urn.jaus.jss.core/Events.xml
+    urn.jaus.jss.core/EventsClient.xml
+    urn.jaus.jss.core/Transport.xml
+    urn.jaus.jss.core/Discovery.xml
+    urn.jaus.jss.core/DiscoveryClient.xml
   OWN_IDLS
   OVERRIDES
     include/urn_jaus_jss_core_Discovery/Discovery_ReceiveFSM.h

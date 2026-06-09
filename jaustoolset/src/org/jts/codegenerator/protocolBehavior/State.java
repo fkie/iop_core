@@ -143,7 +143,7 @@ public class State {
             
             // for the case of a loopback transition within a default state
             // we must change the end state of the transition to the current state
-            // this can be done simply by changing it to <simple/>
+            // this can be done simply by changing it to <internal/>
             if(defaultState.getTransition() != null)
             {
                 for(org.jts.jsidl.binding.Transition transition:defaultState.getTransition())

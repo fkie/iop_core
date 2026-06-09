@@ -14,7 +14,7 @@ _git clone https://github.com/fkie/iop_core_
     - fkie_iop_management
     - fkie_iop_transport
 
-- **manipulator**: _urn.jaus.jss.manipulator-v2.0_ - services
+- **manipulator**: _urn.jaus.jss.manipulator_ - services
     - _git clone [https://github.com/fkie/iop_jaus_manipulator](https://github.com/fkie/iop_jaus_manipulator)_
     - fkie_iop_manipulator_joint_position_sensor
     - fkie_iop_manipulator_specification_service
@@ -53,7 +53,7 @@ _git clone https://github.com/fkie/iop_core_
 
 The clients are used on the OCU side to control an IOP compliant robot.
 
-- **manipulator_clients**: clients for _urn.jaus.jss.manipulator-v2.0_ - services
+- **manipulator_clients**: clients for _urn.jaus.jss.manipulator_ - services
     - _git clone [https://github.com/fkie/iop_jaus_manipulator_clients](https://github.com/fkie/iop_jaus_manipulator_clients)_
     - fkie_iop_client_manipulator_joint_position_sensor
     - fkie_iop_client_manipulator_specification

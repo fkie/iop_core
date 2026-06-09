@@ -643,7 +643,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
 
 // Connect() implementation for full Junior version that includes Run-Time Engine
 // and application-to-application message support.
-JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
+JrErrorCode JuniorMgr::connect(JausAddress &jausAddress,  std::string config_file)
 {
     // Parse the config file & read logger settings
     XmlConfig config;
@@ -669,14 +669,14 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
     if (!logfile.empty()) Logger::get()->openOutputFile(logfile);
 
     // Check for degenerate value
-    if (id == 0)
+    if (jausAddress.get() == 0)
     {
         JrError << "Cannot connect clients with id = 0\n";
         return InvalidID;
     }
 
     // Make sure the ID doesn't contain any wildcards.
-    JAUS_ID jausId(id);
+    JAUS_ID jausId(jausAddress.get());
     if (jausId.containsWildcards())
     {
         JrError << "Client ID may not contain wildcards (0xFF).  Returning error...\n";
@@ -691,12 +691,12 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
    	config.getValue(_enableUDPforLocal, "EnableUDPforLocal", "API_Configuration");
     // connect message
     Message msg;
-    msg.setSourceId(id);
+    msg.setSourceId(jausAddress.get());
     msg.setDestinationId(0);
     msg.setMessageCode(Connect);
     if (!_enableUDPforLocal) {
         // The name of our local socket is the string form of our ID.
-        std::stringstream name; name << id;
+        std::stringstream name; name << jausAddress.get();
 
         // First open a socket with the given name.
         JrSocket* mySocket = new JrSocket(name.str());
@@ -741,6 +741,11 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
                 {
                     connected = true;
                     JrInfo << "Client connection to RTE accepted and open...\n";
+                    if (jausAddress.getSubsystemID() == 0) {
+                        JausAddress destJausAddress(response->getDestinationId().val);
+                        jausAddress.setSubsystemID(destJausAddress.getSubsystemID());
+                        JrInfo << "  Applied new subsystem ID: " << jausAddress.getSubsystemID() << "\n";
+                    }
                 }
                 delete response;
             }
@@ -752,7 +757,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
 
         // Success.  Store values
         _transport = mySocket;
-        _id.val     = id;
+        _id.val     = jausAddress.get();
 
     } else {
         // create UDP socket to communicate with NodeManager
@@ -795,6 +800,11 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
                 {
                     connected = true;
                     JrInfo << "Client connection to RTE accepted and open...\n";
+                    if (jausAddress.getSubsystemID() == 0) {
+                        JausAddress destJausAddress(response->getDestinationId().val);
+                        jausAddress.setSubsystemID(destJausAddress.getSubsystemID());
+                        JrInfo << "  Applied new subsystem ID: " << jausAddress.getSubsystemID() << "\n";
+                    }
                 }
                 delete response;
             }
@@ -802,7 +812,7 @@ JrErrorCode JuniorMgr::connect(unsigned int id,  std::string config_file)
         }
         // Success.  Store values
         _transport = mySocket;
-        _id.val     = id;
+        _id.val     = jausAddress.get();
 
     }
     // Initialize config data from file

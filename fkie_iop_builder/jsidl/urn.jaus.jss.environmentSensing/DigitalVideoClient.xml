@@ -6,24 +6,22 @@
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
 		<inherits_from name="visualSensorClient" id="urn:jaus:jss:environmentSensing:VisualSensorClient" version="2.0"/>
+		<client_of name="DigitalVideo" id="urn:jaus:jss:environmentSensing:DigitalVideo" version="2.0"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:DigitalVideoSet" version="2.0"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ReportDigitalVideoSensorCapabilities" declared_type_ref="messages.ReportDigitalVideoSensorCapabilities"/>
-			<declared_message_def name="ReportDigitalVideoSensorCapabilitiesExt" declared_type_ref="messages.ReportDigitalVideoSensorCapabilitiesExt"/>
-			<declared_message_def name="ReportDigitalVideoSensorConfiguration" declared_type_ref="messages.ReportDigitalVideoSensorConfiguration"/>
+			<declared_message_def name="ReportDigitalVideoSensorCapabilities" declared_type_ref="DigitalVideo.ReportDigitalVideoSensorCapabilities"/>
+			<declared_message_def name="ReportDigitalVideoSensorCapabilitiesExt" declared_type_ref="DigitalVideo.ReportDigitalVideoSensorCapabilitiesExt"/>
+			<declared_message_def name="ReportDigitalVideoSensorConfiguration" declared_type_ref="DigitalVideo.ReportDigitalVideoSensorConfiguration"/>
 		</input_set>
 
 		<output_set>
-			<declared_message_def name="ControlDigitalVideoSensorStream" declared_type_ref="messages.ControlDigitalVideoSensorStream"/>
-			<declared_message_def name="SetDigitalVideoSensorConfiguration" declared_type_ref="messages.SetDigitalVideoSensorConfiguration"/>
-			<declared_message_def name="QueryDigitalVideoSensorConfiguration" declared_type_ref="messages.QueryDigitalVideoSensorConfiguration"/>
-			<declared_message_def name="QueryDigitalVideoSensorCapabilities" declared_type_ref="messages.QueryDigitalVideoSensorCapabilities"/>
-			<declared_message_def name="QueryDigitalVideoSensorStatus" declared_type_ref="messages.QueryDigitalVideoSensorStatus"/>
-			<declared_message_def name="ControlDigitalVideoSensorRecording" declared_type_ref="messages.ControlDigitalVideoSensorRecording"/>
+			<declared_message_def name="ControlDigitalVideoSensorStream" declared_type_ref="DigitalVideo.ControlDigitalVideoSensorStream"/>
+			<declared_message_def name="SetDigitalVideoSensorConfiguration" declared_type_ref="DigitalVideo.SetDigitalVideoSensorConfiguration"/>
+			<declared_message_def name="QueryDigitalVideoSensorConfiguration" declared_type_ref="DigitalVideo.QueryDigitalVideoSensorConfiguration"/>
+			<declared_message_def name="QueryDigitalVideoSensorCapabilities" declared_type_ref="DigitalVideo.QueryDigitalVideoSensorCapabilities"/>
+			<declared_message_def name="QueryDigitalVideoSensorStatus" declared_type_ref="DigitalVideo.QueryDigitalVideoSensorStatus"/>
+			<declared_message_def name="ControlDigitalVideoSensorRecording" declared_type_ref="DigitalVideo.ControlDigitalVideoSensorRecording"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
@@ -36,7 +34,7 @@
 						<transition name="ReportDigitalVideoSensorCapabilities">
 							<parameter type="ReportDigitalVideoSensorCapabilities" value="msg" interpretation="enveloped ReportDigitalVideoSensorCapabilities message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportDigitalVideoSensorCapabilities" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -46,7 +44,7 @@
 						<transition name="ReportDigitalVideoSensorConfiguration">
 							<parameter type="ReportDigitalVideoSensorConfiguration" value="msg" interpretation="enveloped ReportDigitalVideoSensorConfiguration message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportDigitalVideoSensorConfiguration" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>

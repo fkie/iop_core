@@ -26,6 +26,7 @@
 #ifndef __JUNIOR_API_H
 #define __JUNIOR_API_H
 
+#include "Transport/JausAddress.h"
 #include "Transport/OS.h"
 
 // Extern the definitions to avoid name mangling
@@ -66,7 +67,7 @@ JrErrorCode DllExport JrBroadcast(long handle,
 
 JrErrorCode DllExport JrCheckAllHandles(long* list, int* size_of_list);
 
-JrErrorCode DllExport JrConnect(unsigned int id, 
+JrErrorCode DllExport JrConnect(JausAddress &jausAddress, 
                                const char* config_file, 
                                long* handle);
 

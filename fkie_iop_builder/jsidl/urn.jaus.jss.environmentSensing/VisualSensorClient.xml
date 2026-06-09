@@ -6,22 +6,20 @@
 	<assumptions xml:space="preserve">Messages may be delayed, lost or reordered.</assumptions>
 	<references>
 		<inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
+		<client_of name="VisualSensor" id="urn:jaus:jss:environmentSensing:VisualSensor" version="2.0"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:environmentSensing:MessageSet:VisualSensorSet" version="2.0"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ConfirmSensorConfiguration" declared_type_ref="messages.ConfirmSensorConfiguration"/>
-			<declared_message_def name="ReportSensorGeometricProperties" declared_type_ref="messages.ReportSensorGeometricProperties"/>
-			<declared_message_def name="ReportVisualSensorConfiguration" declared_type_ref="messages.ReportVisualSensorConfiguration"/>
-			<declared_message_def name="ReportVisualSensorCapabilities" declared_type_ref="messages.ReportVisualSensorCapabilities"/>
+			<declared_message_def name="ConfirmSensorConfiguration" declared_type_ref="VisualSensor.ConfirmSensorConfiguration"/>
+			<declared_message_def name="ReportSensorGeometricProperties" declared_type_ref="VisualSensor.ReportSensorGeometricProperties"/>
+			<declared_message_def name="ReportVisualSensorConfiguration" declared_type_ref="VisualSensor.ReportVisualSensorConfiguration"/>
+			<declared_message_def name="ReportVisualSensorCapabilities" declared_type_ref="VisualSensor.ReportVisualSensorCapabilities"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="QuerySensorGeometricProperties" declared_type_ref="messages.QuerySensorGeometricProperties"/>
-			<declared_message_def name="QueryVisualSensorConfiguration" declared_type_ref="messages.QueryVisualSensorConfiguration"/>
-			<declared_message_def name="QueryVisualSensorCapabilities" declared_type_ref="messages.QueryVisualSensorCapabilities"/>
-			<declared_message_def name="SetVisualSensorConfiguration" declared_type_ref="messages.SetVisualSensorConfiguration"/>
+			<declared_message_def name="QuerySensorGeometricProperties" declared_type_ref="VisualSensor.QuerySensorGeometricProperties"/>
+			<declared_message_def name="QueryVisualSensorConfiguration" declared_type_ref="VisualSensor.QueryVisualSensorConfiguration"/>
+			<declared_message_def name="QueryVisualSensorCapabilities" declared_type_ref="VisualSensor.QueryVisualSensorCapabilities"/>
+			<declared_message_def name="SetVisualSensorConfiguration" declared_type_ref="VisualSensor.SetVisualSensorConfiguration"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
@@ -35,7 +33,7 @@
 						<transition name="ConfirmSensorConfiguration">
 							<parameter type="ConfirmSensorConfiguration" value="msg" interpretation="enveloped ConfirmSensorConfiguration message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleConfirmSensorConfiguration" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -45,7 +43,7 @@
 						<transition name="ReportSensorGeometricProperties">
 							<parameter type="ReportSensorGeometricProperties" value="msg" interpretation="enveloped ReportSensorGeometricProperties message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportSensorGeometricProperties" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -55,7 +53,7 @@
 						<transition name="ReportVisualSensorConfiguration">
 							<parameter type="ReportVisualSensorConfiguration" value="msg" interpretation="enveloped ReportVisualSensorConfiguration message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportVisualSensorConfiguration" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -65,7 +63,7 @@
 						<transition name="ReportVisualSensorCapabilities">
 							<parameter type="ReportVisualSensorCapabilities" value="msg" interpretation="enveloped ReportVisualSensorCapabilities message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportVisualSensorCapabilities" interpretation="">
 								<argument value="msg"/>
 								<argument value="transportData"/>

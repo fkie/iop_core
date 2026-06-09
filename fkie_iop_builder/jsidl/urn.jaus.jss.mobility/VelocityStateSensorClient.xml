@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service_def name="VelocityStateSensorClient" id="urn:jaus:jss:mobility:VelocityStateSensorClient" version="1.0" xmlns="urn:jaus:jsidl:1.0" xmlns:ns1="urn:jaus:jsidl:1.1">
+<service_def name="VelocityStateSensorClient" id="urn:jaus:jss:mobility:VelocityStateSensorClient" version="1.1"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
   <description>
     The Velocity State Sensor has the responsibility of reporting the instantaneous velocity of the platform.  
     The velocity state of a rigid body is defined as the set of parameters that are necessary to calculate 
@@ -20,17 +22,16 @@
   </description>
   <assumptions>Messages may be delayed, lost or reordered.</assumptions>
   <references>
-    <inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.0"/>
+    <inherits_from name="eventsClient" id="urn:jaus:jss:core:EventsClient" version="1.1"/>
+    <client_of name="VelocityStateSensor" id="urn:jaus:jss:mobility:VelocityStateSensor" version="1.1" />
   </references>
-  <declared_type_set name="Types">
-    <declared_type_set_ref name="mobility" id="urn:jaus:jss:mobility:MessageSet" version="1.0"/>
-  </declared_type_set>
   <message_set>
     <input_set>
-      <declared_message_def name="ReportVelocityState" declared_type_ref="mobility.informClass.ReportVelocityState"/>
+      <declared_message_def name="ReportVelocityState" declared_type_ref="VelocityStateSensor.ReportVelocityState"/>
+      <declared_message_def name="ReportVelocityStateExt" declared_type_ref="VelocityStateSensor.ReportVelocityStateExt"/>
     </input_set>
     <output_set>
-      <declared_message_def name="QueryVelocityState" declared_type_ref="mobility.queryClass.QueryVelocityState"/>
+      <declared_message_def name="QueryVelocityState" declared_type_ref="VelocityStateSensor.QueryVelocityState"/>
     </output_set>
   </message_set>
   <internal_events_set/>
@@ -39,17 +40,26 @@
     <state_machine name="eventsClient.transport.ReceiveFSM" interpretation="extending ReceiveFSM of base service (transport)">
       <state name="Receiving" initial_state="Ready" interpretation="redefine state in order to extend">
         <state name="Ready" interpretation="redefine state in order to extend">
-              <default_state>
-                <transition name="eventsClient.transport.Receive">
-                  <parameter type="ReportVelocityState" value="msg" interpretation="enveloped velocity state message"/>
-                  <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-                  <simple/>
-                  <action name="handleReportVelocityState" interpretation="handle a Report Velocity State message">
-                    <argument value="msg"/>
-                    <argument value="transportData"/>
-                  </action>
-                </transition>
-              </default_state>
+          <default_state>
+            <transition name="eventsClient.transport.Receive">
+              <parameter type="ReportVelocityState" value="msg" interpretation="enveloped velocity state message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportVelocityState" interpretation="handle a Report Velocity State message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="eventsClient.transport.Receive">
+              <parameter type="ReportVelocityStateExt" value="msg" interpretation="enveloped velocity state message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportVelocityStateExt" interpretation="handle a Report Velocity State message">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+          </default_state>
         </state>
       </state>
     </state_machine>

@@ -24,9 +24,9 @@ iop_export_service(
 )
 iop_code_generator(
   IDLS
-    urn.jaus.jss.core-v1.1/Events.xml
-    urn.jaus.jss.core-v1.1/EventsClient.xml
-    urn.jaus.jss.core-v1.1/Transport.xml
+    urn.jaus.jss.core/Events.xml
+    urn.jaus.jss.core/EventsClient.xml
+    urn.jaus.jss.core/Transport.xml
   OWN_IDLS
   OVERRIDES
     include/urn_jaus_jss_core_Events/Events_ReceiveFSM.h

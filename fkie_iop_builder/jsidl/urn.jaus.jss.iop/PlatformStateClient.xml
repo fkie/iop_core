@@ -8,17 +8,14 @@
 		<inherits_from name="AccessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1"/>
 		<client_of name="PlatformState" id="urn:jaus:jss:iop:PlatformState" version="1.1"/>
 	</references>
-	<declared_type_set name="Types">
-		<declared_type_set_ref name="messages" id="urn:jaus:jss:iop:MessageSet:PlatformStateSet" version="1.1"/>
-	</declared_type_set>
 	<message_set>
 		<input_set>
-			<declared_message_def name="ConfirmPlatformStateRequest" declared_type_ref="messages.ConfirmPlatformStateRequest"/>
-			<declared_message_def name="ReportPlatformState" declared_type_ref="messages.ReportPlatformState"/>
+			<declared_message_def name="ConfirmPlatformStateRequest" declared_type_ref="PlatformState.ConfirmPlatformStateRequest"/>
+			<declared_message_def name="ReportPlatformState" declared_type_ref="PlatformState.ReportPlatformState"/>
 		</input_set>
 		<output_set>
-			<declared_message_def name="SetPlatformState" declared_type_ref="messages.SetPlatformState"/>
-			<declared_message_def name="QueryPlatformState" declared_type_ref="messages.QueryPlatformState"/>
+			<declared_message_def name="SetPlatformState" declared_type_ref="PlatformState.SetPlatformState"/>
+			<declared_message_def name="QueryPlatformState" declared_type_ref="PlatformState.QueryPlatformState"/>
 		</output_set>
 	</message_set>
 	<internal_events_set/>
@@ -31,7 +28,7 @@
 						<transition name="ConfirmPlatformStateRequest">
 							<parameter type="ConfirmPlatformStateRequest" value="msg" interpretation="enveloped ConfirmPlatformStateRequest message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-							<simple/>
+							<internal/>
 							<action name="handleConfirmPlatformStateRequest">
 								<argument value="msg"/>
 								<argument value="transportData"/>
@@ -41,7 +38,7 @@
 						<transition name="ReportPlatformState">
 							<parameter type="ReportPlatformState" value="msg" interpretation="enveloped ReportPlatformState message"/>
 							<parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transportData"/>
-							<simple/>
+							<internal/>
 							<action name="handleReportPlatformState">
 								<argument value="msg"/>
 								<argument value="transportData"/>

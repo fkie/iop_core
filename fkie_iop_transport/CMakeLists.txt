@@ -20,7 +20,7 @@ iop_init()
 iop_export_service(urn_jaus_jss_core_Transport)
 iop_code_generator(
   IDLS
-    urn.jaus.jss.core-v1.1/Transport.xml
+    urn.jaus.jss.core/Transport.xml
   OWN_IDLS
   OVERRIDES
     include/urn_jaus_jss_core_Transport/TransportService.h

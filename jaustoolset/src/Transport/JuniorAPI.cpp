@@ -100,7 +100,7 @@ JrErrorCode DllExport JrReceive(long handle,
     return (mgr->recvfrom(sender, bufsize, buffer, priority, flags, msg_id));
 }
 
-JrErrorCode DllExport JrConnect(unsigned int id, const char* config_file, long* handle)
+JrErrorCode DllExport JrConnect(JausAddress &jausAddress, const char* config_file, long* handle)
 {
     if (handle == NULL) return InitFailed;
 
@@ -109,9 +109,9 @@ JrErrorCode DllExport JrConnect(unsigned int id, const char* config_file, long* 
     JuniorMgr* mgr = new JuniorMgr();
     JrErrorCode ret;
     if ((config_file == NULL) || strlen(config_file) == 0)
-        ret = mgr->connect(id, "");
+        ret = mgr->connect(jausAddress, "");
     else
-        ret = mgr->connect(id, config_file);
+        ret = mgr->connect(jausAddress, config_file);
     if (ret != Ok)
     {
         delete mgr;

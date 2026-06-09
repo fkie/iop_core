@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<service_def name="PanTiltMotionProfileClient" id="urn:jaus:jss:manipulator:PanTiltMotionProfileClient" version="2.0"
+  xmlns="urn:jaus:jsidl:1.1"
+  xmlns:ns2="urn:jaus:jsidl:plus">
+  <description xml:space="preserve">
+    Client/Consumer Service for the Pan Tilt Motion Profile Service.
+  </description>
+  <assumptions> Messages may be delayed, lost, or reordered. </assumptions>
+  <references>
+    <inherits_from name="accessControlClient" id="urn:jaus:jss:core:AccessControlClient" version="1.1" />
+    <client_of name="PanTiltMotionProfile" id="urn:jaus:jss:manipulator:PanTiltMotionProfile" version="2.0" />
+  </references>
+  <message_set>
+    <input_set>
+      <declared_message_def name="ReportPanTiltMotionProfile" declared_type_ref="PanTiltMotionProfile.ReportPanTiltMotionProfile"/>
+    </input_set>
+    <output_set>
+      <declared_message_def name="QueryPanTiltMotionProfile" declared_type_ref="PanTiltMotionProfile.QueryPanTiltMotionProfile"/>
+      <declared_message_def name="SetPanTiltMotionProfile" declared_type_ref="PanTiltMotionProfile.SetPanTiltMotionProfile"/>
+    </output_set>
+  </message_set>
+  <internal_events_set/>
+  <protocol_behavior is_stateless="false">
+    <start state_machine_name="accessControlClient.EventsClient.Transport.ReceiveFSM" state_name="Receiving.Ready"/>
+    <state_machine name="accessControlClient.EventsClient.Transport.ReceiveFSM">
+      <state name="Receiving" initial_state="Ready">
+        <state name="Ready">
+          <default_state>
+
+            <transition name="ReportPanTiltMotionProfile">
+              <parameter type="ReportPanTiltMotionProfile" value="msg" interpretation="enveloped ReportPanTiltMotionProfile message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="handleReportPanTiltMotionProfile" interpretation="">
+                <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+
+          </default_state>
+        </state>
+      </state>
+    </state_machine>
+  </protocol_behavior>
+</service_def>
