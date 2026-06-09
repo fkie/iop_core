@@ -1,7 +1,7 @@
 - git:
     local-name: iop_msgs
     uri: https://github.com/fkie/iop_msgs
-    version: ros2
+    version: ros2_iop6
 - git:
     local-name: iop_core
     uri: https://github.com/fkie/iop_core
