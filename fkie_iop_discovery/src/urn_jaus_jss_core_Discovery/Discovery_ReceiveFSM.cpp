@@ -386,7 +386,6 @@ bool Discovery_ReceiveFSM::isComponentRequested(QueryServiceList& msg, std::vect
                         unsigned int cid = complist->getElement(c)->getComponentID();
                         if (cid == 255 or cid == addr.getComponentID()) {
                             if (complist->getElement(c)->isSearchFilterValid()) {
-                                std::cout << "FILTER " << complist->getElement(c)->getSearchFilter() << " ->" << cmp->has_matched_service(complist->getElement(c)->getSearchFilter()) << std::endl;
                                 return cmp->has_matched_service(complist->getElement(c)->getSearchFilter());
                             }
                             return true;
