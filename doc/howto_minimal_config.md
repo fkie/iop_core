@@ -1,3 +1,5 @@
+> This is an example for ROS 1! We're working on an example for ROS2.
+
 ## How to start with own configuration
 
 First of all you need a running `JAUS Node Manager` on **each host** where you start ROS/IOP components. `JAUS Node Manager` is part of JTS, but we created a script, so you can include it into ROS launch files, see [jaus_node_manager.launch](https://github.com/fkie/iop_examples/blob/master/fkie_iop_cfg_sim_stage/launch/jaus_node_manager.launch). Or you run it directly `JTSNodeManager path/to/nm.cfg`.

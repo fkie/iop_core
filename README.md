@@ -61,7 +61,7 @@ Merge the iop.rosinstall file and fetch code.
 ```console
 cd ros/
 mkdir src/iop
-vcs import --input https://raw.githubusercontent.com/fkie/iop_core/refs/heads/ros2/iop_robot.rosinstall src/iop
+vcs import --input https://raw.githubusercontent.com/fkie/iop_core/refs/heads/ros2_iop6/iop_robot.rosinstall src/iop
 ```
 
 ## Install dependencies
