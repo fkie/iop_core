@@ -147,8 +147,6 @@ protected:
     mutable mutex_type p_mutex;
 
     // ros parameter
-    // 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 - 255: Reserved
-    uint8_t system_id;
     /** Variables used for registration by subsystem or node **/
     bool register_own_services;
     // Discovery_ReceiveFSM *p_discovery_fsm;

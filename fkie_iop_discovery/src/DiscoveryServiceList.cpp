@@ -57,3 +57,14 @@ bool DiscoveryServiceList::has_service(std::string uri)
 	}
 	return false;
 }
+
+bool DiscoveryServiceList::has_matched_service(std::string filter)
+{
+	std::vector<DiscoveryServiceDef>::iterator it;
+	for (it = p_services.begin(); it != p_services.end(); it++) {
+		if (it->service_uri.find(filter) != std::string::npos) {
+			return true;
+		}
+	}
+	return false;
+}

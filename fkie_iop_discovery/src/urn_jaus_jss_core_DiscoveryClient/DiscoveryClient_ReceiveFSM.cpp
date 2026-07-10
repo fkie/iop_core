@@ -45,7 +45,6 @@ DiscoveryClient_ReceiveFSM::DiscoveryClient_ReceiveFSM(std::shared_ptr<iop::Comp
     this->pEventsClient_ReceiveFSM = pEventsClient_ReceiveFSM;
     this->pTransport_ReceiveFSM = pTransport_ReceiveFSM;
     this->cmp = cmp;
-    system_id = 4;
     register_own_services = true;
     TIMEOUT_DISCOVER = 5;
     TIMEOUT_STANDBY = 15;
@@ -79,10 +78,6 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 void DiscoveryClient_ReceiveFSM::setupIopConfiguration()
 {
     iop::Config cfg(cmp, "DiscoveryClient");
-    cfg.declare_param<uint8_t>("system_id", system_id, true,
-        rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
-        "ID of the system.",
-        "0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 – 255: Reserved");
     cfg.declare_param<bool>("register_own_services", register_own_services, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
         "Register own services on DiscoveryService. If using with OCU this parameter should be set to false.",
@@ -99,7 +94,6 @@ void DiscoveryClient_ReceiveFSM::setupIopConfiguration()
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "Send QueryIdentification after DiscoveryService was discovered and services are registered.",
         "Default: 15 sec");
-    cfg.param_named<uint8_t>("system_id", system_id, system_id, p_system_id_map(), true, "");
     cfg.param("register_own_services", register_own_services, register_own_services, true);
     cfg.param("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service);
     cfg.param("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER);
@@ -151,25 +145,6 @@ std::map<uint8_t, std::string> DiscoveryClient_ReceiveFSM::p_system_id_map()
     result[4] = "Component";
     return result;
 }
-
-// void DiscoveryClient_ReceiveFSM::setDiscoveryFSM(Discovery_ReceiveFSM *discovery_fsm)
-// {
-// 	if (discovery_fsm != NULL) {
-// 		if (discovery_fsm->getSystemID() == TYPE_SUBSYSTEM) {
-// 			// only uses if it is defined as SUBSYSTEM
-// 			p_discovery_fsm = discovery_fsm;
-// 			for (unsigned int i = 0; i < p_own_uri_services.size(); i++) {
-// 				iop::DiscoveryServiceDef &service = p_own_uri_services[i];
-// 				p_discovery_fsm->registerService(
-// 						service.service_uri,
-// 						service.minor_version,
-// 						service.major_version,
-// 						*jausRouter->getJausAddress());
-// 			}
-// 			pRegistrationFinished();
-// 		}
-// 	}
-// }
 
 void DiscoveryClient_ReceiveFSM::handleQueryIdentificationAction(QueryIdentification msg, Receive::Body::ReceiveRec transportData)
 {
@@ -636,20 +611,6 @@ void DiscoveryClient_ReceiveFSM::sendQueryIdentificationAction()
     }
     int query_type = TYPE_SUBSYSTEM;
     unsigned short subsystem_id = jausRouter->getJausAddress()->getSubsystemID();
-    if (system_id == TYPE_SUBSYSTEM) {
-        // we are subsystem -> discover system
-        query_type = TYPE_SYSTEM;
-        subsystem_id = 65535; // 0xFFFF
-    } else if (system_id == TYPE_NODE or
-        // we are node -> find subsystem discovery service and register own services
-        // if this discovery service is included in a component.
-        system_id == TYPE_COMPONENT) {
-        // IOP 5a: A QueryIdentification message shall be broadcast by
-        // every JAUS component on the subsystem at a rate of at least once per 5 minutes for the
-        // purpose of finding and registering services with the Discovery service.
-
-        // is set by default...
-    }
     query_identification(TYPE_SUBSYSTEM, 0xFFFF, 0xFF, 0xFF);
     if (query_type != TYPE_SUBSYSTEM) {
         query_identification(query_type, subsystem_id, 0xFF, 0xFF);
@@ -666,10 +627,6 @@ void DiscoveryClient_ReceiveFSM::sendQueryIdentificationAction()
                         RCLCPP_DEBUG(logger, "send QueryServices to subsystem: %d for discover service: %s",
                             subsystem_id, p_discover_services[i].service.service_uri.c_str());
                         query_identification(query_type, subsystem_id, 0xFF, 0xFF);
-                        //				QueryIdentification msg;
-                        //				msg.getBody()->getQueryIdentificationRec()->setQueryType(TYPE_SUBSYSTEM);
-                        //				printf("[DiscoveryClient] send QueryIdentification to subsystem: %d of type: %d (SUBSYSTEM)\n", subsystem_id, TYPE_SUBSYSTEM);
-                        //				sendJausMessage(msg,JausAddress(subsystem_id, 0xFF, 0xFF)); //0xFFFF, 0xFF, 0xFF
                     }
                 }
             }

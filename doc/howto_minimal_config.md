@@ -69,8 +69,6 @@ Now we have to configure the `Discovery` service to enable the service registrat
         </rosparam>
         <rosparam subst_value="true">
             Discovery:
-                # 2: Subsystem Identification, 3: Node Identification, 4: Component Identification
-                system_id: 2
                 # 10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT
                 system_type: 10001
         </rosparam>

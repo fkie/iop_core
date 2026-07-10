@@ -74,7 +74,6 @@ public:
     /// User Methods
     void registerService(std::string serviceuri, unsigned char maxver, unsigned char minver, JausAddress address);
     void registerSubsystem(JausAddress address);
-    uint8_t getSystemID() { return system_id; }
     std::vector<iop::DiscoveryComponent> getComponents(std::string uri);
 
     Discovery_ReceiveFSMContext* context;
@@ -94,8 +93,7 @@ protected:
     ReportServiceList* p_report_service_list;
 
     // ros parameter
-    // 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 - 255: Reserved
-    uint8_t system_id;
+    std::string name_system;
     // 10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT
     uint16_t system_type;
     std::string name_subsystem;
@@ -105,11 +103,10 @@ protected:
     std::map<JausAddress, unsigned long> p_respond_ident;
 
     bool isComponentRequested(QueryServices& msg, unsigned int nodeid, unsigned int compid);
-    bool isComponentRequested(QueryServiceList& msg, unsigned int subsystemid, unsigned int nodeid, unsigned int compid);
+    bool isComponentRequested(QueryServiceList& msg, std::vector<iop::DiscoveryComponent>::iterator cmp);
     RS_SSList::SubsystemSeq* p_add_subsystem(RS_SSList* list, unsigned int id);
     RS_NList::NodeSeq* p_add_node(RS_NList* list, unsigned int id);
     RS_CList::ComponentSeq* p_add_component(RS_CList* list, unsigned int id);
-    std::map<uint8_t, std::string> system_id_map();
     std::map<uint16_t, std::string> system_type_map();
     // this method is to inform other components about restart of this component by send service list on second query identification without request services
     bool p_should_send_services(JausAddress address);

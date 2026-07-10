@@ -49,6 +49,12 @@ bool DiscoveryComponent::has_service(std::string uri)
 	return p_services.has_service(uri);
 }
 
+
+bool DiscoveryComponent::has_matched_service(std::string filter)
+{
+	return p_services.has_matched_service(filter);
+}
+
 // comparable for the map
 bool DiscoveryComponent::operator<( const DiscoveryComponent& other) const
 {

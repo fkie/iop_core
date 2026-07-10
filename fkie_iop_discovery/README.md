@@ -7,19 +7,19 @@ The discovery service holds information about System, Subsystem, Node or Compone
 
 #### Parameter:
 
-_system_id (int_, (Default: 4)
-
-> The ID of the service: 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 – 255: Reserved
-
 _system_type (int_, (Default: 60001)
 
 > 10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT
 
-_name_subsystem (str_, (Default: Robotname)
+_name_system (str_, (Default: System-Name)
 
-> The name of the robot. Only used if the _system_id_ is set to 2 (subsystem).
+> The name of the system. Used for ReportIdentification on query for type 1 (system).
 
-_name_node (str_, (Default: Componentname)
+_name_subsystem (str_, (Default: Robot-Name)
+
+> The name of the robot. Used for ReportIdentification on query for type 2 (subsystem).
+
+_name_node (str_, (Default: Component-Name)
 
 > The name of the component which includes this service.
 

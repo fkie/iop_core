@@ -38,6 +38,7 @@ public:
 
 	std::vector<DiscoveryServiceDef> get_services();
 	bool has_service(std::string uri);
+	bool has_matched_service(std::string filter);
 
 protected:
 	std::vector<DiscoveryServiceDef> p_services;

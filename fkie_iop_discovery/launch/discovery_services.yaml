@@ -6,7 +6,5 @@ iop_discovery_node:
       - fkie_iop_list_manager/ListManagerClient
     Events.timeout: 5
     Discovery:
-      # 0: Reserved, 1: System Identification, 2: Subsystem Identification, 3: Node Identification, 4: Component Identification, 5 – 255: Reserved
-      system_id: 2
       # 10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT
       system_type: 10001
