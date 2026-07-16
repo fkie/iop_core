@@ -322,7 +322,7 @@ public class ServiceDefGenerator
                     smAssignmentServiceList.append(System.getProperty("line.separator"));
                     String[] versionArray = sDef.getVersion().split("\\.");
                     if (versionArray.length == 2) {
-                        smAssignmentServiceList.append("\tthis->m_version_manjor = " + Integer.parseInt(versionArray[0]) + ";");
+                        smAssignmentServiceList.append("\tthis->m_version_major = " + Integer.parseInt(versionArray[0]) + ";");
                         smAssignmentServiceList.append(System.getProperty("line.separator"));
                         smAssignmentServiceList.append("\tthis->m_version_minor = " + Integer.parseInt(versionArray[1]) + ";");
                         smAssignmentServiceList.append(System.getProperty("line.separator"));
@@ -335,7 +335,7 @@ public class ServiceDefGenerator
                     
                         String[] versionInhArray = sDef.getReferences().getInheritsFrom().getVersion().split(".");
                         if (versionInhArray.length == 2) {
-                            smAssignmentServiceList.append("\tthis->m_inherits_from_version_manjor = " + Integer.parseInt(versionInhArray[0]) + ";");
+                            smAssignmentServiceList.append("\tthis->m_inherits_from_version_major = " + Integer.parseInt(versionInhArray[0]) + ";");
                             smAssignmentServiceList.append(System.getProperty("line.separator"));
                             smAssignmentServiceList.append("\tthis->m_inherits_from_min_version_minor = " + Integer.parseInt(versionInhArray[1]) + ";");
                             smAssignmentServiceList.append(System.getProperty("line.separator"));

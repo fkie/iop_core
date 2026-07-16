@@ -245,13 +245,13 @@ void Component::load_plugins()
 		RCLCPP_INFO(this->get_logger(), "Add %ld services to register by discovery service...", p_plugins_map.size());
 		std::map<std::string, std::shared_ptr<JTS::Service> >::iterator it2;
 		for (it2 = p_plugins_map.begin(); it2 != p_plugins_map.end(); ++it2) {
-			p_discovery_client->registerService(it2->second->getURN(), it2->second->getVersionManjor(), it2->second->getVersionMinor(), *this->jausRouter->getJausAddress());
 		}
 		RCLCPP_INFO(this->get_logger(), "... all services added");
 	} else {
 		RCLCPP_WARN(this->get_logger(), "Discovery nor DiscoveryClient not found, the services are neither registered nor discovered!");
 	}
 	RCLCPP_INFO(this->get_logger(), "... initialization complete");
+            p_discovery_client->registerService(it2->second->getURN(), it2->second->getVersionMajor(), it2->second->getVersionMinor(), *this->jausRouter->getJausAddress());
 }
 
 std::shared_ptr<JTS::Service> Component::p_init_plugin(std::string name, pluginlib::ClassLoader<JTS::Service>& class_loader)

@@ -73,11 +73,11 @@ public:
 
 	const std::string getURN() const;
 	const std::string getName() const;
-	unsigned char getVersionManjor() const;
+	unsigned char getVersionMajor() const;
 	unsigned char getVersionMinor() const;
 	const std::string getURNInheritsFrom() const;
 	const std::string getNameInheritsFrom() const;
-	unsigned char getVersionManjorInheritsFrom() const;
+	unsigned char getVersionMajorInheritsFrom() const;
 	unsigned char getVersionMinorInheritsFrom() const;
 
 	const std::set<jUnsignedShortInteger> &getInputMessageList() const;
@@ -93,11 +93,11 @@ protected:
 	bool p_initialized;
 	std::string m_name;  // <service_def name<=
 	std::string m_URN;  //  <service_def id<=
-	unsigned char m_version_manjor;  //  <service_def version<=
+	unsigned char m_version_major;  //  <service_def version<=
 	unsigned char m_version_minor;    //  <service_def version<=
 	std::string m_uri_inherits_from;  //  <inherits_from id<=
 	std::string m_name_inherits_from;  //  <inherits_from name<=
-	unsigned char m_inherits_from_version_manjor;  //  <inherits_from version<=
+	unsigned char m_inherits_from_version_major;  //  <inherits_from version<=
 	unsigned char m_inherits_from_min_version_minor;  //  <inherits_from version<=
 };
 

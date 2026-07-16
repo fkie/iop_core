@@ -61,9 +61,9 @@ const std::string Service::getName() const
 	return m_name;
 }
 
-unsigned char Service::getVersionManjor() const
+unsigned char Service::getVersionMajor() const
 {
-	return m_version_manjor;
+	return m_version_major;
 }
 
 unsigned char Service::getVersionMinor() const
@@ -81,9 +81,9 @@ const std::string Service::getNameInheritsFrom() const
 	return m_name_inherits_from;
 }
 
-unsigned char Service::getVersionManjorInheritsFrom() const
+unsigned char Service::getVersionMajorInheritsFrom() const
 {
-	return m_inherits_from_version_manjor;
+	return m_inherits_from_version_major;
 }
 
 unsigned char Service::getVersionMinorInheritsFrom() const
