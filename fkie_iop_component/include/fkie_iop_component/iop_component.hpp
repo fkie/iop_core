@@ -97,6 +97,7 @@ namespace iop
         bool p_search_for_id_params;
         bool p_iop_initialized;
         bool p_use_remote_time;
+        bool p_finished;
 
 
         void p_connect_2_rte();

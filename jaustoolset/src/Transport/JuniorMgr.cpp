@@ -94,7 +94,7 @@ JuniorMgr::~JuniorMgr()
 
 void JuniorMgr::stop()
 {
-	printf("STOP MANAGER\n");
+	printf("stop JuniorMgr\n");
 	isRunning = false;
 	_signal_queue_send.signal();
 }

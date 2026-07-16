@@ -20,24 +20,27 @@ along with this program; or you can read the full license at
 
 /** \author Alexander Tiderko */
 
-
-#include <iostream>
-#include <signal.h>
-#include <rclcpp/rclcpp.hpp>
 #include "Transport/OS.h"
 #include "fkie_iop_component/iop_component.hpp"
+#include <iostream>
+#include <rclcpp/rclcpp.hpp>
+#include <signal.h>
 
-
-int main(int argc, char* argv [] )
+int main(int argc, char* argv[])
 {
     // Instantiate the component and start it.
     rclcpp::init(argc, argv);
     auto component = std::make_shared<iop::Component>("iop_component_default", "");
     component->init(126, 0x40, 81);
+    rclcpp::on_shutdown([&component]() {
+        // Shutdown the component and threads
+        component->shutdown_component();
+        component.reset();
+    });
     rclcpp::spin(component);
-    // Shutdown the component and threads
-    component->shutdown_component();
     rclcpp::shutdown();
     // Give a little time for proper shutdown
     DeVivo::Junior::JrSleep(100);
+    std::cout << "bye!" << std::endl;
+    return 0;
 }
