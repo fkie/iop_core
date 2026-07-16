@@ -111,7 +111,10 @@ void AccessControl_ReceiveFSM::pTimeout()
 void AccessControl_ReceiveFSM::initAction()
 {
     /// Insert User Code HERE
-    setAuthority(p_default_authority);
+    if (p_emergency_address.size() == 0) {
+        // do not change authority in emergency state
+        setAuthority(p_default_authority);
+    }
 }
 
 void AccessControl_ReceiveFSM::resetTimerAction()
@@ -328,6 +331,7 @@ void AccessControl_ReceiveFSM::setControl(JausAddress address)
 void AccessControl_ReceiveFSM::store_emergency_address(JausAddress address)
 {
     p_emergency_address.insert(address.get());
+    // sendRejectControlToControllerAction("NOT_AVAILABLE");
 }
 
 void AccessControl_ReceiveFSM::delete_emergency_address(JausAddress address)

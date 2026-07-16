@@ -302,6 +302,22 @@
                 <argument value="transportData"/>
               </action>
             </transition>
+
+            <transition name="events.transport.Receive">
+              <parameter type="SetAuthority" value="msg" interpretation="enveloped set authority message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <guard condition="isAuthorityValid( msg ) &amp;&amp; isControllingClient( transportData )" interpretation="True if the value of the
+                authority code received from the client is less than or equal to
+                the current authority value of this service, , but greater than or
+                equal to the receiving components default authority, and if the
+                message that triggered the transition is received from the client
+                that is in control of this service"/>
+              <internal/>
+              <action name="setAuthority" interpretation="Set the current authority value of this
+                service to the specified authority">
+                <argument value="msg"/>
+              </action>
+            </transition>
           </state>
           <state name="Controlled">
             <transition name="events.transport.Receive">
@@ -401,8 +417,7 @@
             <transition name="events.transport.Receive">
               <parameter type="SetAuthority" value="msg" interpretation="enveloped set authority message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="isAuthorityValid( msg ) &amp;&amp; isControllingClient( transportData )
-                &amp;&amp; isControlAvailable()" interpretation="True if the value of the
+              <guard condition="isAuthorityValid( msg ) &amp;&amp; isControllingClient( transportData )" interpretation="True if the value of the
                 authority code received from the client is less than or equal to
                 the current authority value of this service, , but greater than or
                 equal to the receiving components default authority, and if the
@@ -489,6 +504,15 @@
               <internal/>
               <action name="sendReportTimeout" interpretation="Send a Report Timeout message to querying client">
                 <argument value="msg"/>
+                <argument value="transportData"/>
+              </action>
+            </transition>
+            <transition name="events.transport.Receive">
+              <parameter type="QueryControl" value="msg" interpretation="enveloped query control message"/>
+              <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
+              <internal/>
+              <action name="events.transport.Send" interpretation="Send a Report Control message with the specified control value">
+                <argument value=" 'ReportControl' "/>
                 <argument value="transportData"/>
               </action>
             </transition>
