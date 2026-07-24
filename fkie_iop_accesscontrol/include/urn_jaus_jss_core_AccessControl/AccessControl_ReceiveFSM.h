@@ -70,6 +70,7 @@ public:
     /// Guard Methods
     virtual bool isAuthorityValid(SetAuthority msg);
     virtual bool isControlAvailable();
+    virtual bool isControlAvailable(Receive::Body::ReceiveRec transportData);
     virtual bool isControllingClient(Receive::Body::ReceiveRec transportData);
     virtual bool isCurrentAuthorityLess(RequestControl msg);
     virtual bool isDefaultAuthorityGreater(RequestControl msg);

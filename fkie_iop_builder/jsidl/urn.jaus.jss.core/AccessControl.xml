@@ -210,7 +210,7 @@
             <transition name="events.transport.Receive">
               <parameter type="RequestControl" value="msg" interpretation="enveloped request control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="! isControlAvailable()" interpretation="True if this service or
+              <guard condition="! isControlAvailable( transportData )" interpretation="True if this service or
                 services related to this service are engaged in other operations that would
                 prevent this service from performing its actions."/>
               <internal/>
@@ -241,7 +241,7 @@
               <parameter type="RequestControl" value="msg" interpretation="enveloped request
                 control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="! isDefaultAuthorityGreater( msg ) &amp;&amp; isControlAvailable()" interpretation="True if the base authority
+              <guard condition="! isDefaultAuthorityGreater( msg ) &amp;&amp; isControlAvailable( transportData )" interpretation="True if the base authority
                 code of this service is greater than the authority code of the client
                 service that triggered the corresponding transition and if this service or services
                 related to this service are not engaged in other operations that would prevent this
@@ -269,7 +269,7 @@
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped release control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="! isControlAvailable() &amp;&amp; ! isEmergencyClient( transportData )" interpretation="True if this service or
+              <guard condition="! isControlAvailable( transportData ) &amp;&amp; ! isEmergencyClient( transportData )" interpretation="True if this service or
                 services related to this service are engaged in other operations that would
                 prevent this service from performing its actions."/>
               <internal/>
@@ -324,7 +324,7 @@
               <parameter type="RequestControl" value="msg" interpretation="enveloped request
                 control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="! isControlAvailable()" interpretation="True if this service or
+              <guard condition="! isControlAvailable( transportData )" interpretation="True if this service or
                 services related to this service are engaged in other operations that would
                 prevent this service from performing its actions."/>
               <internal/>
@@ -433,7 +433,7 @@
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped request control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="! isControlAvailable()" interpretation="True if this service or
+              <guard condition="! isControlAvailable( transportData )" interpretation="True if this service or
                 services related to this service are engaged in other operations that would
                 prevent this service from performing its actions."/>
               <internal/>
@@ -447,7 +447,7 @@
             <transition name="events.transport.Receive">
               <parameter type="ReleaseControl" value="msg" interpretation="enveloped release control message"/>
               <parameter type="Receive.Body.ReceiveRec" value="transportData" interpretation="transport data"/>
-              <guard condition="isControllingClient( transportData ) &amp;&amp; isControlAvailable()" interpretation="True if the message that triggered the transition is
+              <guard condition="isControllingClient( transportData ) &amp;&amp; isControlAvailable( transportData )" interpretation="True if the message that triggered the transition is
                 received from the client that is in control of this service, and if
                 this service or services related to this service are not engaged in other
                 operations that would prevent this service from performing its actions"/>

@@ -276,6 +276,10 @@ bool AccessControl_ReceiveFSM::isControlAvailable()
 {
     return (p_emergency_address.size() == 0 && p_ros_available);
 }
+bool AccessControl_ReceiveFSM::isControlAvailable(Receive::Body::ReceiveRec transportData)
+{
+    return ((p_emergency_address.size() == 0 && p_ros_available) || has_emergency_address(transportData.getAddress()));
+}
 bool AccessControl_ReceiveFSM::isControllingClient(Receive::Body::ReceiveRec transportData)
 {
     if (p_current_controller == transportData.getAddress()) {
@@ -328,7 +332,14 @@ void AccessControl_ReceiveFSM::setControl(JausAddress address)
 
 void AccessControl_ReceiveFSM::store_emergency_address(JausAddress address)
 {
-    p_emergency_address.insert(address.get());
+    if (p_current_controller != address) {
+        if (!has_emergency_address(p_current_controller)) {
+            p_emergency_address.insert(p_current_controller.get());
+        }
+    }
+    if (!has_emergency_address(address)) {
+        p_emergency_address.insert(address.get());
+    }
     // sendRejectControlToControllerAction("NOT_AVAILABLE");
 }
 
