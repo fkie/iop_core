@@ -41,16 +41,14 @@ void DiscoveryRosInterface::setup(std::shared_ptr<iop::Component> cmp, JTS::Stat
 {
 	p_jaus_router = &jaus_router;
 	iop::Config cfg(cmp, "DiscoveryClient");
-	cfg.declare_param<bool>("enable_ros_interface", p_enable_ros_interface, true,
+	cfg.param<bool>("enable_ros_interface", p_enable_ros_interface, p_enable_ros_interface, true,
 		rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
 		"Enables ROS interface for using with ROS operator control unit (e.g. RQt or RViz)",
 		"Default: false");
-	cfg.declare_param<int64_t>("force_component_update_after", p_force_component_update_after, true,
+	cfg.param<int64_t>("force_component_update_after", p_force_component_update_after, p_force_component_update_after, true,
 		rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
 		"Discovery client updates all discovered services after given time",
 		"Default: 300 sec");
-	cfg.param("enable_ros_interface", p_enable_ros_interface, p_enable_ros_interface);
-	cfg.param("force_component_update_after", p_force_component_update_after, p_force_component_update_after);
 	if (p_enable_ros_interface) {
 		p_pub_identification = cfg.create_publisher<fkie_iop_msgs::msg::Identification>("/iop_identification", 10);
 		rclcpp::QoS qos_latched(10);

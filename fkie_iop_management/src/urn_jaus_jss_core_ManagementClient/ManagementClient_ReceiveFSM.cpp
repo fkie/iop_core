@@ -73,16 +73,14 @@ void ManagementClient_ReceiveFSM::setupNotifications()
 void ManagementClient_ReceiveFSM::setupIopConfiguration()
 {
     iop::Config cfg(cmp, "ManagementClient");
-    cfg.declare_param<double>("hz", p_hz, true,
+    cfg.param<double>("hz", p_hz, p_hz, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE,
         "Sets how often the reports are requested. If by_query is true hz must be greather then 0. In this case each time a Query message is sent to get a report. If by_query is false an event is created to get Reports. In this case 0 disables the rate and an event of type on_change will be created.",
         "Default: 0 (each new one)");
-    cfg.declare_param<bool>("by_query", by_query, true,
+    cfg.param<bool>("by_query", by_query, by_query, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
         "By default the current state will be requested by creating an event. By setting this variable to true the state is requested by query.",
         "Default: false");
-    cfg.param("hz", p_hz, p_hz, false);
-    cfg.param("by_query", by_query, by_query, true);
     p_pub_status = cfg.create_publisher<std_msgs::msg::String>("mgmt_status", 5);
     p_pub_status_emergency = cfg.create_publisher<std_msgs::msg::Bool>("mgmt_emergency", 5);
     p_sub_cmd_emergency = cfg.create_subscription<std_msgs::msg::Bool>("cmd_mgmt_emergency", 5, std::bind(&ManagementClient_ReceiveFSM::pRosEmergency, this, std::placeholders::_1));

@@ -53,49 +53,41 @@ Component::Component(const std::string node_name, const std::string namespace_)
 void Component::init(unsigned int subsystem, unsigned short node, unsigned short component)
 {
     p_cfg = new iop::Config(std::dynamic_pointer_cast<iop::Component>(shared_from_this()), "");
-    p_cfg->declare_param<std::string>("iop_address", "", true,
-        rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
-        "Address of the IOP component", "{subsystem-65535}.{node-255}.{component-255}");
     p_id_subsystem = subsystem;
     p_id_node = node;
     p_id_component = component;
-    rclcpp::Parameter addr_param = this->get_parameter("iop_address");
-    if (addr_param.get_type() == rclcpp::ParameterType::PARAMETER_STRING) {
-        std::string addr_str = addr_param.as_string();
-        if (!addr_str.empty()) {
-            int p1, p2, p3;
-            int scan_result = std::sscanf(addr_str.c_str(), "%d.%d.%d", &p1, &p2, &p3);
-            if (scan_result == 2) {
-                RCLCPP_INFO(this->get_logger(), "found iop_address: %s", addr_str.c_str());
-                p_id_subsystem = p1;
-                p_id_node = p2;
-                p_search_for_id_params = false;
-            } else if (scan_result == 3) {
-                RCLCPP_INFO(this->get_logger(), "found iop_address: %s", addr_str.c_str());
-                p_id_subsystem = p1;
-                p_id_node = p2;
-                p_id_component = p3;
-                p_search_for_id_params = false;
-            } else {
-                RCLCPP_WARN(this->get_logger(), "invalid format in iop_address[str]: %s, should be subsystem.node.component or subsystem.node", addr_str.c_str());
-            }
+    std::string addr_str;
+    p_cfg->param<std::string>("iop_address", addr_str, "", true,
+        rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
+        "Address of the IOP component", "{subsystem-65535}.{node-255}.{component-255}");
+    if (!addr_str.empty()) {
+        int p1, p2, p3;
+        int scan_result = std::sscanf(addr_str.c_str(), "%d.%d.%d", &p1, &p2, &p3);
+        if (scan_result == 2) {
+            RCLCPP_INFO(this->get_logger(), "found iop_address: %s", addr_str.c_str());
+            p_id_subsystem = p1;
+            p_id_node = p2;
+            p_search_for_id_params = false;
+        } else if (scan_result == 3) {
+            RCLCPP_INFO(this->get_logger(), "found iop_address: %s", addr_str.c_str());
+            p_id_subsystem = p1;
+            p_id_node = p2;
+            p_id_component = p3;
+            p_search_for_id_params = false;
         } else {
-            throw std::runtime_error("iop_address is empty");
+            RCLCPP_WARN(this->get_logger(), "invalid format in iop_address[str]: %s, should be subsystem.node.component or subsystem.node", addr_str.c_str());
         }
     } else {
-        std::string msg = "iop_address[str] has invalid type ";
-        msg += addr_param.get_type_name();
-        throw std::runtime_error(msg.c_str());
+        throw std::runtime_error("iop_address is empty");
     }
     RCLCPP_INFO(this->get_logger(), "Set JAUS address to: %d.%d.%d", p_id_subsystem, p_id_node, p_id_component);
     p_own_address = JausAddress(p_id_subsystem, p_id_node, p_id_component);
     p_publisher_diagnostics = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
     p_config_path = "nm.cfg";
     // read configuration from private parameter
-    p_cfg->declare_param<std::string>("jaus_config", "nm.cfg", true,
+    p_cfg->param<std::string>("jaus_config", p_config_path, "nm.cfg", true,
         rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
-        "Configuration path for JAUS library context", "");
-    this->get_parameter("jaus_config", p_config_path);
+        "Configuration path for JAUS library context");
     if (p_config_path.compare("nm.cfg") == 0) {
         char cwd[1024];
         if (getcwd(cwd, sizeof(cwd)) != nullptr) {
@@ -106,11 +98,10 @@ void Component::init(unsigned int subsystem, unsigned short node, unsigned short
     } else {
         RCLCPP_INFO(this->get_logger(), "JAUS configuration file: %s", p_config_path.c_str());
     }
-    p_cfg->declare_param<bool>("iop_use_remote_time", false, true,
+    p_cfg->param<bool>("iop_use_remote_time", p_use_remote_time, false, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
         "On false the timestamp of received messages will be overwritten by current time of local pc. Useful with if time is not synchronized and you got TF problem on local host.",
         "Default: false");
-    this->get_parameter<bool>("iop_use_remote_time", p_use_remote_time);
     p_class_loader = nullptr;
     jausRouter = nullptr;
     // spawn another thread
@@ -169,37 +160,32 @@ void Component::load_plugins()
     bool has_discovery_service = false;
     bool has_discovery_client_service = false;
     std::vector<std::string> plugins;
-    p_cfg->declare_param<std::vector<std::string>>("iop_services", std::vector<std::string>(), true,
+    p_cfg->param<std::vector<std::string>>("iop_services", plugins, std::vector<std::string>(), true,
         rcl_interfaces::msg::ParameterType::PARAMETER_STRING_ARRAY,
         "List of service to include into component.", "package_name/service_name");
-    bool param_available = this->get_parameter("iop_services", plugins);
-    if (param_available) {
-        for (unsigned int i = 0; i < plugins.size(); i++) {
-            auto pkg_srv = iop::split(iop::trim(plugins[i]), '/');
-            if (pkg_srv.size() == 2) {
-                std::string package = pkg_srv[0];
-                std::string service = pkg_srv[1];
-                if (service.compare("RangeSensor") == 0 or service.compare("RangeSensorClient") == 0) {
-                    has_range_sensor_service = true;
-                }
-                if (service.compare("VisualSensor") == 0 or service.compare("VisualSensorClient") == 0) {
-                    has_visual_sensor_service = true;
-                }
-                if (service.compare("Discovery") == 0) {
-                    has_discovery_service = true;
-                }
-                if (service.compare("DiscoveryClient") == 0) {
-                    has_discovery_client_service = true;
-                }
-                plugin_names.push_back(service);
-            } else {
-                RCLCPP_WARN(this->get_logger(), "skipped plugin entry '%s' because of invalid format", plugins[i].c_str());
+    for (unsigned int i = 0; i < plugins.size(); i++) {
+        auto pkg_srv = iop::split(iop::trim(plugins[i]), '/');
+        if (pkg_srv.size() == 2) {
+            std::string package = pkg_srv[0];
+            std::string service = pkg_srv[1];
+            if (service.compare("RangeSensor") == 0 or service.compare("RangeSensorClient") == 0) {
+                has_range_sensor_service = true;
             }
+            if (service.compare("VisualSensor") == 0 or service.compare("VisualSensorClient") == 0) {
+                has_visual_sensor_service = true;
+            }
+            if (service.compare("Discovery") == 0) {
+                has_discovery_service = true;
+            }
+            if (service.compare("DiscoveryClient") == 0) {
+                has_discovery_client_service = true;
+            }
+            plugin_names.push_back(service);
+        } else {
+            RCLCPP_WARN(this->get_logger(), "skipped plugin entry '%s' because of invalid format", plugins[i].c_str());
         }
-    } else {
-        std::string msg = "iop_services parameter not available! It should be a list of string with PACKAGE_NAME/SERVICE_NAME";
-        throw std::runtime_error(msg.c_str());
     }
+
     if (has_discovery_service & has_discovery_client_service) {
         RCLCPP_WARN(this->get_logger(), "In this version you do not need to include Discovery and DiscoverClient in the same component!");
         throw std::logic_error("include Discovery or DiscoverClient, not both!");

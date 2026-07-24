@@ -121,29 +121,25 @@ void Discovery_ReceiveFSM::setupNotifications()
 void Discovery_ReceiveFSM::setupIopConfiguration()
 {
     iop::Config cfg(cmp, "Discovery");
-    cfg.declare_param<std::string>("name_system", name_system, true,
+    cfg.param<std::string>("name_system", name_system, name_system, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
         "Name of the system.",
         "");
-    cfg.declare_param<uint16_t>("system_type", system_type, true,
+    cfg.param_named<uint16_t>("system_type", system_type, system_type, system_type_map(), true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "System type",
-        "10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT");
-    cfg.declare_param<std::string>("name_subsystem", name_subsystem, true,
+        "10001: VEHICLE, 20001: OCU, 30001: OTHER_SUBSYSTEM, 40001: NODE, 50001: PAYLOAD, 60001: COMPONENT",
+        "");
+    cfg.param<std::string>("name_subsystem", name_subsystem, name_subsystem, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
         "System name", "");
-    cfg.declare_param<std::string>("name_node", name_node, true,
+    cfg.param<std::string>("name_node", name_node, name_node, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
         "ROS Node name", "");
-    cfg.declare_param<int64_t>("timeout_lost", p_timeout_lost, true,
+    cfg.param<int64_t>("timeout_lost", p_timeout_lost, p_timeout_lost, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "Registered components are removed if they do not send a QueryIdentification within the timeout",
         "Default: 60 sec");
-    cfg.param<std::string>("name_system", name_system, name_system);
-    cfg.param_named<uint16_t>("system_type", system_type, system_type, system_type_map(), true, "");
-    cfg.param<std::string>("name_subsystem", name_subsystem, name_subsystem);
-    cfg.param<std::string>("name_node", name_node, name_node);
-    cfg.param<int64_t>("timeout_lost", p_timeout_lost, p_timeout_lost);
     pEvents_ReceiveFSM->get_event_handler().register_query(QueryServiceList::ID, true, false);
     p_own_address = *(this->jausRouter->getJausAddress());
     p_component_list.set_timeout(p_timeout_lost);

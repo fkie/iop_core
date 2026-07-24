@@ -42,10 +42,6 @@ std::string Config::get_topic_name(const std::string& name, const std::string& p
         param_name += name;
     }
     std::replace(param_name.begin(), param_name.end(), '/', '_');
-    declare_param<std::string>(param_name, name, true,
-        rcl_interfaces::msg::ParameterType::PARAMETER_STRING,
-        "", "");
-    // only from private namespace
-    param<std::string>(param_name, result, name, true);
+    param<std::string>(param_name, result, name);
     return result;
 }

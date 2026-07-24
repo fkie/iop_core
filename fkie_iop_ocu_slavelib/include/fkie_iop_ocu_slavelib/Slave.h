@@ -67,8 +67,8 @@ namespace ocu {
 		urn_jaus_jss_core_ManagementClient::ManagementClient_ReceiveFSM *p_management_client;
 		rclcpp::Logger logger;
 		std::shared_ptr<iop::Component> cmp;
-		int p_subsystem_restricted;
-		int p_controlled_component_nr;
+		int64_t p_subsystem_restricted;
+		int64_t p_controlled_component_nr;
 		bool p_only_monitor;
 		bool p_try_get_management;
 		bool p_use_queries;
@@ -78,8 +78,8 @@ namespace ocu {
 		JausAddress p_default_control_addr;
 		JausAddress p_current_control_addr;
 		unsigned char p_current_control_state;
-		int p_default_authority;
-		int p_default_access_control;
+		int64_t p_default_authority;
+		int64_t p_default_access_control;
 		std::vector<ServiceInfo> p_services;
 		std::vector<Component> p_components;
 		rclcpp::Publisher<fkie_iop_msgs::msg::OcuFeedback>::SharedPtr p_pub_control_feedback;

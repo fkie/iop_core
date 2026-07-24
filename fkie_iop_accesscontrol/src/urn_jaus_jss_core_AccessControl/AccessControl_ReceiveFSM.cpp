@@ -71,17 +71,15 @@ void AccessControl_ReceiveFSM::setupNotifications()
 void AccessControl_ReceiveFSM::setupIopConfiguration()
 {
     iop::Config cfg(cmp, "AccessControl");
-    cfg.declare_param<int64_t>("access_timeout", p_default_timeout, true,
+    cfg.param<int64_t>("access_timeout", p_default_timeout, p_default_timeout, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "Time period in seconds after which the exclusive control goes lost. Zero disables the timeout.",
         "Default: 60 sec");
-    cfg.param<int64_t>("access_timeout", p_default_timeout, p_default_timeout);
     uint8_t da = p_default_authority;
-    cfg.declare_param<uint8_t>("default_authority", p_default_authority, true,
+    cfg.param<uint8_t>("default_authority", da, p_default_authority, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "The authority level of a client requesting control (RequestControl) must be greather than or equal to the this value.",
         "Default: 1; Possible values: 1-254");
-    cfg.param<uint8_t>("default_authority", da, da);
     p_default_authority = da;
     if (p_default_timeout > 0) {
         p_timer.set_interval(std::chrono::seconds(p_default_timeout));

@@ -78,30 +78,26 @@ void DiscoveryClient_ReceiveFSM::setupNotifications()
 void DiscoveryClient_ReceiveFSM::setupIopConfiguration()
 {
     iop::Config cfg(cmp, "DiscoveryClient");
-    cfg.declare_param<bool>("register_own_services", register_own_services, true,
+    cfg.param<bool>("register_own_services", register_own_services, register_own_services, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_BOOL,
         "Register own services on DiscoveryService. If using with OCU this parameter should be set to false.",
         "Default: true");
-    cfg.declare_param<int64_t>("timeout_discover_service", p_timeout_discover_service, true,
+    cfg.param<int64_t>("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "DiscoveryService was not seen for this time all own services are registered again.",
         "Default: 300 sec");
-    cfg.declare_param<int64_t>("query_timeout_discover", TIMEOUT_DISCOVER, true,
+    cfg.param<int>("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER, true,
         rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
         "Send QueryIdentification while DiscoveryService was not discovered.",
         "Default: 5 sec");
-    cfg.declare_param<int64_t>("query_timeout_standby", TIMEOUT_STANDBY, true,
-        rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
-        "Send QueryIdentification after DiscoveryService was discovered and services are registered.",
-        "Default: 15 sec");
-    cfg.param("register_own_services", register_own_services, register_own_services, true);
-    cfg.param("timeout_discover_service", p_timeout_discover_service, p_timeout_discover_service);
-    cfg.param("query_timeout_discover", TIMEOUT_DISCOVER, TIMEOUT_DISCOVER);
     if (TIMEOUT_DISCOVER == 0) {
         RCLCPP_WARN(logger, "query_timeout_discover is configured to zero, increase to 5");
         TIMEOUT_DISCOVER = 5;
     }
-    cfg.param("query_timeout_standby", TIMEOUT_STANDBY, TIMEOUT_STANDBY);
+    cfg.param<int>("query_timeout_standby", TIMEOUT_STANDBY, TIMEOUT_STANDBY, true,
+        rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER,
+        "Send QueryIdentification after DiscoveryService was discovered and services are registered.",
+        "Default: 15 sec");
     if (TIMEOUT_STANDBY == 0) {
         RCLCPP_WARN(logger, "query_timeout_standby is configured to zero, increase to 15");
         TIMEOUT_STANDBY = 15;
