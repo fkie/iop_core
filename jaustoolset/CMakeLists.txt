@@ -11,8 +11,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(tinyxml2_vendor REQUIRED)
-find_package(TinyXML2 REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(executable_name JTSNodeManager)
 set(library_name ${PROJECT_NAME})
@@ -55,9 +54,10 @@ add_library(jaustoolset::jaustoolset ALIAS jaustoolset)
 # )
 
 target_link_libraries(${library_name}
-    pthread
-    rt
-    ${TinyXML2_LIBRARIES}
+    PUBLIC
+        pthread
+        rt
+        tinyxml2::tinyxml2
 )
 
 ###################################
@@ -85,10 +85,9 @@ add_executable(${executable_name}
 # )
 
 
-target_link_libraries(${executable_name} ${library_name}
-    pthread
-    rt
-    ${TinyXML2_LIBRARIES}
+target_link_libraries(${executable_name}
+    PRIVATE
+        ${library_name}
 )
 
 
